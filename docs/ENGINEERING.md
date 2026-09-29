@@ -47,7 +47,7 @@ No. It demonstrates freshness policy using a constant synthetic response and the
 
 **Is this a production gateway?**
 
-No. There is no real origin proxy, authenticated tenant model, account-level abuse prevention, idle-lab deletion, global load test, or production deployment evidence. UUIDs are bearer capabilities, not identities. A user can create new sessions and reset demo quotas. Do not use the experimental rate limiter as an account protection boundary.
+No. There is no real origin proxy, authenticated tenant model, account-level abuse prevention, idle-lab deletion, global load test, or production traffic evidence. UUIDs are bearer capabilities, not identities. A user can create new sessions and reset demo quotas. Do not use the experimental rate limiter as an account protection boundary.
 
 **How is latency measured?**
 
