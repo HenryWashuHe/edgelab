@@ -16,9 +16,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - run: npm run test:lifecycle
       - name: Test real local Worker and Durable Object
         run: |
-          npx wrangler dev --port 8787 > /tmp/edgelab.log 2>&1 &
+          npm run dev:workers > /tmp/edgelab.log 2>&1 &
           SERVER_PID=$!
           trap 'kill "$SERVER_PID" || true' EXIT
           for attempt in $(seq 1 30); do

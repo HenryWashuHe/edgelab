@@ -9,7 +9,8 @@ The role emphasizes identifying familiar Internet problems, shipping independent
 1. `worker/engine.ts`: follow `admit`, then `complete`. Read each associated test.
 2. `worker/index.ts`: identify every asynchronous boundary. Admission and persistence happen together before origin work; completion reloads current state afterward.
 3. `src/main.tsx`: trace one button into the HTTP API and back into the event log.
-4. `wrangler.jsonc`: explain the binding, SQLite migration, and asset routing.
+4. `worker/origin-client.ts` and `worker/origin.ts`: trace the service binding, payload validation, and timeout boundary.
+5. `wrangler.jsonc` and `wrangler.origin.jsonc`: explain the binding, private origin, SQLite migration, and asset routing.
 
 ## Invariants worth explaining
 
@@ -43,15 +44,23 @@ Admission state and events are persisted. Work interrupted after admission may l
 
 **Is the cache a general HTTP cache?**
 
-No. It demonstrates freshness policy using a constant synthetic response and the timestamp of the last successful completion. It does not implement cache keys, Vary, authorization-aware caching, headers, or arbitrary payload storage. Extending it to real data requires those decisions.
+No. It caches the actual versioned catalog payload returned by a private origin Worker, with a 60-second maximum age measured from capture. It does not implement cache keys, Vary, authorization-aware caching, headers, or arbitrary payload storage. Extending it to real data requires those decisions.
 
 **Is this a production gateway?**
 
-No. There is no real origin proxy, authenticated tenant model, account-level abuse prevention, idle-lab deletion, global load test, or production traffic evidence. UUIDs are bearer capabilities, not identities. A user can create new sessions and reset demo quotas. Do not use the experimental rate limiter as an account protection boundary.
+No. There is no arbitrary origin proxy, authenticated tenant model, account-level abuse prevention, global load test, or production traffic evidence. The private controlled origin is reached through a real service binding, and idle labs are automatically deleted after 24 hours. UUIDs are bearer capabilities, not identities. A user can create new sessions and reset demo quotas. Do not use the experimental rate limiter as an account protection boundary.
 
 **How is latency measured?**
 
-`Date.now()` elapsed from the Durable Object handler through admission, synthetic delay if any, and completion. Workerd timing resolution can produce zero-millisecond local bypasses. P95 uses the nearest-rank method over the latest 180 completed events, mixing outcomes. It is not the latency of successful requests alone, browser RTT, or a network-wide measurement.
+`Date.now()` elapsed from the Durable Object handler through admission, the origin service call if admitted, and completion. Workerd timing resolution can produce zero-millisecond local bypasses. Origin P95 uses the nearest-rank method over origin attempts within the latest 180 completed events. Rate-limited requests and circuit bypasses are excluded; origin errors and timeouts are included. The chart still shows all outcomes. It is not the latency of successful requests alone, browser RTT, or a network-wide measurement.
+
+## Alarm and upgrade behavior
+
+Every API request renews the persisted 24-hour deadline and schedules an alarm. The alarm runs inside a short concurrency block, checks the latest deadline, and deletes all storage only when expired. The next request recreates the schema. A completion checks that a live lab still exists and has the same run ID before writing. Existing v1 state gains timeout defaults and clears its timestamp-only cache; old history remains available, but new metadata is only recorded for v2 requests. Previously idle v1 objects acquire alarms when next accessed.
+
+`scripts/lifecycle.mjs` runs the deployed bundles in an isolated Miniflare runtime with a shortened test-only idle interval. It proves real SQLite state and cached payload survival across eviction, renewal past the old deadline, actual alarm deletion, schema recreation, and rejection of a late response after expiry. Production uses 24 hours; the short interval is never configured in Wrangler deployment files.
+
+The timeout bounds how long the gateway awaits the origin; cancellation does not guarantee already-started upstream work stops. State updates after timeout use the timeout result and cannot later be replaced by a late successful response.
 
 ## Two-minute demo
 
@@ -65,10 +74,10 @@ No. There is no real origin proxy, authenticated tenant model, account-level abu
 
 Choose one and implement it yourself before presenting the project as work you fully understand:
 
-1. **Owned origin via service binding.** Deploy a second Worker as the origin. Add explicit timeout handling and propagate a stable request ID. Never accept arbitrary target URLs.
+1. **Public session issuance.** Add a separate admission boundary to issue signed, expiring session capabilities. Keep demo policy controls separate from account-level quotas.
 2. **Controlled A/B experiment.** Compare protected and unprotected requests against the same controlled origin. Measure success, origin invocations, and latency by outcome. Publish raw data and your hypothesis.
-3. **Expiration alarms.** Persist an idle deadline and delete expired lab data through a Durable Object alarm, including a test for activity racing with cleanup.
-4. **Real cached payload.** Save a versioned origin response with explicit freshness and stale deadlines. Test that a late response cannot overwrite a newer version.
+3. **Windowed error detection.** Compare the consecutive-failure breaker to a rolling-window failure rate under the same fault schedule.
+4. **HTTP cache semantics.** Add per-resource cache keys, conditional requests, and explicit fresh/stale intervals. Decide how authorization and Vary affect cache eligibility.
 
 ## AI-assisted development disclosure
 

@@ -1,5 +1,7 @@
+import { callOrigin } from './origin-client';
 import { DurableObject } from 'cloudflare:workers';
 import {
+  defaults,
   admit,
   complete,
   initialState,
@@ -12,6 +14,8 @@ import {
 interface Env {
   LABS: DurableObjectNamespace<ReliabilityLab>;
   ASSETS: Fetcher;
+  ORIGIN: Fetcher;
+  LAB_IDLE_TTL_MS?: string;
 }
 const colo = (request: Request) =>
   ['localhost', '127.0.0.1', '[::1]'].includes(new URL(request.url).hostname)
@@ -25,10 +29,13 @@ const json = (data: unknown, status = 200, extra: Record<string, string> = {}) =
 export class ReliabilityLab extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
-    ctx.storage.sql.exec(
+    this.ensureSchema();
+  }
+  private ensureSchema() {
+    this.ctx.storage.sql.exec(
       'CREATE TABLE IF NOT EXISTS state (id INTEGER PRIMARY KEY CHECK (id = 1), value TEXT NOT NULL)',
     );
-    ctx.storage.sql.exec(
+    this.ctx.storage.sql.exec(
       'CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT, value TEXT NOT NULL)',
     );
   }
@@ -36,7 +43,12 @@ export class ReliabilityLab extends DurableObject<Env> {
     const row = this.ctx.storage.sql
       .exec<{ value: string }>('SELECT value FROM state WHERE id = 1')
       .toArray()[0];
-    return row ? JSON.parse(row.value) : initialState(Date.now(), crypto.randomUUID());
+    const s: LabState = row ? JSON.parse(row.value) : initialState(Date.now(), crypto.randomUUID());
+    // Preserve existing v1 runs while adding the new timeout and real-response cache.
+    s.config = { ...defaults, ...s.config };
+    s.cachedPayload ??= null;
+    if (!s.cachedPayload) s.cachedAt = null;
+    return s;
   }
   private save(s: LabState) {
     this.ctx.storage.sql.exec(
@@ -44,9 +56,17 @@ export class ReliabilityLab extends DurableObject<Env> {
       JSON.stringify(s),
     );
   }
-  private event(s: LabState, decision: Decision, started: number) {
+  private event(
+    s: LabState,
+    decision: Decision,
+    started: number,
+    requestId: string,
+    originAttempted = false,
+  ) {
     const item = {
       ...decision,
+      requestId,
+      originAttempted,
       at: Date.now(),
       latencyMs: Date.now() - started,
       circuit: s.circuit,
@@ -55,7 +75,31 @@ export class ReliabilityLab extends DurableObject<Env> {
     this.ctx.storage.sql.exec('DELETE FROM events WHERE id <= (SELECT MAX(id) - 180 FROM events)');
     return item;
   }
+  async alarm() {
+    await this.ctx.blockConcurrencyWhile(async () => {
+      const expiresAt = this.ctx.storage.kv.get<number>('expiresAt');
+      if (expiresAt && expiresAt > Date.now()) {
+        await this.ctx.storage.setAlarm(expiresAt);
+        return;
+      }
+      // Compatibility date >= 2026-02-24 also clears alarm metadata.
+      await this.ctx.storage.deleteAll();
+    });
+  }
+  private async touch() {
+    await this.ctx.blockConcurrencyWhile(async () => {
+      this.ensureSchema();
+      const configured = Number(this.env.LAB_IDLE_TTL_MS);
+      const ttl = Number.isFinite(configured) && configured >= 100 ? configured : 86_400_000;
+      const expiresAt = Date.now() + ttl;
+      this.ctx.storage.kv.put('expiresAt', expiresAt);
+      this.save(this.read());
+      await this.ctx.storage.setAlarm(expiresAt);
+    });
+  }
   async fetch(request: Request): Promise<Response> {
+    await this.touch();
+    const requestId = crypto.randomUUID();
     const action = new URL(request.url).pathname.split('/').pop();
     if (action === 'state' && request.method === 'GET') {
       const s = this.read();
@@ -66,7 +110,12 @@ export class ReliabilityLab extends DurableObject<Env> {
         )
         .toArray()
         .map((row) => ({ ...JSON.parse(row.value), id: row.id }) as LabEvent);
-      return json({ state: s, events, now: Date.now() });
+      return json({
+        state: s,
+        events,
+        now: Date.now(),
+        expiresAt: this.ctx.storage.kv.get('expiresAt'),
+      });
     }
     if (request.method !== 'POST')
       return json({ error: 'Method not allowed' }, 405, { Allow: 'POST' });
@@ -103,38 +152,39 @@ export class ReliabilityLab extends DurableObject<Env> {
       const s = this.read();
       const result = admit(s, started);
       this.save(s);
-      if ('outcome' in result) this.event(s, result, started);
+      if ('outcome' in result) this.event(s, result, started, requestId);
       return result;
     });
-    if ('outcome' in admission) return this.respond(admission);
-    // This intentionally controlled origin never fetches a user-supplied URL.
-    // The delay is actual elapsed time; failures are injected, not real incidents.
-    await new Promise((resolve) => setTimeout(resolve, admission.delay));
+    if ('outcome' in admission) return this.respond(admission, requestId);
+    const originResult = await callOrigin(
+      this.env.ORIGIN,
+      admission.delay,
+      admission.fails,
+      admission.timeoutMs,
+    );
     const result = this.ctx.storage.transactionSync(() => {
+      if (!this.ctx.storage.kv.get('expiresAt')) return null;
       const s = this.read();
-      const decision = complete(s, admission, Date.now());
+      const decision = complete(s, admission, Date.now(), originResult);
       if (decision) {
         this.save(s);
-        this.event(s, decision, started);
+        this.event(s, decision, started, requestId, true);
       }
       return decision;
     });
     return result
-      ? this.respond(result)
+      ? this.respond(result, requestId)
       : json({ error: 'Lab reset while request was in flight' }, 409);
   }
-  private respond(decision: Decision) {
-    return json(
-      {
-        ...decision,
-        payload:
-          decision.status === 200
-            ? { service: 'demo-store', message: 'The Internet is still open.' }
-            : undefined,
-      },
-      decision.status,
-      decision.retryAfter ? { 'Retry-After': String(decision.retryAfter) } : {},
-    );
+  private respond(decision: Decision, requestId: string) {
+    const headers: Record<string, string> = {
+      'X-Request-ID': requestId,
+      'X-Response-Source': decision.outcome,
+    };
+    if (decision.retryAfter) headers['Retry-After'] = String(decision.retryAfter);
+    if (decision.cacheAgeMs !== undefined)
+      headers['Age'] = String(Math.floor(decision.cacheAgeMs / 1000));
+    return json({ ...decision, requestId }, decision.status, headers);
   }
 }
 async function boundedBody(request: Request): Promise<string> {
@@ -169,6 +219,8 @@ export default {
         ok: true,
         colo: colo(request),
         platform: 'Cloudflare Workers + Durable Objects',
+        version: '2.0.0',
+        origin: 'service-binding',
       });
     if (!['/api/state', '/api/request', '/api/config', '/api/reset'].includes(url.pathname))
       return json({ error: 'Not found' }, 404);
@@ -178,8 +230,9 @@ export default {
     const id = request.headers.get('X-Lab-ID');
     if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))
       return json({ error: 'A UUID v4 X-Lab-ID header is required' }, 400);
-    if (!['GET', 'POST'].includes(request.method))
-      return json({ error: 'Method not allowed' }, 405);
+    const allowed = url.pathname === '/api/state' ? 'GET' : 'POST';
+    if (request.method !== allowed)
+      return json({ error: 'Method not allowed' }, 405, { Allow: allowed });
     let body: string | undefined;
     if (request.method === 'POST') {
       try {

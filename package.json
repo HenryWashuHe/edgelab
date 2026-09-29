@@ -1,17 +1,19 @@
 {
   "name": "edgelab",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm run build && wrangler dev --port 8787",
+    "dev": "npm run build && npm run dev:workers",
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
     "test:integration": "node scripts/integration.mjs",
-    "check": "npm run format:check && npm test && npm run build && wrangler deploy --dry-run",
-    "deploy": "npm run build && wrangler deploy",
+    "check": "npm run format:check && npm test && npm run build && wrangler deploy --dry-run -c wrangler.origin.jsonc --outdir output/origin && wrangler deploy --dry-run -c wrangler.jsonc --outdir output/worker",
+    "deploy": "npm run build && wrangler deploy -c wrangler.origin.jsonc && wrangler deploy -c wrangler.jsonc",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "dev:workers": "wrangler dev -c wrangler.jsonc -c wrangler.origin.jsonc --port 8787",
+    "test:lifecycle": "node scripts/lifecycle.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.48.0",
@@ -22,6 +24,7 @@
     "@cloudflare/workers-types": "^5.20260928.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "miniflare": "^5.20260926.0-alpha",
     "prettier": "^3.9.9",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",

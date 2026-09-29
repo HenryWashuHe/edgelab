@@ -13,9 +13,18 @@ async function call(path, body, session = id, extra = {}) {
 }
 await call('reset', {});
 assert.equal((await call('state')).data.state.total, 0);
-assert.equal((await call('request', {})).status, 200);
+const warm = await call('request', {});
+assert.equal(warm.status, 200);
+assert.equal(warm.data.payload.service, 'demo-catalog');
+assert.equal(warm.headers.get('X-Request-ID'), warm.data.requestId);
 await call('config', { originMode: 'failing' });
-for (let i = 0; i < 3; i++) assert.equal((await call('request', {})).data.outcome, 'stale');
+for (let i = 0; i < 3; i++) {
+  const cached = await call('request', {});
+  assert.equal(cached.data.outcome, 'stale');
+  assert.deepEqual(cached.data.payload, warm.data.payload);
+  assert.ok(cached.data.cacheAgeMs >= 0);
+  assert.equal(cached.headers.get('X-Response-Source'), 'stale');
+}
 assert.equal((await call('state')).data.state.circuit, 'open');
 assert.equal((await call('request', {})).data.outcome, 'stale');
 await call('config', { staleFallback: false });
@@ -26,7 +35,15 @@ await call('config', { originMode: 'healthy' });
 await new Promise((resolve) => setTimeout(resolve, 4100));
 assert.equal((await call('request', {})).status, 200);
 assert.equal((await call('state')).data.state.circuit, 'closed');
-console.log('PASS outage → cached fallback → blocked → recovery');
+console.log('PASS service-bound origin → exact cached payload → blocked → recovery');
+const fresh = (await call('request', {})).data.payload;
+assert.notEqual(fresh.revision, warm.data.payload.revision);
+await call('reset', {});
+await call('config', { originLatencyMs: 500, originTimeoutMs: 100, staleFallback: false });
+const timeout = await call('request', {});
+assert.equal(timeout.status, 504);
+assert.equal((await call('state')).data.state.failures, 1);
+console.log('PASS real origin timeout becomes HTTP 504 and a circuit failure');
 await call('reset', {});
 await call('config', { refillPerSecond: 1 });
 const started = Date.now();
@@ -37,12 +54,17 @@ assert.ok(results.some((r) => r.status === 429));
 const snap = (await call('state')).data;
 assert.equal(snap.state.total, 24);
 assert.equal(snap.events.length, 24);
+assert.equal(new Set(snap.events.map((e) => e.requestId)).size, 24);
+assert.equal(snap.events.filter((e) => e.originAttempted).length, admitted);
+assert.ok(snap.expiresAt > snap.now && snap.expiresAt <= snap.now + 86400000);
 assert.equal(snap.state.originCalls, admitted);
 assert.equal((await call('state', undefined, randomUUID())).data.state.total, 0);
 console.log(
   `PASS 24 concurrent requests: ${admitted} admitted, ${24 - admitted} limited; separate session isolated`,
 );
 assert.equal((await call('config', { capacity: -1 })).status, 400);
+assert.equal((await call('state', {})).status, 405);
+assert.equal((await call('request')).status, 405);
 assert.equal((await call('config', { originMode: ['healthy'] })).status, 400);
 assert.equal((await call('state', undefined, 'invalid')).status, 400);
 assert.equal((await call('request', {}, id, { Origin: 'https://untrusted.example' })).status, 403);

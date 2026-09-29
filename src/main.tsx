@@ -1,3 +1,6 @@
+import { Architecture, Notes } from './Guide';
+import { RequestInspector } from './RequestInspector';
+import { asCsv, report, saveFile, percentile95 } from './reports';
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -6,11 +9,9 @@ import {
   ArrowRight,
   ArrowUpRight,
   BookOpen,
-  Check,
   ChevronRight,
   CircleHelp,
   Cloud,
-  Code2,
   Database,
   FlaskConical,
   Globe2,
@@ -44,15 +45,39 @@ const names: Record<Outcome, string> = {
   error: 'Origin error',
 };
 function getLabId() {
-  let id = localStorage.getItem('edgelab-session');
+  let id: string | null = null;
+  try {
+    id = localStorage.getItem('edgelab-session');
+  } catch {
+    /* Private browsers can deny storage. */
+  }
   if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
     id = crypto.randomUUID();
-    localStorage.setItem('edgelab-session', id);
+    try {
+      localStorage.setItem('edgelab-session', id);
+    } catch {
+      /* In-memory session still works. */
+    }
   }
   return id;
 }
 const labId = getLabId();
-const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const pause = (ms: number, signal?: AbortSignal) =>
+  new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException('Stopped', 'AbortError'));
+      return;
+    }
+    const stop = () => {
+      clearTimeout(timer);
+      reject(new DOMException('Stopped', 'AbortError'));
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener('abort', stop);
+      resolve();
+    }, ms);
+    signal?.addEventListener('abort', stop, { once: true });
+  });
 async function api<T = Record<string, unknown>>(path: string, body?: unknown) {
   const response = await fetch(`/api/${path}`, {
     method: body === undefined ? 'GET' : 'POST',
@@ -68,6 +93,15 @@ async function api<T = Record<string, unknown>>(path: string, body?: unknown) {
 function App() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [page, setPage] = useState('playground');
+  const [selectedEvent, setSelectedEvent] = useState<LabEvent | null>(null);
+  const [configBusy, setConfigBusy] = useState(false);
+  const configLock = useRef(false);
+  const [step, setStep] = useState(-1);
+  const [sent, setSent] = useState(0);
+  const [tick, setTick] = useState(Date.now());
+  const receivedAt = useRef(Date.now());
+  const refreshSeq = useRef(0);
+  const stopController = useRef<AbortController | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState('');
   const [notice, setNotice] = useState(
@@ -78,13 +112,19 @@ function App() {
   const streamRef = useRef(false);
   const lock = useRef(false);
   async function refresh() {
+    const seq = ++refreshSeq.current;
     const result = await api<Omit<Snapshot, 'colo'>>('state');
+    if (seq !== refreshSeq.current) return;
+    receivedAt.current = Date.now();
     setSnapshot({ ...result.data, colo: result.colo });
   }
   useEffect(() => {
     refresh().catch((e) => setError(e.message));
+    const timer = setInterval(() => setTick(Date.now()), 250);
     return () => {
       streamRef.current = false;
+      stopController.current?.abort();
+      clearInterval(timer);
     };
   }, []);
   async function run(label: string, fn: () => Promise<void>) {
@@ -96,16 +136,37 @@ function App() {
       await fn();
       await refresh();
     } catch (e) {
-      setError((e as Error).message);
+      if ((e as Error).name === 'AbortError')
+        setNotice('Experiment stopped. Completed requests are kept in the log.');
+      else setError((e as Error).message);
     } finally {
       lock.current = false;
       setBusy('');
+      stopController.current = null;
     }
   }
   const update = async (patch: Partial<Config>) => {
     await api('config', patch);
     await refresh();
   };
+  async function configure(patch: Partial<Config>) {
+    if (configLock.current || (lock.current && !streamRef.current)) return;
+    configLock.current = true;
+    setConfigBusy(true);
+    setError('');
+    try {
+      await update(patch);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      configLock.current = false;
+      setConfigBusy(false);
+    }
+  }
+  function stop() {
+    streamRef.current = false;
+    stopController.current?.abort();
+  }
   async function send() {
     await api('request', {});
   }
@@ -120,75 +181,109 @@ function App() {
   }
   function demo() {
     return run('demo', async () => {
+      const controller = new AbortController();
+      stopController.current = controller;
+      const check = () => controller.signal.throwIfAborted();
+      const wait = (ms: number) => pause(ms, controller.signal);
+      setStep(0);
+      setSent(0);
+      setSelectedEvent(null);
       await api('reset', {});
+      check();
       await update({ capacity: 30, refillPerSecond: 10 });
-      setNotice('01 / Warm the cache — three healthy origin requests.');
-      for (let i = 0; i < 3; i++) {
-        await send();
-        await refresh();
-        await pause(250);
-      }
-      await update({ originMode: 'failing' });
-      setNotice('02 / Inject an outage — errors open the circuit; cached responses keep working.');
-      for (let i = 0; i < 7; i++) {
-        await send();
-        await refresh();
-        await pause(200);
-      }
-      await update({ originMode: 'healthy' });
-      setNotice('03 / Recover — wait for the cooldown, then admit one recovery probe.');
-      await pause(4200);
-      await send();
-      await refresh();
-      await update({ capacity: 12, refillPerSecond: 4 });
       setNotice(
-        'Demo complete. The origin recovered and the circuit closed. Export this run or try a traffic burst.',
+        'Warm the cache: healthy requests create a real catalog response in the origin Worker.',
+      );
+      for (let i = 0; i < 3; i++) {
+        check();
+        await send();
+        setSent(i + 1);
+        await refresh();
+        await wait(250);
+      }
+      check();
+      setStep(1);
+      await update({ originMode: 'failing' });
+      setNotice('Inject an outage: the circuit opens and replays the last good response.');
+      for (let i = 0; i < 7; i++) {
+        check();
+        await send();
+        setSent(i + 4);
+        await refresh();
+        await wait(200);
+      }
+      check();
+      setStep(2);
+      await update({ originMode: 'healthy' });
+      setNotice('Restore health: waiting for cooldown before one recovery probe.');
+      await wait(4200);
+      check();
+      await send();
+      setSent(11);
+      await refresh();
+      check();
+      await update({ capacity: 12, refillPerSecond: 4 });
+      setStep(3);
+      setNotice(
+        'Demo complete. Inspect a cached request to compare its payload revision with an origin response.',
       );
     });
   }
   async function startStream() {
     if (streamRef.current) {
-      streamRef.current = false;
-      setStreaming(false);
+      stop();
       return;
     }
     streamRef.current = true;
     setStreaming(true);
+    setSent(0);
+    setStep(-1);
     await run('stream', async () => {
-      setNotice('Sending one request per second. Traffic stops automatically after 60 requests.');
+      const controller = new AbortController();
+      stopController.current = controller;
+      setNotice(
+        'Steady traffic is running. Change origin health or the timeout budget to test a failure live.',
+      );
       for (let i = 0; i < 60 && streamRef.current; i++) {
+        controller.signal.throwIfAborted();
         await send();
+        setSent(i + 1);
         await refresh();
-        await pause(1000);
+        await pause(1000, controller.signal);
       }
+      setNotice('Traffic complete. Inspect the log or export the experiment.');
     });
     streamRef.current = false;
     setStreaming(false);
   }
-  function download() {
+  function download(format: 'json' | 'csv') {
     if (!snapshot) return;
-    const report = {
-      project: 'EdgeLab',
-      exportedAt: new Date().toISOString(),
-      environment: snapshot.colo === 'LOCAL' ? 'local' : 'cloudflare',
-      note: 'Controlled synthetic origin; measured server elapsed latency. Latest 180 events; counters cover the full run.',
-      ...snapshot,
-    };
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `edgelab-${Date.now()}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+    saveFile(
+      format === 'csv' ? asCsv(snapshot.events) : JSON.stringify(report(snapshot), null, 2),
+      format === 'csv' ? 'text/csv;charset=utf-8' : 'application/json',
+      `edgelab-${Date.now()}.${format}`,
+    );
   }
   const s = snapshot?.state;
   const events = snapshot?.events ?? [];
   const settled = s ? Object.values(s.counts).reduce((a, b) => a + b, 0) : 0;
   const success = s ? s.counts.origin + s.counts.stale : 0;
-  const latency = [...events].map((e) => e.latencyMs).sort((a, b) => a - b);
-  const p95 = latency.length ? latency[Math.ceil(latency.length * 0.95) - 1] : null;
-  const disabled = !!busy || !s;
+  const p95 = percentile95(events);
+  const disabled = !!busy || configBusy || !s;
+  const configDisabled = !s || configBusy || (!!busy && !streaming);
+  const serverNow = (snapshot?.now ?? tick) + Math.max(0, tick - receivedAt.current);
+  const tokens = s
+    ? Math.min(
+        s.config.capacity,
+        s.tokens + (Math.max(0, serverNow - s.updatedAt) / 1000) * s.config.refillPerSecond,
+      )
+    : 0;
+  const cacheAge =
+    s?.cachedAt === null || s?.cachedAt === undefined ? null : Math.max(0, serverNow - s.cachedAt);
+  const cooldown =
+    s?.circuit === 'open'
+      ? Math.max(0, Math.ceil((s.config.cooldownMs - (serverNow - s.openedAt)) / 1000))
+      : 0;
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -254,7 +349,7 @@ function App() {
             </a>
           </div>
           <div className="sidebar-footer">
-            <span className="tiny-dot" /> EdgeLab v1.0 <span>TS</span>
+            <span className="tiny-dot" /> EdgeLab v2.0 <span>TS</span>
           </div>
         </div>
       </aside>
@@ -311,13 +406,17 @@ function App() {
               </p>
             </div>
             {page === 'playground' && (
-              <button className="button primary" disabled={disabled} onClick={demo}>
+              <button
+                className="button primary"
+                disabled={busy !== 'demo' && disabled}
+                onClick={busy === 'demo' ? stop : demo}
+              >
                 {busy === 'demo' ? (
                   <LoaderCircle className="spin" size={16} />
                 ) : (
                   <Play size={15} fill="currentColor" />
                 )}{' '}
-                Run guided demo
+                {busy === 'demo' ? 'Stop demo' : 'Run guided demo'}
               </button>
             )}
           </div>
@@ -329,6 +428,47 @@ function App() {
           )}
           {page === 'playground' ? (
             <>
+              <div className="lab-intro">
+                <span className="intro-label">
+                  <ShieldCheck size={15} /> TWO WORKERS. ONE RESILIENT PATH.
+                </span>
+                <p>
+                  Protect a live service binding from bursts, failures, and slow responses. Every
+                  decision leaves a trace.
+                </p>
+                <a href="https://github.com/HenryWashuHe/edgelab" target="_blank" rel="noreferrer">
+                  Explore the source <ArrowUpRight size={14} />
+                </a>
+              </div>
+              {(step >= 0 || streaming) && (
+                <section className="experiment-progress" aria-label="Experiment progress">
+                  <div>
+                    <span className={`tiny-dot ${busy ? '' : 'muted-dot'}`} />
+                    <b>
+                      {streaming
+                        ? 'Steady traffic'
+                        : busy === 'demo'
+                          ? 'Guided experiment'
+                          : step === 3
+                            ? 'Experiment complete'
+                            : 'Experiment stopped'}
+                    </b>
+                    <span>{sent} requests sent</span>
+                  </div>
+                  {streaming ? (
+                    <p>Change a control while requests are running. Maximum 60 requests.</p>
+                  ) : (
+                    <ol>
+                      {['Warm cache', 'Inject outage', 'Probe recovery'].map((label, i) => (
+                        <li key={label} className={step > i ? 'done' : step === i ? 'current' : ''}>
+                          <span>{step > i ? '✓' : i + 1}</span>
+                          {label}
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </section>
+              )}
               <div className="experiment-label">
                 <span>CHOOSE YOUR EXPERIMENT</span>
                 <span>Controlled traffic. Real protection logic.</span>
@@ -397,7 +537,7 @@ function App() {
                       <h2>
                         <Globe2 size={17} /> Request journey
                       </h2>
-                      <span className="badge neutral">SYNTHETIC ORIGIN</span>
+                      <span className="badge neutral">LIVE SERVICE BINDING</span>
                     </div>
                     <div className="flow">
                       <div className="flow-node">
@@ -439,7 +579,7 @@ function App() {
                         >
                           <Server size={23} />
                         </span>
-                        <b>Demo origin</b>
+                        <b>Origin Worker</b>
                         <small>
                           {s?.config.originMode === 'failing'
                             ? 'Failure injected'
@@ -451,7 +591,7 @@ function App() {
                     </div>
                     <div className="flow-caption">
                       <span className="tiny-dot" />
-                      <span>Real Worker requests · isolated lab state · no external targets</span>
+                      <span>Two Workers · isolated state · controlled catalog data</span>
                       <span className="mono">{snapshot?.colo ?? '…'}</span>
                     </div>
                   </section>
@@ -476,10 +616,10 @@ function App() {
                       icon={<Layers size={15} />}
                     />
                     <Metric
-                      label="P95 LATENCY"
+                      label="ORIGIN P95"
                       value={p95 === null ? '—' : String(p95)}
                       unit={p95 === null ? '' : 'ms'}
-                      detail="Server elapsed · recent 180"
+                      detail="Origin attempts · recent 180"
                       icon={<Zap size={15} />}
                     />
                   </div>
@@ -535,8 +675,15 @@ function App() {
                             .map((e) => (
                               <tr key={e.id}>
                                 <td className="mono">
-                                  {new Date(e.at).toLocaleTimeString('en-US', { hour12: false })}
-                                  <span className="event-id">#{e.id}</span>
+                                  <button
+                                    className="inspect-button"
+                                    aria-label={`Inspect request ${e.id}`}
+                                    onClick={() => setSelectedEvent(e)}
+                                  >
+                                    {new Date(e.at).toLocaleTimeString('en-US', { hour12: false })}
+                                    <span className="event-id">#{e.id}</span>
+                                    <ChevronRight size={12} />
+                                  </button>
                                 </td>
                                 <td>
                                   <span
@@ -580,8 +727,11 @@ function App() {
                     </div>
                     <div className="log-footer">
                       Latest 30 matching events shown · 180 retained per lab
-                      <button onClick={download} disabled={!events.length}>
-                        <ArrowDownToLine size={14} /> Export JSON
+                      <button onClick={() => download('json')} disabled={!events.length}>
+                        <ArrowDownToLine size={14} /> JSON
+                      </button>
+                      <button onClick={() => download('csv')} disabled={!events.length}>
+                        <ArrowDownToLine size={14} /> CSV
                       </button>
                     </div>
                   </section>
@@ -597,10 +747,10 @@ function App() {
                       <div className="segmented">
                         {(['healthy', 'flaky', 'failing'] as const).map((mode) => (
                           <button
-                            disabled={disabled}
+                            disabled={configDisabled}
                             className={s?.config.originMode === mode ? `selected ${mode}` : ''}
                             key={mode}
-                            onClick={() => run('config', () => update({ originMode: mode }))}
+                            onClick={() => configure({ originMode: mode })}
                           >
                             {mode === 'healthy'
                               ? 'Healthy'
@@ -617,7 +767,7 @@ function App() {
                       <div className="control-row">
                         <label className="control-label">TOKEN BUCKET</label>
                         <span className="mono">
-                          {Math.floor(s?.tokens ?? 0)} / {s?.config.capacity ?? 12}
+                          {Math.floor(tokens)} / {s?.config.capacity ?? 12}
                         </span>
                       </div>
                       <div className="token-meter">
@@ -625,20 +775,22 @@ function App() {
                           <i
                             key={i}
                             className={
-                              i / 20 < (s ? s.tokens / s.config.capacity : 1) ? 'filled' : ''
+                              i / 20 < (s ? tokens / s.config.capacity : 1) ? 'filled' : ''
                             }
                           />
                         ))}
                       </div>
-                      <p className="control-help">Available at the last state refresh.</p>
+                      <p className="control-help">
+                        Live refill estimate · enforced by the coordinator.
+                      </p>
                       <Range
                         label="Burst capacity"
                         value={s?.config.capacity ?? 12}
                         min={1}
                         max={50}
                         unit="tokens"
-                        disabled={disabled}
-                        onChange={(value) => run('config', () => update({ capacity: value }))}
+                        disabled={configDisabled}
+                        onChange={(value) => configure({ capacity: value })}
                       />
                       <Range
                         label="Refill rate"
@@ -646,10 +798,8 @@ function App() {
                         min={1}
                         max={20}
                         unit="/ sec"
-                        disabled={disabled}
-                        onChange={(value) =>
-                          run('config', () => update({ refillPerSecond: value }))
-                        }
+                        disabled={configDisabled}
+                        onChange={(value) => configure({ refillPerSecond: value })}
                       />
                       <div className="divider" />
                       <div className="control-row">
@@ -661,7 +811,11 @@ function App() {
                       </div>
                       <p className="control-help">
                         Opens after {s?.config.failureThreshold ?? 3} consecutive origin failures.
-                        Retries after {(s?.config.cooldownMs ?? 4000) / 1000}s.
+                        {s?.circuit === 'open'
+                          ? cooldown
+                            ? `Probe available in ${cooldown}s.`
+                            : 'Next request can probe recovery.'
+                          : `Cooldown: ${(s?.config.cooldownMs ?? 4000) / 1000}s.`}
                       </p>
                       <div className="circuit-steps">
                         <span className={s?.circuit === 'closed' ? 'current' : ''}>Closed</span>
@@ -681,20 +835,64 @@ function App() {
                           aria-checked={s?.config.staleFallback ?? true}
                           aria-label="Serve cached fallback"
                           className={`toggle ${s?.config.staleFallback ? 'on' : ''}`}
-                          disabled={disabled}
-                          onClick={() =>
-                            run('config', () => update({ staleFallback: !s?.config.staleFallback }))
-                          }
+                          disabled={configDisabled}
+                          onClick={() => configure({ staleFallback: !s?.config.staleFallback })}
                         >
                           <span />
                         </button>
                       </div>
-                      <div className={`cache-status ${s?.cachedAt ? 'warm' : ''}`}>
+                      <div
+                        className={`cache-status ${cacheAge !== null && cacheAge <= 60000 ? 'warm' : ''}`}
+                      >
                         <Database size={13} />
-                        {s?.cachedAt
-                          ? `Last cached at ${new Date(s.cachedAt).toLocaleTimeString()}`
-                          : 'Cache empty · send a healthy request'}
+                        {cacheAge === null
+                          ? 'Cache empty · send a healthy request'
+                          : cacheAge > 60000
+                            ? 'Cache expired · a healthy response will refresh it'
+                            : `Cached response · ${Math.floor(cacheAge / 1000)}s old / 60s limit`}
                       </div>
+                      <details className="advanced-controls">
+                        <summary>Timing & recovery settings</summary>
+                        <Range
+                          label="Origin delay"
+                          value={s?.config.originLatencyMs ?? 160}
+                          min={20}
+                          max={3000}
+                          unit="ms"
+                          disabled={configDisabled}
+                          onChange={(value) => configure({ originLatencyMs: value })}
+                        />
+                        <Range
+                          label="Timeout budget"
+                          value={s?.config.originTimeoutMs ?? 1500}
+                          min={100}
+                          max={5000}
+                          unit="ms"
+                          disabled={configDisabled}
+                          onChange={(value) => configure({ originTimeoutMs: value })}
+                        />
+                        <Range
+                          label="Failure threshold"
+                          value={s?.config.failureThreshold ?? 3}
+                          min={1}
+                          max={10}
+                          unit="failures"
+                          disabled={configDisabled}
+                          onChange={(value) => configure({ failureThreshold: value })}
+                        />
+                        <Range
+                          label="Recovery cooldown"
+                          value={s?.config.cooldownMs ?? 4000}
+                          min={1000}
+                          max={15000}
+                          unit="ms"
+                          disabled={configDisabled}
+                          onChange={(value) => configure({ cooldownMs: value })}
+                        />
+                        <p className="control-help">
+                          Set delay above the timeout to create a slow-origin failure.
+                        </p>
+                      </details>
                       <button
                         className="button dark full"
                         disabled={disabled}
@@ -725,6 +923,9 @@ function App() {
                         onClick={() =>
                           run('reset', async () => {
                             await api('reset', {});
+                            setStep(-1);
+                            setSelectedEvent(null);
+                            setFilter('all');
                             setNotice('Fresh lab. All settings and counters have been reset.');
                           })
                         }
@@ -743,7 +944,7 @@ function App() {
                     </button>
                   </div>
                   <div className="session-info">
-                    <span className="tiny-dot" /> Your own isolated session{' '}
+                    <span className="tiny-dot" /> Expires after 24h idle · session{' '}
                     <span className="mono">{labId.slice(0, 8)}</span>
                   </div>
                 </aside>
@@ -762,6 +963,7 @@ function App() {
           </footer>
         </main>
       </div>
+      <RequestInspector event={selectedEvent} onClose={() => setSelectedEvent(null)} />
     </div>
   );
 }
@@ -895,182 +1097,6 @@ function TrafficChart({ events }: { events: LabEvent[] }) {
           <span>Latest request</span>
         </div>
       </div>
-    </div>
-  );
-}
-function Architecture() {
-  return (
-    <div className="docs-layout">
-      <section className="panel doc-panel">
-        <div className="eyebrow">01 / THE REQUEST PATH</div>
-        <h2>Stateless at the edge. Consistent at the coordinator.</h2>
-        <p>
-          The Worker validates the request and routes the lab's opaque session ID to one Durable
-          Object. That object owns admission, circuit state, the last successful response timestamp,
-          and a bounded SQLite event log.
-        </p>
-        <div className="architecture-strip">
-          <span>
-            <Globe2 />
-            Browser
-          </span>
-          <ArrowRight />
-          <span>
-            <Cloud />
-            Worker
-          </span>
-          <ArrowRight />
-          <span>
-            <Database />
-            Durable Object
-            <br />+ SQLite
-          </span>
-          <ArrowRight />
-          <span>
-            <Server />
-            Synthetic origin
-          </span>
-        </div>
-        <p>
-          Origin work is a controlled asynchronous delay with injected failures. No external origin
-          is contacted. The UI shows server elapsed time, not round-trip Internet latency or
-          multi-region benchmarks.
-        </p>
-        <hr />
-        <div className="eyebrow">02 / WHY A DURABLE OBJECT?</div>
-        <h2>One budget, even under concurrent traffic.</h2>
-        <p>
-          A per-Worker in-memory bucket would split the budget across isolates. An eventually
-          consistent store can admit too many concurrent requests. A Durable Object coordinates each
-          lab's state; synchronous SQLite transactions persist each admission before the handler
-          awaits origin work.
-        </p>
-        <pre>{`Client → validate session → Durable Object\n  1. Refill and reserve a token\n  2. Check circuit / reserve recovery probe\n  3. Persist admission synchronously\n  4. Await controlled origin work\n  5. Record result + circuit transition atomically`}</pre>
-        <hr />
-        <div className="eyebrow">03 / THE SUBTLE PART</div>
-        <h2>Recovery is a concurrency problem.</h2>
-        <p>
-          Only one request enters half-open recovery. Other requests get a bounded-age cached
-          response or HTTP 503. Each permit carries a circuit generation: a late success from an
-          older generation cannot close a circuit that just tripped. A run ID prevents old in-flight
-          requests from repopulating a reset lab.
-        </p>
-        <p>
-          A persisted 10-second probe lease allows recovery if a probe is interrupted. Multiple
-          calls admitted before a failure threshold may still reach the origin; a breaker cannot
-          recall work already in flight.
-        </p>
-      </section>
-      <aside className="doc-side">
-        <div className="panel doc-panel">
-          <h3>Deliberate boundaries</h3>
-          <ul>
-            <li>One coordinator per lab, not one global bottleneck.</li>
-            <li>Latest 180 events retained; counters cover the full run.</li>
-            <li>Cached payload is a constant demo response, valid for 60 seconds.</li>
-            <li>
-              Opaque session IDs isolate demos; this is not an authenticated multi-tenant gateway.
-            </li>
-            <li>A public deployment needs account-level abuse controls and quota monitoring.</li>
-            <li>Idle lab data is retained until reset. No scheduled cleanup is implemented.</li>
-          </ul>
-        </div>
-        <div className="insight-card">
-          <span className="insight-label">THE TRADEOFF</span>
-          <p>
-            Strong coordination adds a network hop to the object location. Measure it before
-            claiming global low latency.
-          </p>
-        </div>
-      </aside>
-    </div>
-  );
-}
-function Notes() {
-  return (
-    <div className="docs-layout">
-      <section className="panel doc-panel">
-        <div className="eyebrow">A TWO-MINUTE WALKTHROUGH</div>
-        <h2>Show the failure. Explain the fix.</h2>
-        <ol className="walkthrough">
-          <li>
-            <b>Start with the problem.</b>
-            <p>
-              “Retries can turn a partial outage into an overload. I built a lab to make admission
-              control and recovery visible.”
-            </p>
-          </li>
-          <li>
-            <b>Run a burst.</b>
-            <p>
-              Send 24 concurrent requests and show the shared token budget. Explain HTTP 429 and why
-              rejected traffic gets Retry-After.
-            </p>
-          </li>
-          <li>
-            <b>Break the origin.</b>
-            <p>
-              Warm the cache, inject failures, and show the circuit opening after three failures.
-              Cached responses preserve availability for up to 60 seconds.
-            </p>
-          </li>
-          <li>
-            <b>Recover deliberately.</b>
-            <p>
-              Restore health, wait for cooldown, and send a probe. Explain why only one recovery
-              request may reach the origin.
-            </p>
-          </li>
-          <li>
-            <b>Make the tradeoff explicit.</b>
-            <p>
-              Strong consistency costs a coordinator hop. Cached data may be stale. This lab
-              measures a synthetic origin, not production capacity.
-            </p>
-          </li>
-        </ol>
-        <hr />
-        <div className="eyebrow">RESUME STARTER</div>
-        <blockquote>
-          Built an interactive API resilience lab using Cloudflare Workers, SQLite-backed Durable
-          Objects, and TypeScript; implemented coordinated token-bucket rate limiting, circuit
-          breaking with single-probe recovery, and bounded-age cached fallback.
-        </blockquote>
-        <p>
-          Use this once you can explain and reproduce the behavior. Add measured numbers only after
-          running and saving your own experiments.
-        </p>
-        <hr />
-        <h2>Make the next improvement yours.</h2>
-        <p>
-          Add a fixed, owned origin through a service binding; compare protected and unprotected
-          traffic using the same workload; or implement lab expiration with Durable Object alarms.
-          Document the result and one thing your original design got wrong.
-        </p>
-      </section>
-      <aside className="doc-side">
-        <div className="panel doc-panel">
-          <Code2 size={24} />
-          <h3>Be ready for these questions</h3>
-          <ul>
-            <li>Why not use KV for the bucket?</li>
-            <li>What happens when two recovery probes arrive at once?</li>
-            <li>Can an old response close a newly opened circuit?</li>
-            <li>What survives an object eviction?</li>
-            <li>When is a stale response unacceptable?</li>
-            <li>Where are the bottlenecks and trust boundaries?</li>
-          </ul>
-        </div>
-        <div className="insight-card">
-          <span className="insight-label">
-            <Check size={15} /> WHAT COUNTS
-          </span>
-          <p>
-            A working demo, reproducible tests, and a clear explanation of tradeoffs. No project
-            guarantees an interview—but these give an interviewer something concrete to evaluate.
-          </p>
-        </div>
-      </aside>
     </div>
   );
 }

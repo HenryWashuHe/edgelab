@@ -1,3 +1,5 @@
+import type { CatalogPayload } from './origin';
+import type { OriginResult } from './origin-client';
 export type OriginMode = 'healthy' | 'failing' | 'flaky';
 export type Circuit = 'closed' | 'open' | 'half-open';
 export type Outcome = 'origin' | 'stale' | 'limited' | 'blocked' | 'error';
@@ -7,6 +9,7 @@ export interface Config {
   failureThreshold: number;
   cooldownMs: number;
   originLatencyMs: number;
+  originTimeoutMs: number;
   staleFallback: boolean;
   originMode: OriginMode;
 }
@@ -16,6 +19,7 @@ export const defaults: Config = {
   failureThreshold: 3,
   cooldownMs: 4000,
   originLatencyMs: 160,
+  originTimeoutMs: 1500,
   staleFallback: true,
   originMode: 'healthy',
 };
@@ -30,6 +34,7 @@ export interface LabState {
   openedAt: number;
   probeDeadline: number;
   cachedAt: number | null;
+  cachedPayload: CatalogPayload | null;
   originCalls: number;
   total: number;
   counts: Record<Outcome, number>;
@@ -39,6 +44,8 @@ export interface Decision {
   status: number;
   message: string;
   retryAfter?: number;
+  cacheAgeMs?: number;
+  payload?: CatalogPayload;
 }
 export interface Permit {
   runId: string;
@@ -46,18 +53,22 @@ export interface Permit {
   probe: boolean;
   fails: boolean;
   delay: number;
+  timeoutMs: number;
 }
 export interface LabEvent extends Decision {
   id: number;
   at: number;
   latencyMs: number;
   circuit: Circuit;
+  requestId: string;
+  originAttempted: boolean;
 }
 export interface Snapshot {
   state: LabState;
   events: LabEvent[];
   now: number;
   colo: string;
+  expiresAt: number;
 }
 export function initialState(now: number, runId: string): LabState {
   return {
@@ -71,6 +82,7 @@ export function initialState(now: number, runId: string): LabState {
     openedAt: 0,
     probeDeadline: 0,
     cachedAt: null,
+    cachedPayload: null,
     originCalls: 0,
     total: 0,
     counts: { origin: 0, stale: 0, limited: 0, blocked: 0, error: 0 },
@@ -88,8 +100,19 @@ function record(s: LabState, decision: Decision): Decision {
   return decision;
 }
 function fallback(s: LabState, now: number, retryAfter: number, reason: string): Decision {
-  if (s.config.staleFallback && s.cachedAt !== null && now - s.cachedAt <= 60_000) {
-    return record(s, { outcome: 'stale', status: 200, message: `Cached response · ${reason}` });
+  if (
+    s.config.staleFallback &&
+    s.cachedAt !== null &&
+    s.cachedPayload &&
+    now - s.cachedAt <= 60_000
+  ) {
+    return record(s, {
+      outcome: 'stale',
+      status: 200,
+      message: `Cached response · ${reason}`,
+      cacheAgeMs: now - s.cachedAt,
+      payload: s.cachedPayload,
+    });
   }
   return record(s, { outcome: 'blocked', status: 503, message: reason, retryAfter });
 }
@@ -128,14 +151,20 @@ export function admit(s: LabState, now: number): Decision | Permit {
       s.config.originMode === 'failing' ||
       (s.config.originMode === 'flaky' && s.originCalls % 3 === 0),
     delay: s.config.originLatencyMs,
+    timeoutMs: s.config.originTimeoutMs,
   };
 }
 /** Ignore obsolete circuit results; an older in-flight success must not close a newer open circuit. */
-export function complete(s: LabState, p: Permit, now: number): Decision | null {
+export function complete(
+  s: LabState,
+  p: Permit,
+  now: number,
+  result: OriginResult,
+): Decision | null {
   if (p.runId !== s.runId) return null;
   const current = p.generation === s.generation;
   if (current) {
-    if (p.fails) {
+    if (!result.ok) {
       s.failures++;
       if (p.probe || s.failures >= s.config.failureThreshold) {
         s.circuit = 'open';
@@ -146,6 +175,7 @@ export function complete(s: LabState, p: Permit, now: number): Decision | null {
     } else {
       s.failures = 0;
       s.cachedAt = now;
+      s.cachedPayload = result.payload;
       if (p.probe) {
         s.circuit = 'closed';
         s.generation++;
@@ -153,22 +183,33 @@ export function complete(s: LabState, p: Permit, now: number): Decision | null {
       }
     }
   }
-  if (!p.fails)
+  if (result.ok)
     return record(s, {
       outcome: 'origin',
       status: 200,
-      message: 'Fresh response from synthetic origin',
+      message: 'Fresh catalog from the origin Worker',
+      payload: result.payload,
     });
-  if (s.config.staleFallback && s.cachedAt !== null && now - s.cachedAt <= 60_000)
+  if (
+    s.config.staleFallback &&
+    s.cachedAt !== null &&
+    s.cachedPayload &&
+    now - s.cachedAt <= 60_000
+  )
     return record(s, {
       outcome: 'stale',
       status: 200,
-      message: 'Origin failed; cached response served',
+      message: `Origin ${result.reason}; cached response served`,
+      cacheAgeMs: now - s.cachedAt,
+      payload: s.cachedPayload,
     });
   return record(s, {
     outcome: 'error',
-    status: 502,
-    message: 'Synthetic origin returned an error',
+    status: result.reason === 'timeout' ? 504 : 502,
+    message:
+      result.reason === 'timeout'
+        ? 'Origin exceeded its timeout budget'
+        : 'Origin Worker failed or returned an invalid response',
   });
 }
 export function validateConfig(value: unknown, previous: Config): Config {
@@ -180,7 +221,8 @@ export function validateConfig(value: unknown, previous: Config): Config {
     refillPerSecond: [1, 20],
     failureThreshold: [1, 10],
     cooldownMs: [1000, 15000],
-    originLatencyMs: [20, 1000],
+    originLatencyMs: [20, 3000],
+    originTimeoutMs: [100, 5000],
   };
   for (const [key, val] of Object.entries(value)) {
     if (Object.hasOwn(bounds, key)) {
