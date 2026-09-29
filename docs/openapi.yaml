@@ -1,0 +1,312 @@
+openapi: 3.1.0
+info:
+  title: EdgeLab Reliability Operations
+  version: 3.0.0
+  description: |
+    Public monitoring read model and single-owner operator control plane.
+    Laboratory endpoints are documented in LAB.md. No public probe or target-enrollment endpoint exists.
+    All responses disable caching. Browser Origins must match the API origin.
+servers:
+  - url: https://edgelab-reliability.edgelab-henrywashuhe.workers.dev
+  - url: http://localhost:8787
+paths:
+  /api/health:
+    get:
+      summary: Gateway health and version (not proof that monitoring is running)
+      responses:
+        '200':
+          description: Worker is responding
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, version, colo, platform, origin]
+                properties:
+                  ok: { type: boolean }
+                  version: { type: string }
+                  colo: { type: string }
+                  platform: { type: string }
+                  origin: { type: string }
+  /api/ops/status:
+    get:
+      summary: Public observations, metrics, and incident timeline
+      parameters:
+        - in: query
+          name: window
+          schema: { type: string, enum: [24h, 7d], default: 24h }
+          description: Unrecognized values fall back to 24h.
+      responses:
+        '200':
+          description: Public snapshot; excludes target URLs, notes, and credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [version, now, window, retentionDays, cadenceSeconds, services, incidents]
+                properties:
+                  version: { type: string }
+                  now: { type: integer, description: Unix milliseconds }
+                  window: { type: string, enum: [24h, 7d] }
+                  retentionDays: { type: integer, const: 30 }
+                  cadenceSeconds: { type: integer, const: 60 }
+                  services:
+                    type: array
+                    maxItems: 5
+                    items: { $ref: '#/components/schemas/Service' }
+                  incidents:
+                    type: array
+                    maxItems: 100
+                    items: { $ref: '#/components/schemas/Incident' }
+        '403': { $ref: '#/components/responses/Error' }
+        '405': { $ref: '#/components/responses/Error' }
+  /api/ops/export:
+    get:
+      summary: Download a public monitoring report
+      parameters:
+        - in: query
+          name: window
+          schema: { type: string, enum: [24h, 7d], default: 24h }
+      responses:
+        '200':
+          description: JSON attachment with the status snapshot, schemaVersion, exportedAt, and measurement methodology. Contains no private operator data.
+          headers:
+            Content-Disposition:
+              schema: { type: string }
+              description: Attachment named edgelab-operations.json
+          content:
+            application/json:
+              schema: { type: object }
+        '403': { $ref: '#/components/responses/Error' }
+        '405': { $ref: '#/components/responses/Error' }
+  /api/ops/audit:
+    get:
+      summary: Latest 100 audit records and private incident notes
+      security: [{ operatorToken: [] }]
+      responses:
+        '200':
+          description: Private operator data; lifecycle audit actor is the deployment credential
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [events, incidents]
+                properties:
+                  events:
+                    type: array
+                    maxItems: 100
+                    items:
+                      type: object
+                      required: [id, at, action, service, detail]
+                      properties:
+                        id: { type: integer }
+                        at: { type: integer }
+                        action: { type: string }
+                        service: { type: string }
+                        detail: { type: object }
+                  incidents:
+                    type: array
+                    maxItems: 100
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/Incident'
+                        - type: object
+                          properties:
+                            note: { type: string, maxLength: 500 }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '405': { $ref: '#/components/responses/Error' }
+  /api/ops/policy:
+    post:
+      summary: Change policy with optimistic revision control
+      description: Resets streaks and invalidates in-flight old-policy probes; preserves active incidents.
+      security: [{ operatorToken: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [service, revision, policy]
+              properties:
+                service: { type: string }
+                revision: { type: integer, minimum: 1 }
+                policy: { $ref: '#/components/schemas/PolicyPatch' }
+      responses:
+        '200':
+          description: Updated policy revision
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, revision]
+                properties:
+                  ok: { type: boolean }
+                  revision: { type: integer }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '405': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '413': { $ref: '#/components/responses/Error' }
+  /api/ops/acknowledge:
+    post:
+      summary: Acknowledge an open incident with a private investigation note
+      description: Duplicate acknowledgements succeed without overwriting the first note. Does not resolve incidents.
+      security: [{ operatorToken: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [incident, note]
+              properties:
+                incident: { type: string, format: uuid }
+                note: { type: string, minLength: 1, maxLength: 500 }
+      responses:
+        '200':
+          description: Acknowledgement recorded or already present
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok: { type: boolean }
+                  alreadyAcknowledged: { type: boolean }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '405': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '413': { $ref: '#/components/responses/Error' }
+components:
+  securitySchemes:
+    operatorToken:
+      type: http
+      scheme: bearer
+      description: Random deployment secret, not an identity JWT. Never send as a query parameter.
+  responses:
+    Error:
+      description: |
+        400 validation; 401 absent/invalid credential; 403 Origin mismatch;
+        404 missing route/incident; 405 method with Allow header; 409 revision/resolved conflict;
+        413 request body over 4096 bytes.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [error]
+            properties:
+              error: { type: string }
+  schemas:
+    PolicyPatch:
+      type: object
+      additionalProperties: false
+      description: Partial update; latencyObjectiveMs must not exceed timeoutMs after merging.
+      properties:
+        paused: { type: boolean }
+        timeoutMs: { type: integer, minimum: 100, maximum: 10000 }
+        latencyObjectiveMs: { type: integer, minimum: 50, maximum: 10000 }
+        availabilityTarget:
+          {
+            type: number,
+            minimum: 90,
+            maximum: 99.99,
+            description: Good-check objective,
+            including validity and latency,
+          }
+        failureThreshold: { type: integer, minimum: 1, maximum: 10 }
+        recoveryThreshold: { type: integer, minimum: 1, maximum: 10 }
+    Check:
+      type: object
+      required: [service, slot, at, outcome, status, latency, revision]
+      properties:
+        service: { type: string }
+        slot: { type: integer, description: Unix minute number }
+        at: { type: integer, description: Completion Unix milliseconds }
+        outcome:
+          {
+            type: string,
+            enum: [good, http-error, timeout, network-error, invalid-body, slow, maintenance],
+          }
+        status: { type: [integer, 'null'] }
+        latency: { type: integer, minimum: 0 }
+        revision: { type: integer }
+    Incident:
+      type: object
+      required: [id, service, opened, resolved, acknowledged]
+      properties:
+        id: { type: string, format: uuid }
+        service: { type: string }
+        opened: { type: integer, description: Detection Unix milliseconds }
+        resolved: { type: [integer, 'null'] }
+        acknowledged: { type: [integer, 'null'] }
+    Service:
+      type: object
+      required:
+        [
+          id,
+          name,
+          transport,
+          assertion,
+          createdAt,
+          revision,
+          policy,
+          latest,
+          status,
+          state,
+          metrics,
+          history,
+          hourly,
+        ]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        transport: { type: string, enum: [origin, https] }
+        assertion: { type: string, enum: [ok-json, catalog-json] }
+        createdAt: { type: integer }
+        revision: { type: integer }
+        policy: { $ref: '#/components/schemas/PolicyPatch' }
+        latest:
+          oneOf:
+            - $ref: '#/components/schemas/Check'
+            - type: 'null'
+        status: { type: string, enum: [healthy, degraded, incident, unknown, maintenance] }
+        state:
+          type: object
+          properties:
+            failures: { type: integer }
+            successes: { type: integer }
+            lastSlot: { type: [integer, 'null'] }
+            incidentId: { type: [string, 'null'] }
+        metrics:
+          type: object
+          description: Finished minutes only; null ratios when denominators are zero. Budget uses current target, outcomes use original policy.
+          properties:
+            total: { type: integer }
+            observed: { type: integer }
+            good: { type: integer }
+            maintenance: { type: integer }
+            expected: { type: integer }
+            missing: { type: integer }
+            coverage: { type: [number, 'null'] }
+            goodRatio: { type: [number, 'null'] }
+            p95Ms: { type: [number, 'null'] }
+            budgetConsumed: { type: [number, 'null'] }
+            windowStart: { type: integer }
+            windowEnd: { type: integer }
+        history:
+          type: array
+          maxItems: 60
+          items: { $ref: '#/components/schemas/Check' }
+        hourly:
+          type: array
+          items:
+            type: object
+            properties:
+              at: { type: integer }
+              total: { type: integer }
+              good: { type: integer }
+              maintenance: { type: integer }

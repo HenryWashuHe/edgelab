@@ -17,6 +17,7 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run test:lifecycle
+      - run: npm run test:monitor
       - name: Test real local Worker and Durable Object
         run: |
           npm run dev:workers > /tmp/edgelab.log 2>&1 &

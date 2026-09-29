@@ -1,0 +1,171 @@
+{
+  "verifiedAt": "2026-09-29T02:31:23.217Z",
+  "startedAt": "2026-09-29T02:27:42.512Z",
+  "baseUrl": "https://edgelab-reliability.edgelab-henrywashuhe.workers.dev",
+  "verification": "Two distinct new good scheduled minutes for each service after verification began. No manual tick endpoint was invoked. Operator audit authentication and public privacy boundaries checked.",
+  "health": {
+    "ok": true,
+    "colo": "EWR",
+    "platform": "Cloudflare Workers + Durable Objects",
+    "version": "3.0.0",
+    "origin": "service-binding"
+  },
+  "snapshot": {
+    "version": "3.0.0",
+    "now": 1790649083217,
+    "window": "24h",
+    "retentionDays": 30,
+    "cadenceSeconds": 60,
+    "services": [
+      {
+        "id": "catalog",
+        "name": "Catalog service",
+        "transport": "origin",
+        "assertion": "catalog-json",
+        "createdAt": 1790648862447,
+        "revision": 1,
+        "policy": {
+          "paused": false,
+          "timeoutMs": 3000,
+          "latencyObjectiveMs": 1500,
+          "availabilityTarget": 99.9,
+          "failureThreshold": 3,
+          "recoveryThreshold": 2
+        },
+        "latest": {
+          "service": "catalog",
+          "slot": 29844151,
+          "at": 1790649065315,
+          "outcome": "good",
+          "status": 200,
+          "latency": 20,
+          "revision": 1
+        },
+        "status": "healthy",
+        "state": {
+          "failures": 0,
+          "successes": 2,
+          "lastSlot": 29844151,
+          "incidentId": null
+        },
+        "metrics": {
+          "total": 1,
+          "observed": 1,
+          "good": 1,
+          "maintenance": 0,
+          "expected": 3,
+          "missing": 2,
+          "coverage": 33.333333333333336,
+          "goodRatio": 100,
+          "p95Ms": 29,
+          "budgetConsumed": 0,
+          "windowStart": 1790648880000,
+          "windowEnd": 1790649060000
+        },
+        "history": [
+          {
+            "service": "catalog",
+            "slot": 29844151,
+            "at": 1790649065315,
+            "outcome": "good",
+            "status": 200,
+            "latency": 20,
+            "revision": 1
+          },
+          {
+            "service": "catalog",
+            "slot": 29844150,
+            "at": 1790649000617,
+            "outcome": "good",
+            "status": 200,
+            "latency": 29,
+            "revision": 1
+          }
+        ],
+        "hourly": [
+          {
+            "at": 1790647200000,
+            "total": 1,
+            "good": 1,
+            "maintenance": 0
+          }
+        ]
+      },
+      {
+        "id": "gateway",
+        "name": "Gateway API",
+        "transport": "https",
+        "assertion": "ok-json",
+        "createdAt": 1790648862447,
+        "revision": 1,
+        "policy": {
+          "paused": false,
+          "timeoutMs": 3000,
+          "latencyObjectiveMs": 1500,
+          "availabilityTarget": 99.9,
+          "failureThreshold": 3,
+          "recoveryThreshold": 2
+        },
+        "latest": {
+          "service": "gateway",
+          "slot": 29844151,
+          "at": 1790649065318,
+          "outcome": "good",
+          "status": 200,
+          "latency": 23,
+          "revision": 1
+        },
+        "status": "healthy",
+        "state": {
+          "failures": 0,
+          "successes": 2,
+          "lastSlot": 29844151,
+          "incidentId": null
+        },
+        "metrics": {
+          "total": 1,
+          "observed": 1,
+          "good": 1,
+          "maintenance": 0,
+          "expected": 3,
+          "missing": 2,
+          "coverage": 33.333333333333336,
+          "goodRatio": 100,
+          "p95Ms": 47,
+          "budgetConsumed": 0,
+          "windowStart": 1790648880000,
+          "windowEnd": 1790649060000
+        },
+        "history": [
+          {
+            "service": "gateway",
+            "slot": 29844151,
+            "at": 1790649065318,
+            "outcome": "good",
+            "status": 200,
+            "latency": 23,
+            "revision": 1
+          },
+          {
+            "service": "gateway",
+            "slot": 29844150,
+            "at": 1790649000635,
+            "outcome": "good",
+            "status": 200,
+            "latency": 47,
+            "revision": 1
+          }
+        ],
+        "hourly": [
+          {
+            "at": 1790647200000,
+            "total": 1,
+            "good": 1,
+            "maintenance": 0
+          }
+        ]
+      }
+    ],
+    "incidents": []
+  }
+}

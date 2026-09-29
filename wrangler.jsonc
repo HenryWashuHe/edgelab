@@ -11,8 +11,18 @@
   },
   "services": [{ "binding": "ORIGIN", "service": "edgelab-origin" }],
   "durable_objects": {
-    "bindings": [{ "name": "LABS", "class_name": "ReliabilityLab" }],
+    "bindings": [
+      { "name": "LABS", "class_name": "ReliabilityLab" },
+      { "name": "MONITORS", "class_name": "MonitorStore" },
+    ],
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ReliabilityLab"] }],
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["ReliabilityLab"] },
+    { "tag": "v2", "new_sqlite_classes": ["MonitorStore"] },
+  ],
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": {
+    "MONITOR_TARGETS": "[{\"id\":\"catalog\",\"name\":\"Catalog service\",\"url\":\"https://origin.internal/catalog\",\"transport\":\"origin\",\"assertion\":\"catalog-json\"},{\"id\":\"gateway\",\"name\":\"Gateway API\",\"url\":\"https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/api/health\",\"transport\":\"https\",\"assertion\":\"ok-json\"}]",
+  },
   "observability": { "enabled": true },
 }

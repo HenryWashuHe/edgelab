@@ -25,6 +25,8 @@ export function isCatalogPayload(value: unknown): value is CatalogPayload {
 }
 export default {
   async fetch(request: Request): Promise<Response> {
+    if (request.method === 'GET' && new URL(request.url).pathname === '/catalog')
+      return Response.json(catalog(), { headers: { 'Cache-Control': 'no-store' } });
     if (request.method !== 'POST' || new URL(request.url).pathname !== '/catalog')
       return Response.json({ error: 'Not found' }, { status: 404 });
     let settings: { delay?: number; fails?: boolean };
@@ -45,15 +47,19 @@ export default {
     await new Promise((resolve) => setTimeout(resolve, settings.delay));
     if (settings.fails)
       return Response.json({ error: 'Controlled origin failure' }, { status: 503 });
-    const payload: CatalogPayload = {
-      service: 'demo-catalog',
-      revision: crypto.randomUUID(),
-      generatedAt: Date.now(),
-      products: [
-        { sku: 'edge-notebook', available: 42 },
-        { sku: 'internet-pin', available: 18 },
-      ],
-    };
+    const payload = catalog();
     return Response.json(payload, { headers: { 'Cache-Control': 'no-store' } });
   },
 } satisfies ExportedHandler;
+
+function catalog(): CatalogPayload {
+  return {
+    service: 'demo-catalog',
+    revision: crypto.randomUUID(),
+    generatedAt: Date.now(),
+    products: [
+      { sku: 'edge-notebook', available: 42 },
+      { sku: 'internet-pin', available: 18 },
+    ],
+  };
+}

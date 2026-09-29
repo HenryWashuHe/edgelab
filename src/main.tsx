@@ -1,3 +1,4 @@
+import { Operations } from './Operations';
 import { Architecture, Notes } from './Guide';
 import { RequestInspector } from './RequestInspector';
 import { asCsv, report, saveFile, percentile95 } from './reports';
@@ -92,7 +93,21 @@ async function api<T = Record<string, unknown>>(path: string, body?: unknown) {
 }
 function App() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  const [page, setPage] = useState('playground');
+  const [page, setPage] = useState(() =>
+    ['playground', 'architecture', 'notes'].includes(location.hash.slice(1))
+      ? location.hash.slice(1)
+      : 'operations',
+  );
+  useEffect(() => {
+    const change = () =>
+      setPage(
+        ['playground', 'architecture', 'notes'].includes(location.hash.slice(1))
+          ? location.hash.slice(1)
+          : 'operations',
+      );
+    window.addEventListener('hashchange', change);
+    return () => window.removeEventListener('hashchange', change);
+  }, []);
   const [selectedEvent, setSelectedEvent] = useState<LabEvent | null>(null);
   const [configBusy, setConfigBusy] = useState(false);
   const configLock = useRef(false);
@@ -119,6 +134,7 @@ function App() {
     setSnapshot({ ...result.data, colo: result.colo });
   }
   useEffect(() => {
+    if (page !== 'playground') return;
     refresh().catch((e) => setError(e.message));
     const timer = setInterval(() => setTick(Date.now()), 250);
     return () => {
@@ -126,7 +142,7 @@ function App() {
       stopController.current?.abort();
       clearInterval(timer);
     };
-  }, []);
+  }, [page]);
   async function run(label: string, fn: () => Promise<void>) {
     if (lock.current) return;
     lock.current = true;
@@ -305,21 +321,25 @@ function App() {
             <FlaskConical size={18} />
           </span>
           <div>
-            Personal workspace<small>Developer lab</small>
+            Reliability workspace<small>Monitor · investigate · test</small>
           </div>
           <span className="workspace-version">01</span>
         </div>
         <div className="nav-label">WORKSPACE</div>
         <nav>
           {[
-            ['playground', FlaskConical, 'Playground'],
+            ['operations', Activity, 'Operations'],
+            ['playground', FlaskConical, 'Resilience lab'],
             ['architecture', Layers, 'Architecture'],
             ['notes', BookOpen, 'Field notes'],
           ].map(([id, Icon, label]) => (
             <button
               key={String(id)}
               className={`nav-item ${page === id ? 'active' : ''}`}
-              onClick={() => setPage(String(id))}
+              onClick={() => {
+                setPage(String(id));
+                location.hash = String(id);
+              }}
             >
               <Icon size={18} />
               {String(label)}
@@ -331,7 +351,7 @@ function App() {
           <div className="built-card">
             <Cloud size={24} />
             <p>
-              Small lab.
+              Observe. Investigate.
               <br />
               <strong>Real edge infrastructure.</strong>
             </p>
@@ -349,7 +369,7 @@ function App() {
             </a>
           </div>
           <div className="sidebar-footer">
-            <span className="tiny-dot" /> EdgeLab v2.0 <span>TS</span>
+            <span className="tiny-dot" /> EdgeLab v3.0 <span>TS</span>
           </div>
         </div>
       </aside>
@@ -358,21 +378,25 @@ function App() {
           <div className="breadcrumbs">
             Workspace <ChevronRight size={13} />
             <span>
-              {page === 'playground'
-                ? 'Reliability playground'
-                : page === 'architecture'
-                  ? 'Architecture'
-                  : 'Field notes'}
+              {page === 'operations'
+                ? 'Service operations'
+                : page === 'playground'
+                  ? 'Reliability playground'
+                  : page === 'architecture'
+                    ? 'Architecture'
+                    : 'Field notes'}
             </span>
           </div>
           <div className="topbar-right">
             <span className="runtime-pill">
               <span className={`tiny-dot ${snapshot ? '' : 'muted-dot'}`} />
-              {snapshot
-                ? snapshot.colo === 'LOCAL'
-                  ? 'Local runtime'
-                  : `${snapshot.colo} · Edge connected`
-                : 'Connecting'}
+              {page === 'operations'
+                ? 'Persistent monitoring'
+                : snapshot
+                  ? snapshot.colo === 'LOCAL'
+                    ? 'Local runtime'
+                    : `${snapshot.colo} · Edge connected`
+                  : 'Connecting'}
             </span>
             <a
               href="https://developers.cloudflare.com/workers/"
@@ -391,18 +415,22 @@ function App() {
                 <span /> THE INTERNET, UNDER PRESSURE
               </div>
               <h1>
-                {page === 'playground'
-                  ? 'Break things. Build resilience.'
-                  : page === 'architecture'
-                    ? 'Under the hood.'
-                    : 'Make the work count.'}
+                {page === 'operations'
+                  ? 'Know when reliability slips.'
+                  : page === 'playground'
+                    ? 'Break things. Build resilience.'
+                    : page === 'architecture'
+                      ? 'Under the hood.'
+                      : 'Make the work count.'}
               </h1>
               <p>
-                {page === 'playground'
-                  ? 'A hands-on lab for the systems that keep the Internet running.'
-                  : page === 'architecture'
-                    ? 'One edge entry point. One consistent coordinator per lab. Every decision visible.'
-                    : 'A demo is the beginning. Understanding the tradeoffs is what makes it yours.'}
+                {page === 'operations'
+                  ? 'Continuous checks, accountable incidents, and reliability backed by evidence.'
+                  : page === 'playground'
+                    ? 'A hands-on lab for the systems that keep the Internet running.'
+                    : page === 'architecture'
+                      ? 'Scheduled monitoring and isolated resilience experiments, with durable coordination.'
+                      : 'Operating evidence, reproducible failures, and engineering tradeoffs you can explain.'}
               </p>
             </div>
             {page === 'playground' && (
@@ -420,13 +448,15 @@ function App() {
               </button>
             )}
           </div>
-          {error && (
+          {error && page === 'playground' && (
             <div className="error-banner" role="alert">
               {error}
               <button onClick={() => run('retry', refresh)}>Reconnect</button>
             </div>
           )}
-          {page === 'playground' ? (
+          {page === 'operations' ? (
+            <Operations />
+          ) : page === 'playground' ? (
             <>
               <div className="lab-intro">
                 <span className="intro-label">

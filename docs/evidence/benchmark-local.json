@@ -1,0 +1,131 @@
+{
+  "project": "EdgeLab",
+  "version": 3,
+  "runAt": "2026-09-29T02:17:12.975Z",
+  "baseUrl": "http://localhost:8790",
+  "node": "v25.4.0",
+  "rounds": 3,
+  "methodology": "Fresh isolated lab per trial. Capacity 12, refill 1/s, controlled private origin delay 250ms. Client elapsed includes network and body consumption. Concurrent burst test; not sustained throughput, production traffic, or multi-region performance. Assertions: no lost events, only expected status codes, accepted <= initial capacity + maximum elapsed refill.",
+  "samples": [
+    {
+      "concurrency": 1,
+      "round": 1,
+      "accepted": 1,
+      "limited": 0,
+      "wallMs": 261.2,
+      "clientP50Ms": 261.17,
+      "clientP95Ms": 261.17,
+      "originCalls": 1
+    },
+    {
+      "concurrency": 1,
+      "round": 2,
+      "accepted": 1,
+      "limited": 0,
+      "wallMs": 263.34,
+      "clientP50Ms": 263.33,
+      "clientP95Ms": 263.33,
+      "originCalls": 1
+    },
+    {
+      "concurrency": 1,
+      "round": 3,
+      "accepted": 1,
+      "limited": 0,
+      "wallMs": 261.58,
+      "clientP50Ms": 261.57,
+      "clientP95Ms": 261.57,
+      "originCalls": 1
+    },
+    {
+      "concurrency": 12,
+      "round": 1,
+      "accepted": 12,
+      "limited": 0,
+      "wallMs": 289.64,
+      "clientP50Ms": 287.83,
+      "clientP95Ms": 288.95,
+      "originCalls": 12
+    },
+    {
+      "concurrency": 12,
+      "round": 2,
+      "accepted": 12,
+      "limited": 0,
+      "wallMs": 293.16,
+      "clientP50Ms": 292.33,
+      "clientP95Ms": 292.92,
+      "originCalls": 12
+    },
+    {
+      "concurrency": 12,
+      "round": 3,
+      "accepted": 12,
+      "limited": 0,
+      "wallMs": 288.89,
+      "clientP50Ms": 288.09,
+      "clientP95Ms": 288.63,
+      "originCalls": 12
+    },
+    {
+      "concurrency": 24,
+      "round": 1,
+      "accepted": 12,
+      "limited": 12,
+      "wallMs": 289.98,
+      "clientP50Ms": 39.2,
+      "clientP95Ms": 289.43,
+      "originCalls": 12
+    },
+    {
+      "concurrency": 24,
+      "round": 2,
+      "accepted": 12,
+      "limited": 12,
+      "wallMs": 304.55,
+      "clientP50Ms": 41.15,
+      "clientP95Ms": 304.21,
+      "originCalls": 12
+    },
+    {
+      "concurrency": 24,
+      "round": 3,
+      "accepted": 12,
+      "limited": 12,
+      "wallMs": 307.43,
+      "clientP50Ms": 40.51,
+      "clientP95Ms": 307.14,
+      "originCalls": 12
+    },
+    {
+      "concurrency": 48,
+      "round": 1,
+      "accepted": 12,
+      "limited": 36,
+      "wallMs": 304.05,
+      "clientP50Ms": 92.94,
+      "clientP95Ms": 303.46,
+      "originCalls": 12
+    },
+    {
+      "concurrency": 48,
+      "round": 2,
+      "accepted": 12,
+      "limited": 36,
+      "wallMs": 337.86,
+      "clientP50Ms": 78.06,
+      "clientP95Ms": 337.1,
+      "originCalls": 12
+    },
+    {
+      "concurrency": 48,
+      "round": 3,
+      "accepted": 12,
+      "limited": 36,
+      "wallMs": 341.7,
+      "clientP50Ms": 81.51,
+      "clientP95Ms": 341.17,
+      "originCalls": 12
+    }
+  ]
+}

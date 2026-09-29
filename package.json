@@ -1,6 +1,6 @@
 {
   "name": "edgelab",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,7 +13,11 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "dev:workers": "wrangler dev -c wrangler.jsonc -c wrangler.origin.jsonc --port 8787",
-    "test:lifecycle": "node scripts/lifecycle.mjs"
+    "test:lifecycle": "node scripts/lifecycle.mjs",
+    "test:monitor": "node scripts/monitor-integration.mjs",
+    "benchmark": "node scripts/benchmark.mjs",
+    "operator:setup": "node scripts/operator-setup.mjs",
+    "operator": "node scripts/operator.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.48.0",

@@ -1,145 +1,126 @@
 # EdgeLab
 
-[**Open the live demo**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev) · [CI checks](https://github.com/HenryWashuHe/edgelab/actions)
+[**Live operations dashboard**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev) · [CI](https://github.com/HenryWashuHe/edgelab/actions) · [Operator runbook](docs/OPERATIONS.md) · [API contract](docs/openapi.yaml)
 
-**Break things. Build resilience.** An interactive API reliability lab built with Cloudflare Workers, SQLite-backed Durable Objects, React, and TypeScript.
+**A self-hostable reliability workspace on Cloudflare.** Monitor services continuously, investigate durable incidents, measure good-check objectives and coverage, and reproduce resilience failures in an isolated engineering lab.
 
-Send a concurrent traffic burst, inject an origin outage, and watch a coordinated token bucket, circuit breaker, and cached fallback protect the request path. Every request leaves an inspectable event. Inspect response payloads and request IDs, then export an experiment as JSON or CSV.
+The operating system comprises a public gateway, a private catalog Worker, and two SQLite-backed Durable Object classes. A Cron Trigger drives monitoring independently of browsers. The public dashboard exposes observations; authenticated operators manage policies, maintenance, acknowledgements, and private investigation notes.
 
-The gateway calls a **separate private origin Worker through a service binding**. The catalog data and injected failures are synthetic; the service-to-service requests, response cache, timeout handling, and persistence are real. This is an educational lab, not a general-purpose production proxy or a claim of Internet-scale capacity. Latency is measured server elapsed time, not browser RTT.
+The included deployment monitors its actual public gateway and private catalog service. It starts with an empty incident history and accumulates real checks over time. The catalog contains controlled example data. This is an independently built engineering project, not a claim of production customers or global uptime measurement.
 
-Version 2 adds actual cached payloads, configurable timeouts, automatic idle cleanup, a keyboard-accessible request inspector, CSV exports, cancellable guided experiments, and controls that stay available during steady traffic.
+## What is implemented
 
-## Run locally
+- **Continuous checks:** one scheduled observation per minute per deployment-approved target; HTTP status, bounded JSON contract validation, latency objective, timeout, and 16 KB body limit. Redirects are not followed.
+- **Durable incident response:** consecutive-failure opening, consecutive-success recovery, operator acknowledgement, private notes, and audit events. Maintenance suspends probes while preserving incidents.
+- **Reliable scheduling:** atomic persisted leases, per-service/minute uniqueness, retry deduplication, crash recovery, and policy revision fencing. Late or duplicate observations cannot advance incident streaks twice.
+- **Honest SLO reporting:** observed good-check ratio, p95, error-budget consumption, maintenance exclusion, and missing-sample coverage. Missing data is unknown. Current incomplete minutes are excluded. Every observation retains its policy revision.
+- **Operator access:** a deployment secret gates writes and audit access. The browser stores the token only in memory. Same-origin checks, bounded payloads, optimistic writes, and deploy-time target enrollment define the boundary.
+- **Engineering lab:** isolated per-session token buckets, circuit breakers, actual cached payloads, timeout experiments, traces, CSV/JSON export, and cancellable guided runs.
+- **Evidence:** deterministic unit tests, real workerd/SQLite fault tests, local and live HTTP verification, and repeatable concurrency benchmarks with raw results.
 
-Requires Node.js 22.12+ and npm.
+## Quick start
+
+Node.js 22.12+ and npm are required.
 
 ```sh
 npm ci
+npm run operator:setup -- --local
 npm run dev
 ```
 
-Open http://localhost:8787 and select **Run guided demo**. Wrangler starts both Workers, their service binding, SQLite storage, and Durable Objects locally. The local server needs permission to bind loopback ports. No Cloudflare account or API key is needed locally.
+Open http://localhost:8787. The local operator token is in the ignored `.dev.vars` file. Open it privately to unlock the Operator tab; do not commit it or include it in a screenshot.
 
-`npm run dev` builds the UI before starting Wrangler. Worker changes reload automatically; after frontend edits, run `npm run build` in a second terminal and refresh the browser.
+Wrangler runs both Workers and both Durable Object classes locally. For an explicit local scheduled event, start with `npm run dev:workers -- --test-scheduled` (after `npm run build`), then:
 
-## What to try
+```sh
+curl 'http://localhost:8787/cdn-cgi/local/scheduled?cron=*+*+*+*+*'
+```
 
-1. **Guided demo:** warms the cache, injects failures, opens the circuit, restores the origin, waits for cooldown, and probes recovery. Resets the current lab first; Stop demo cancels future requests and retains completed events.
-2. **Traffic burst:** fires 24 concurrent requests against one shared token budget. With a full default bucket, an immediate burst admits 12 and rejects the rest with HTTP 429. Refill and timing can change the exact count.
-3. **Failure without fallback:** disable the cache switch, take the origin offline, and send requests. The first failures return 502; once the circuit opens, new admitted traffic returns 503 without origin work.
-4. **Steady traffic:** sends one request per second plus response time. Change origin health, cache policy, or timing while it runs. Stops after 60 requests or when you press Stop.
-5. **Slow origin:** expand Timing & recovery settings. Set origin delay above the timeout budget. Without a populated cache, the gateway returns 504 and counts a circuit failure.
-6. **Inspect a response:** click a request time. Compare the revision and generatedAt fields of a fresh and cached response. Request IDs, retry hints, cache age, and origin attempts are recorded.
-7. **Export JSON / CSV:** JSON includes configuration and all-run counters. CSV includes chronological event rows. Both export the latest 180 events; the table shows 30 matching events and the chart shows 60.
+Local Wrangler does not automatically simulate the production cron. The included HTTPS monitor points at the public deployment; edit `MONITOR_TARGETS` for your own deployment. The private catalog monitor uses the local binding. Tests use isolated fixtures without depending on public services.
+
+Frontend edits require `npm run build` followed by refresh. Worker code reloads automatically. Do not run multiple dev servers against the same persistence directory; use `--persist-to /tmp/edgelab-isolated` for another checkout.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    B[Browser / API client] --> W[Cloudflare Worker]
-    W --> D[Per-lab Durable Object]
-    D --> T[Token bucket + circuit breaker]
-    T -->|Service binding + timeout| O[Private catalog Worker]
-    T --> C[Bounded-age cached fallback]
-    D --- S[(SQLite state + event history)]
+  C[Cloudflare Cron / every minute] --> G[Gateway Worker]
+  B[Public dashboard] --> G
+  A[Authenticated operator] --> G
+  G --> M[MonitorStore / singleton SQLite DO]
+  M --> P[Private catalog Worker]
+  M --> H[Approved HTTPS health endpoint]
+  M --- S[(Checks / jobs / incidents / policies / audit)]
+  G --> L[ReliabilityLab / per-session SQLite DO]
+  L --> P
 ```
 
-- **Worker:** serves the frontend through Workers Static Assets; validates API path, origin, body size, and session ID.
-- **Durable Object:** one coordinator per opaque UUID session. Admission reserves tokens and the sole half-open probe in synchronous SQLite transactions before awaiting origin work. Completion uses another transaction.
-- **Circuit breaker:** closed → open after three consecutive failures → one half-open probe after a four-second cooldown → closed on success, open on failure.
-- **Generation fencing:** late completions from an older circuit generation cannot change the new circuit. A run ID invalidates requests admitted before reset. A ten-second persisted probe lease recovers interrupted probes.
-- **Origin:** a separate Worker returns a versioned catalog response. Its workers.dev and preview routes are disabled; only the service binding is used. The gateway validates its response and applies a configurable timeout, including response-body consumption.
-- **Cache:** the actual last successful catalog payload and its capture timestamp. Failures and circuit bypasses may serve it for up to 60 seconds. Rate-limited requests still return 429.
-- **Storage:** state and a 180-row event ring survive object eviction. Counters cover the entire run, including admitted requests still in flight. Every API request renews a 24-hour idle deadline. A Durable Object alarm deletes SQL, KV, and alarm metadata after inactivity; late origin completions cannot resurrect the expired run. State created before v2 gains cleanup on its next API request.
+The monitor uses a singleton because this deployment intentionally supports at most five targets. Each check claims a 30-second durable lease, performs bounded network work outside the transaction, and commits an observation plus its incident transition atomically. A policy revision and lease token fence stale completion. No scheduler HTTP endpoint is publicly exposed.
 
-See [the engineering walkthrough](docs/ENGINEERING.md) for invariants, limitations, and extension ideas. The app also has Architecture and Field notes views.
+See [architecture decisions](docs/adr/001-monitor-coordination.md), [measurement methodology](docs/MEASUREMENT.md), and [security boundaries](docs/SECURITY.md). The [lab walkthrough](docs/ENGINEERING.md) explains the gateway algorithms in depth.
 
-## Verify
-
-```sh
-npm test                 # deterministic engine tests
-npm run build            # strict TypeScript + production frontend bundle
-npm run check            # formatting, tests, build, deployment dry-runs
-npm run test:lifecycle   # actual eviction, idle alarms, and post-expiry recovery
-```
-
-With `npm run dev` running in another terminal:
-
-```sh
-npm run test:integration
-```
-
-Integration checks execute real HTTP requests against both local Workers and the SQLite-backed Durable Object: real payload caching, upstream timeout, concurrent admission, outage/fallback/recovery, isolated sessions, validation, reset fencing, and log retention. They use a new random session, never the browser's session. To test a deployed instance you own, explicitly set `BASE_URL`.
-
-## Deploy to your Cloudflare account
+## Deploy
 
 ```sh
 npx wrangler login
 npx wrangler whoami
+# Edit Worker names, service binding, and MONITOR_TARGETS for your account first.
 npm run deploy
+npm run operator:setup
 ```
 
-The deploy first creates the private `edgelab-origin` Worker, then the public `edgelab-reliability` gateway and its SQLite-backed Durable Object namespace. Wrangler prints your workers.dev URL. The repository includes the initial `new_sqlite_classes` migration and needs no manual database provisioning. If either Worker name already belongs to another project, update both config files and the ORIGIN service binding before deploying. A new Cloudflare account also needs a workers.dev subdomain; Wrangler or the Workers dashboard can register one.
+Deploy creates the private origin first, then the gateway and additive SQLite migrations. The second command provisions a random operator secret via Wrangler stdin and saves a mode-600, Git-ignored local copy in `.env.operator`. Rerunning preserves the token; add `--rotate` to revoke the previous one.
 
-Cloudflare supports SQLite-backed Durable Objects on the Workers Free plan, subject to current account limits. Check [Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/) and [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) before sustained traffic. No paid service is required by the code.
+The cron is `* * * * *` in UTC. New trigger propagation can take up to 15 minutes. Verify `/api/ops/status` contains fresh observations in at least two distinct scheduled minutes. **Do not mistake an HTTP 200 health endpoint for functioning monitoring.** The runbook covers verification, stopping probes, target changes, troubleshooting, secret rotation, rollback, and retention.
 
-A public anonymous lab can be abused to create sessions and consume your account quota. The lab's adjustable bucket is an experiment, **not** a perimeter abuse control. For broad public access, add a separate admission boundary (such as Cloudflare Access for private demos, or session issuance with abuse controls). Idle cleanup limits retained session data but does not prevent users from creating new sessions. Do not put sensitive data in a lab. Knowing its UUID grants access; there are no user accounts.
+No paid feature is required by the code. Usage depends on targets, probes, public reads, and lab traffic. Limits are finite and account-wide; inspect [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) and [Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/). For restricted deployments, put Cloudflare Access in front of the gateway. The intentionally public lab is not a perimeter abuse control.
 
-## API
-
-All lab endpoints require a UUID v4 `X-Lab-ID` header. Keep it out of public screenshots or URLs if you want your demo session private. Same-origin browser requests and non-browser clients with the capability are accepted. All API responses disable caching.
-
-| Endpoint       | Method | Behavior                                                               |
-| -------------- | ------ | ---------------------------------------------------------------------- |
-| `/api/health`  | GET    | Worker health and actual edge colo, or `LOCAL`                         |
-| `/api/state`   | GET    | State snapshot and latest 180 completed events                         |
-| `/api/request` | POST   | Run one protected request; returns 200, 429, 502, 503, or 504          |
-| `/api/config`  | POST   | Apply bounded configuration fields                                     |
-| `/api/reset`   | POST   | Clear lab history and restore defaults; in-flight old work returns 409 |
+## Verify and reproduce
 
 ```sh
-LAB_ID=$(node -e 'console.log(crypto.randomUUID())')
-curl -H "X-Lab-ID: $LAB_ID" -X POST http://localhost:8787/api/request
-curl -H "X-Lab-ID: $LAB_ID" http://localhost:8787/api/state
+npm run check             # formatting, unit tests, TS/build, both deployment dry-runs
+npm run test:lifecycle    # actual lab eviction, expiry alarms, late completion fencing
+npm run test:monitor      # actual monitor auth, incidents, concurrency, leases, retention
+# With the local server running:
+npm run test:integration  # lab HTTP behavior and isolation
+BASE_URL=http://localhost:8787 npm run benchmark
 ```
 
-Numeric bounds: capacity 1–50, refill 1–20 tokens/s, threshold 1–10, cooldown 1–15 seconds, origin delay 20–3000 ms, timeout 100–5000 ms. Origin mode is `healthy`, `flaky` (every third origin call fails), or `failing`. Bodies over 4 KB are rejected.
+CI runs the first four checks on every push and PR, then starts both Workers and runs HTTP integration tests. Monitor tests use real SQLite/workerd and controlled service failures. They also invoke the actual scheduled handler. The benchmark supports `ROUNDS=1..10`, tests 1/12/24/48 concurrent requests against a fresh lab per trial, and writes results under [docs/evidence](docs/evidence).
 
-## Project layout
+[Benchmark methodology](docs/MEASUREMENT.md) distinguishes controlled burst admission from sustained throughput. Results are measurements of a specified environment, not Cloudflare-scale performance claims.
 
-```text
-worker/engine.ts          deterministic admission and recovery state machine
-worker/index.ts           gateway, Durable Object, SQLite, expiry alarms
-worker/origin.ts          private catalog Worker and response schema
-worker/origin-client.ts   validated service call with bounded timeout
-src/main.tsx             interactive dashboard and cancellable experiments
-src/RequestInspector.tsx accessible request details dialog
-src/reports.ts           report statistics and CSV/JSON export
-src/Guide.tsx             architecture and interview walkthrough
-src/style.css            responsive interface
-scripts/integration.mjs  HTTP tests against the actual local runtime
-scripts/lifecycle.mjs    actual workerd eviction and alarm tests
-tests/                   state machine, origin client, and report tests
-docs/ENGINEERING.md       design decisions and interview preparation
-wrangler*.jsonc          gateway and private origin configurations
+## Operator CLI
+
+```sh
+BASE_URL=https://YOUR-WORKER.workers.dev npm run operator -- audit
+BASE_URL=https://YOUR-WORKER.workers.dev npm run operator -- pause catalog
+BASE_URL=https://YOUR-WORKER.workers.dev npm run operator -- resume catalog
+BASE_URL=https://YOUR-WORKER.workers.dev npm run operator -- ack INCIDENT_ID 'Investigating upstream failures'
 ```
 
-## Resume wording
+Remote commands read the ignored `.env.operator`; local commands read `.dev.vars`. An explicit `OPERATOR_TOKEN` environment variable can override the file for CI. Credentials are never placed in a URL.
 
-> Built an interactive API resilience lab using Cloudflare Workers, SQLite-backed Durable Objects, and TypeScript; implemented coordinated token-bucket rate limiting, circuit breaking with single-probe recovery, bounded-age response caching, service-binding timeouts, and alarm-based idle cleanup.
+## Project map
 
-Use this after you can explain and reproduce the behavior. Add numbers only from experiments you ran and saved. Do not claim production traffic, global latency, or performance at Cloudflare's scale based on a localhost demo.
+| Area                                           | Files                                             |
+| ---------------------------------------------- | ------------------------------------------------- |
+| Monitoring state machine and validation        | `worker/monitor-domain.ts`                        |
+| Bounded probes                                 | `worker/monitor-probe.ts`                         |
+| SQLite coordinator and operator authentication | `worker/monitor.ts`                               |
+| Gateway, cron handler, laboratory coordinator  | `worker/index.ts`                                 |
+| Resilience algorithms and origin service       | `worker/engine.ts`, `worker/origin*.ts`           |
+| Operations UI                                  | `src/Operations.tsx`, `src/operations.css`        |
+| Interactive lab and guides                     | `src/main.tsx`, `src/Guide.tsx`, `src/reports.ts` |
+| Runtime tests and benchmarks                   | `scripts/`, `tests/`                              |
+| Deployment and CI                              | `wrangler*.jsonc`, `.github/workflows/ci.yml`     |
 
-A strong follow-up is to implement one extension yourself, publish an experiment with reproducible steps, and explain a tradeoff or bug you discovered. See [docs/ENGINEERING.md](docs/ENGINEERING.md).
+## How to present the project
 
-## Platform references
+> Built a Cloudflare reliability workspace with scheduled service monitoring, SQLite-backed Durable Object coordination, durable incident response, and SLO coverage reporting; implemented lease-based job deduplication, revision-fenced policy updates, authenticated operator controls, and reproducible fault/concurrency tests.
 
-- [Durable Objects overview](https://developers.cloudflare.com/durable-objects/)
-- [SQLite storage API](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)
-- [Service bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/)
-- [Durable Object alarms](https://developers.cloudflare.com/durable-objects/api/alarms/)
-- [Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)
-- [New SQLite namespace migration](https://developers.cloudflare.com/changelog/post/2026-07-09-restrict-new-kv-backed-namespaces/)
+Be ready to explain why unknown observations cannot become uptime, why a lease needs a fencing token, why acknowledgement differs from recovery, and why one-region sampled monitoring cannot prove global availability. Link the running dashboard, raw benchmark evidence, and CI. Add performance numbers only with their actual test conditions.
 
-The dev tooling pins a patched Undici release through npm overrides to avoid the advisory affecting Wrangler's transitive dependency. The production Worker does not bundle Undici.
+## Scope and limits
+
+This is a single-owner, small-service operations application with a deliberately bounded deployment model. It does not provide tenant billing, global independent probes, or external email/PagerDuty delivery. Incident notifications live in the dashboard. Monitoring shares the provider being monitored; use an independent external monitor for the monitor itself. Open incidents and policies persist; completed checks, resolved incidents, and audit events have 30-day retention. Export summaries periodically if longer history is required.

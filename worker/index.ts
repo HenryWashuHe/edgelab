@@ -1,3 +1,5 @@
+import { MonitorStore, operatorAuthorized, type MonitorEnv } from './monitor';
+export { MonitorStore };
 import { callOrigin } from './origin-client';
 import { DurableObject } from 'cloudflare:workers';
 import {
@@ -11,7 +13,7 @@ import {
   type LabEvent,
   type Decision,
 } from './engine';
-interface Env {
+interface Env extends MonitorEnv {
   LABS: DurableObjectNamespace<ReliabilityLab>;
   ASSETS: Fetcher;
   ORIGIN: Fetcher;
@@ -211,6 +213,17 @@ async function boundedBody(request: Request): Promise<string> {
   return new TextDecoder().decode(bytes);
 }
 export default {
+  async scheduled(controller: ScheduledController, env: Env): Promise<void> {
+    const stub = env.MONITORS.get(env.MONITORS.idFromName('operations'));
+    const response = await stub.fetch(
+      new Request('https://monitor.internal/tick', {
+        method: 'POST',
+        body: JSON.stringify({ slot: Math.floor(controller.scheduledTime / 60000) }),
+      }),
+    );
+    if (!response.ok) throw new Error(`Monitoring schedule failed: ${response.status}`);
+    console.log(JSON.stringify({ event: 'monitor.tick', ...((await response.json()) as object) }));
+  },
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(request);
@@ -219,9 +232,77 @@ export default {
         ok: true,
         colo: colo(request),
         platform: 'Cloudflare Workers + Durable Objects',
-        version: '2.0.0',
+        version: '3.0.0',
         origin: 'service-binding',
       });
+    if (url.pathname.startsWith('/api/ops/')) {
+      const origin = request.headers.get('Origin');
+      if (origin && origin !== url.origin)
+        return json({ error: 'Cross-origin requests are not allowed' }, 403);
+      const action = url.pathname.slice('/api/ops/'.length);
+      const method = ['status', 'audit', 'export'].includes(action) ? 'GET' : 'POST';
+      if (!['status', 'audit', 'export', 'policy', 'acknowledge'].includes(action))
+        return json({ error: 'Not found' }, 404);
+      if (request.method !== method)
+        return json({ error: 'Method not allowed' }, 405, { Allow: method });
+      if (
+        !['status', 'export'].includes(action) &&
+        !(await operatorAuthorized(request, env.OPERATOR_TOKEN))
+      )
+        return json({ error: 'Operator token required' }, 401, { 'WWW-Authenticate': 'Bearer' });
+      let body: string | undefined;
+      if (method === 'POST') {
+        try {
+          body = await boundedBody(request);
+        } catch {
+          return json({ error: 'Request exceeds 4 KB' }, 413);
+        }
+        try {
+          JSON.parse(body);
+        } catch {
+          return json({ error: 'Invalid JSON' }, 400);
+        }
+        if (
+          !body ||
+          JSON.parse(body) === null ||
+          typeof JSON.parse(body) !== 'object' ||
+          Array.isArray(JSON.parse(body))
+        )
+          return json({ error: 'JSON object required' }, 400);
+      }
+      const stub = env.MONITORS.get(env.MONITORS.idFromName('operations'));
+      const response = await stub.fetch(
+        new Request(
+          `https://monitor.internal/${action === 'export' ? 'status' : action}?window=${url.searchParams.get('window') === '7d' ? '7d' : '24h'}`,
+          { method, body },
+        ),
+      );
+      if (action === 'export' && response.ok) {
+        const snapshot = (await response.json()) as object;
+        return new Response(
+          JSON.stringify(
+            {
+              schemaVersion: 3,
+              exportedAt: new Date().toISOString(),
+              measurement:
+                'One scheduled observation per minute from the coordinator. Finished UTC minutes only. Gaps are unknown; maintenance is excluded; good checks meet the policy active when observed. Not global uptime.',
+              ...snapshot,
+            },
+            null,
+            2,
+          ),
+          {
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+              'Content-Disposition': 'attachment; filename="edgelab-operations.json"',
+              'Cache-Control': 'no-store',
+              'X-Content-Type-Options': 'nosniff',
+            },
+          },
+        );
+      }
+      return response;
+    }
     if (!['/api/state', '/api/request', '/api/config', '/api/reset'].includes(url.pathname))
       return json({ error: 'Not found' }, 404);
     const origin = request.headers.get('Origin');

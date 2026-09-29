@@ -1,0 +1,23 @@
+# v3 verification record
+
+Release verification performed 2026-09-29 UTC. This is evidence of a newly deployed application, not a long-term reliability claim.
+
+| Requirement                                   | Evidence                                                                                                                                                                                                             |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Autonomous monitoring without browser traffic | `live-monitoring.json`: two new distinct good scheduled minutes for both the private catalog and public gateway, captured without invoking a manual tick                                                             |
+| Persistent state and incidents                | `npm run test:monitor`: real workerd/SQLite eviction preserves checks and incidents; `test:lifecycle` covers the separate lab                                                                                        |
+| Idempotent scheduling                         | Twelve concurrent deliveries produce one upstream call and one check; duplicate/open-incident invariants verified in runtime tests                                                                                   |
+| Crash and stale-result handling               | Persisted active/expired lease test, replaced-token test with a real in-flight request, and policy-revision race test                                                                                                |
+| Incident response                             | Three bad observations open once; two good recover; acknowledgement is idempotent and private note does not appear publicly                                                                                          |
+| Honest metrics                                | Missing fixture slots reduce coverage; zero/bounded window tests; current incomplete minute excluded; SLO method documented in `MEASUREMENT.md`                                                                      |
+| Owner controls                                | Runtime auth, bad credentials, Origin mismatch, malformed JSON, oversized body, stale revision, and private audit tests; browser verified local login, maintenance save, invalid timeout rejection, resume, and lock |
+| Export                                        | Real downloaded `edgelab-operations.json` parsed as schema version 3; runtime verifies attachment headers, selected window, and target-URL exclusion                                                                 |
+| UI                                            | Desktop and 390px layout checked; no horizontal document overflow; console error inspection; legacy lab remains available                                                                                            |
+| Regression coverage                           | 47 unit tests, strict TypeScript/build, both Worker dry-runs, lab lifecycle suite, monitoring runtime suite, local and deployed HTTP integration                                                                     |
+| Reproducible performance                      | `benchmark-local.json` and `benchmark-live.json`: three trials each at concurrency 1, 12, 24, 48; no missing events or token-budget violations                                                                       |
+| Operating documentation                       | OpenAPI contract, operator runbook, measurement guide, coordinator ADR, and trust-boundary document                                                                                                                  |
+| Published revision                            | Git history and the matching GitHub Actions run provide exact commit identity and CI outcome                                                                                                                         |
+
+The benchmark's 250 ms controlled origin delay is intentional. In all three deployed 48-request trials, 12 reached the origin and 36 were limited. This shows the configured burst boundary under those test conditions, not sustained throughput or a global latency guarantee.
+
+The runtime probe fixtures inject failure only in isolated tests. Production incident history has not been seeded with invented incidents. Local preview history can contain maintenance changes made during UI validation; this is separate from the deployed monitor's state.

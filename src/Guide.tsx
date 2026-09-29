@@ -3,7 +3,30 @@ export function Architecture() {
   return (
     <div className="docs-layout">
       <section className="panel doc-panel">
-        <div className="eyebrow">01 / THE REQUEST PATH</div>
+        <div className="eyebrow">OPERATIONS / THE PERSISTENT PATH</div>
+        <h2>One schedule. Durable evidence.</h2>
+        <p>
+          A one-minute Cron Trigger drives a SQLite monitoring coordinator for up to five approved
+          services. It runs independently of the browser. The public dashboard reads checks and
+          incidents; authenticated operators edit policies, acknowledge incidents, and inspect the
+          audit trail.
+        </p>
+        <pre>{`Cron → claim durable job lease → bounded probe
+  → verify lease token + policy revision
+  → atomically store check and incident transition`}</pre>
+        <p>
+          Each service and scheduled minute has a unique key. Duplicate deliveries cannot
+          double-count observations. A 30-second lease recovers abandoned work; revision fencing
+          rejects results from outdated policies. Missing checks reduce coverage and never become
+          healthy samples.
+        </p>
+        <p>
+          Monitoring history has 30-day retention, with open incidents and policies preserved.
+          Acknowledgement records ownership; only measured recovery resolves an incident. The
+          monitor shares Cloudflare with its targets and does not establish global uptime.
+        </p>
+        <hr />
+        <div className="eyebrow">LABORATORY / THE REQUEST PATH</div>
         <h2>Stateless at the edge. Consistent at the coordinator.</h2>
         <p>
           The Worker validates the request and routes the lab's opaque session ID to one Durable
@@ -76,7 +99,10 @@ export function Architecture() {
         <div className="panel doc-panel">
           <h3>Deliberate boundaries</h3>
           <ul>
-            <li>One coordinator per lab, not one global bottleneck.</li>
+            <li>
+              One monitor coordinator for five services; separate isolated coordinators for
+              experimental labs.
+            </li>
             <li>Latest 180 events retained; counters cover the full run.</li>
             <li>
               The cache stores the actual catalog response and replays its revision for at most 60
@@ -105,7 +131,12 @@ export function Notes() {
     <div className="docs-layout">
       <section className="panel doc-panel">
         <div className="eyebrow">A TWO-MINUTE WALKTHROUGH</div>
-        <h2>Show the failure. Explain the fix.</h2>
+        <h2>Show the evidence. Explain the decisions.</h2>
+        <p>
+          Start with Operations: real scheduled observations, missing-data coverage, incident
+          history, and authenticated policy changes. Explain lease fencing and why acknowledgement
+          is separate from recovery. Then use the lab to reproduce a failure safely.
+        </p>
         <ol className="walkthrough">
           <li>
             <b>Start with the problem.</b>

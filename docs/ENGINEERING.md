@@ -1,4 +1,6 @@
-# EdgeLab engineering walkthrough
+# EdgeLab resilience-lab engineering walkthrough
+
+EdgeLab v3 also includes persistent service monitoring and incident response. See the [operator runbook](OPERATIONS.md), [monitor architecture decision](adr/001-monitor-coordination.md), and [measurement guide](MEASUREMENT.md). This document focuses on the isolated experimental gateway.
 
 ## Why this project fits the supplied internship role
 
