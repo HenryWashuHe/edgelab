@@ -10,10 +10,11 @@ The included deployment monitors its actual public gateway and private catalog s
 
 ## What is implemented
 
-- **Continuous checks:** one scheduled observation per minute per deployment-approved target; HTTP status, bounded JSON contract validation, latency objective, timeout, and 16 KB body limit. Redirects are not followed.
-- **Durable incident response:** consecutive-failure opening, consecutive-success recovery, operator acknowledgement, private notes, and audit events. Maintenance suspends probes while preserving incidents.
-- **Reliable scheduling:** atomic persisted leases, per-service/minute uniqueness, retry deduplication, crash recovery, and policy revision fencing. Late or duplicate observations cannot advance incident streaks twice.
-- **Honest SLO reporting:** observed good-check ratio, p95, error-budget consumption, maintenance exclusion, and missing-sample coverage. Missing data is unknown. Current incomplete minutes are excluded. Every observation retains its policy revision.
+- **Continuous checks:** one observation opportunity per current UTC minute per deployment-approved target; HTTP status, bounded JSON contract validation, latency objective, timeout, and 16 KB body limit. Redirects are not followed. Delayed schedules are skipped rather than backfilled.
+- **Durable incident response:** consecutive-failure opening, consecutive-success recovery, acknowledgement, private investigation notes, and audit events. Incident detail pages expose paginated check evidence, lifecycle timestamps, and the policy versions applicable to each page. Maintenance suspends probes while preserving incidents.
+- **Reliable scheduling:** atomic persisted leases, per-service/minute uniqueness, retry deduplication, crash recovery, and policy revision fencing. Observations retain their actual probe start time; a completion may cross a minute boundary without becoming a new sample.
+- **Monitoring readiness:** a separate readiness endpoint checks persisted scheduler completion and active-service freshness against a three-minute limit. Dashboard reads cannot renew that evidence. Recent scheduler diagnostics explain starts, completions, and skipped late events.
+- **Honest SLO reporting:** verified good-check ratio, p95, error-budget consumption, maintenance exclusion, missing-sample coverage, and legacy unverified counts. Missing data is unknown. Current incomplete minutes and legacy checks without an observation start timestamp receive no verified SLO credit.
 - **Operator access:** a deployment secret gates writes and audit access. The browser stores the token only in memory. Same-origin checks, bounded payloads, optimistic writes, and deploy-time target enrollment define the boundary.
 - **Engineering lab:** isolated per-session token buckets, circuit breakers, actual cached payloads, timeout experiments, traces, CSV/JSON export, and cancellable guided runs.
 - **Evidence:** deterministic unit tests, real workerd/SQLite fault tests, local and live HTTP verification, and repeatable concurrency benchmarks with raw results.
@@ -50,12 +51,12 @@ flowchart LR
   G --> M[MonitorStore / singleton SQLite DO]
   M --> P[Private catalog Worker]
   M --> H[Approved HTTPS health endpoint]
-  M --- S[(Checks / jobs / incidents / policies / audit)]
+  M --- S[(Checks / jobs / incidents / policy versions / notes / scheduler / audit)]
   G --> L[ReliabilityLab / per-session SQLite DO]
   L --> P
 ```
 
-The monitor uses a singleton because this deployment intentionally supports at most five targets. Each check claims a 30-second durable lease, performs bounded network work outside the transaction, and commits an observation plus its incident transition atomically. A policy revision and lease token fence stale completion. No scheduler HTTP endpoint is publicly exposed.
+The monitor uses a singleton because this deployment intentionally supports at most five targets. Each current-minute check claims a 30-second durable lease, performs bounded network work outside the transaction, and commits an observation plus its incident transition atomically. A policy revision and lease token fence stale completion. No scheduler HTTP endpoint is publicly exposed. `GET /api/ready` observes monitoring freshness without initiating a probe.
 
 See [architecture decisions](docs/adr/001-monitor-coordination.md), [measurement methodology](docs/MEASUREMENT.md), and [security boundaries](docs/SECURITY.md). The [lab walkthrough](docs/ENGINEERING.md) explains the gateway algorithms in depth.
 
@@ -71,7 +72,7 @@ npm run operator:setup
 
 Deploy creates the private origin first, then the gateway and additive SQLite migrations. The second command provisions a random operator secret via Wrangler stdin and saves a mode-600, Git-ignored local copy in `.env.operator`. Rerunning preserves the token; add `--rotate` to revoke the previous one.
 
-The cron is `* * * * *` in UTC. New trigger propagation can take up to 15 minutes. Verify `/api/ops/status` contains fresh observations in at least two distinct scheduled minutes. **Do not mistake an HTTP 200 health endpoint for functioning monitoring.** The runbook covers verification, stopping probes, target changes, troubleshooting, secret rotation, rollback, and retention.
+The cron is `* * * * *` in UTC. [Cloudflare documents](https://developers.cloudflare.com/workers/configuration/cron-triggers/) trigger changes taking up to 15 minutes to propagate. This is separate from a delayed invocation: EdgeLab accepts only the current scheduled minute and skips older ones. Verify `/api/ops/status` contains fresh observations in at least two distinct scheduled minutes and `/api/ready` returns 200. The runbook covers verification, stopping probes, target changes, troubleshooting, secret rotation, rollback, and retention.
 
 No paid feature is required by the code. Usage depends on targets, probes, public reads, and lab traffic. Limits are finite and account-wide; inspect [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) and [Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/). For restricted deployments, put Cloudflare Access in front of the gateway. The intentionally public lab is not a perimeter abuse control.
 
@@ -101,11 +102,21 @@ BASE_URL=https://YOUR-WORKER.workers.dev npm run operator -- ack INCIDENT_ID 'In
 
 Remote commands read the ignored `.env.operator`; local commands read `.dev.vars`. An explicit `OPERATOR_TOKEN` environment variable can override the file for CI. Credentials are never placed in a URL.
 
+## Incident evidence API
+
+`GET /api/ops/incidents/<id>?before=<slot>` returns up to 50 checks in descending slot order, lifecycle timestamps, and policy versions used by that page. Follow `nextCursor` with the next `before` value. Public responses omit private notes and target URLs. A valid bearer token adds investigation notes and the original acknowledgement note; an invalid supplied token returns 401.
+
+`POST /api/ops/incident-note` accepts `{ "incident": "...", "requestId": "UUID-v4", "note": "..." }` with an operator bearer token. Notes contain 1–500 characters with non-whitespace content, and each incident has a maximum of 100 retained notes. Reuse the same request ID and exact payload after a lost response: the retry returns the existing note. Reusing an ID for a different payload returns 409. Notes can be added after recovery.
+
+Version 3.1 reports use export `schemaVersion: 4`. Newly captured policy versions have `recorded` provenance. Migration can recover only the policy currently persisted by v3, marked `recovered-current`; it cannot recreate earlier historical policies. Legacy checks remain available as evidence with `observedAt: null` and are excluded from verified metrics. See the [measurement rules](docs/MEASUREMENT.md) for interpretation.
+
 ## Project map
 
 | Area                                           | Files                                             |
 | ---------------------------------------------- | ------------------------------------------------- |
 | Monitoring state machine and validation        | `worker/monitor-domain.ts`                        |
+| Timing and monitoring freshness                | `worker/monitor-readiness.ts`                     |
+| Incident evidence and private notes            | `worker/incident-evidence.ts`                     |
 | Bounded probes                                 | `worker/monitor-probe.ts`                         |
 | SQLite coordinator and operator authentication | `worker/monitor.ts`                               |
 | Gateway, cron handler, laboratory coordinator  | `worker/index.ts`                                 |
@@ -117,10 +128,18 @@ Remote commands read the ignored `.env.operator`; local commands read `.dev.vars
 
 ## How to present the project
 
-> Built a Cloudflare reliability workspace with scheduled service monitoring, SQLite-backed Durable Object coordination, durable incident response, and SLO coverage reporting; implemented lease-based job deduplication, revision-fenced policy updates, authenticated operator controls, and reproducible fault/concurrency tests.
+> Built a Cloudflare reliability workspace with scheduled monitoring and SQLite-backed Durable Object coordination; implemented durable incident investigations, paginated evidence tied to policy revisions, retry-safe private notes, monitor readiness, and coverage-qualified SLO reporting.
 
-Be ready to explain why unknown observations cannot become uptime, why a lease needs a fencing token, why acknowledgement differs from recovery, and why one-region sampled monitoring cannot prove global availability. Link the running dashboard, raw benchmark evidence, and CI. Add performance numbers only with their actual test conditions.
+Resume claims should describe implemented behavior:
+
+- Coordinated scheduled probes with persisted leases, minute-level deduplication, policy revision fencing, and rejection of historical backfill.
+- Preserved incident lifecycle and investigation evidence across eviction, with authenticated idempotent note writes and explicit migration provenance.
+- Verified failure recovery, timing boundaries, persistence, authorization, and concurrency through deterministic and actual-runtime tests.
+
+Be ready to explain why unknown observations cannot become uptime, why a lease needs a fencing token, why acknowledgement differs from recovery, and why one coordinator's sampled network path cannot prove global availability. Link the running dashboard, raw benchmark evidence, and CI. Add performance numbers only with their actual test conditions.
 
 ## Scope and limits
 
-This is a single-owner, small-service operations application with a deliberately bounded deployment model. It does not provide tenant billing, global independent probes, or external email/PagerDuty delivery. Incident notifications live in the dashboard. Monitoring shares the provider being monitored; use an independent external monitor for the monitor itself. Open incidents and policies persist; completed checks, resolved incidents, and audit events have 30-day retention. Export summaries periodically if longer history is required.
+This is a single-owner, small-service operations application with a deliberately bounded deployment model. It does not provide tenant billing, global independent probes, or external email/PagerDuty delivery. Incident notifications live in the dashboard. Monitoring shares the provider being monitored; an independent external monitor can inspect `/api/ready`. Readiness describes observation freshness, so fresh checks reporting upstream failure can still produce healthy monitoring readiness.
+
+Public incident lists include every open incident for active targets and the latest 100 resolved incidents for those targets. Open incidents and current policies persist. Checks, resolved incidents, audit events, scheduler diagnostics, and appended private notes have 30-day retention. Original acknowledgement notes follow their incident record's retention. Exports are bounded reports; collect them periodically if longer history is required.

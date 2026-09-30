@@ -14,6 +14,8 @@ import {
   type ProbeResult,
 } from './monitor-domain';
 import { probe } from './monitor-probe';
+import { IncidentEvidence } from './incident-evidence';
+import { classifyTick, monitoringReadiness } from './monitor-readiness';
 export interface MonitorEnv {
   MONITORS: DurableObjectNamespace<MonitorStore>;
   ORIGIN: Fetcher;
@@ -37,6 +39,7 @@ type CheckRow = {
   status: number | null;
   latency: number;
   revision: number;
+  observedAt: number | null;
 };
 type IncidentRow = {
   id: string;
@@ -52,6 +55,7 @@ const reply = (data: unknown, status = 200) =>
     headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
   });
 export class MonitorStore extends DurableObject<MonitorEnv> {
+  private evidence: IncidentEvidence;
   constructor(ctx: DurableObjectState, env: MonitorEnv) {
     super(ctx, env);
     const sql = ctx.storage.sql;
@@ -62,6 +66,28 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       'CREATE TABLE IF NOT EXISTS checks (service TEXT NOT NULL, slot INTEGER NOT NULL, at INTEGER NOT NULL, outcome TEXT NOT NULL, status INTEGER, latency INTEGER NOT NULL, revision INTEGER NOT NULL, PRIMARY KEY(service, slot))',
     );
     sql.exec('CREATE INDEX IF NOT EXISTS checks_retention ON checks(at)');
+    // Existing observations cannot prove when their probe started. Preserve them as
+    // legacy evidence, but never invent a timestamp or include them in verified SLOs.
+    const columns = sql.exec<{ name: string }>('PRAGMA table_info(checks)').toArray();
+    if (!columns.some((column) => column.name === 'observed_at')) {
+      ctx.storage.transactionSync(() => {
+        sql.exec('ALTER TABLE checks ADD COLUMN observed_at INTEGER');
+        for (const row of sql
+          .exec<{ id: string; state: string }>('SELECT id,state FROM services')
+          .toArray()) {
+          const state: MonitorState = JSON.parse(row.state);
+          state.failures = state.successes = 0;
+          state.lastSlot = null;
+          sql.exec('UPDATE services SET state=? WHERE id=?', JSON.stringify(state), row.id);
+        }
+      });
+    }
+    sql.exec(
+      'CREATE TABLE IF NOT EXISTS service_versions (service TEXT NOT NULL, revision INTEGER NOT NULL, recorded_at INTEGER NOT NULL, name TEXT NOT NULL, transport TEXT NOT NULL, assertion TEXT NOT NULL, policy TEXT NOT NULL, provenance TEXT NOT NULL, PRIMARY KEY(service,revision))',
+    );
+    sql.exec(
+      'CREATE TABLE IF NOT EXISTS scheduler_events (id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER NOT NULL, slot INTEGER NOT NULL, status TEXT NOT NULL, detail TEXT NOT NULL)',
+    );
     sql.exec(
       'CREATE TABLE IF NOT EXISTS jobs (service TEXT NOT NULL, slot INTEGER NOT NULL, token TEXT NOT NULL, lease INTEGER NOT NULL, done INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(service, slot))',
     );
@@ -74,6 +100,12 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
     sql.exec(
       'CREATE TABLE IF NOT EXISTS audit (id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER NOT NULL, action TEXT NOT NULL, service TEXT NOT NULL, detail TEXT NOT NULL)',
     );
+    this.evidence = new IncidentEvidence(ctx.storage);
+    this.evidence.ensureSchema();
+  }
+  /** Overridden only by the workerd test fixture; production uses wall-clock time. */
+  protected now() {
+    return Date.now();
   }
   private rows<T extends Record<string, SqlStorageValue>>(
     query: string,
@@ -84,9 +116,36 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
   private event(action: string, service: string, detail: unknown) {
     this.ctx.storage.sql.exec(
       'INSERT INTO audit(at,action,service,detail) VALUES(?,?,?,?)',
-      Date.now(),
+      this.now(),
       action,
       service,
+      JSON.stringify(detail),
+    );
+  }
+  private recordVersion(
+    target: MonitorTarget,
+    revision: number,
+    policy: MonitorPolicy,
+    provenance: string,
+  ) {
+    this.ctx.storage.sql.exec(
+      'INSERT OR IGNORE INTO service_versions VALUES(?,?,?,?,?,?,?,?)',
+      target.id,
+      revision,
+      this.now(),
+      target.name,
+      target.transport,
+      target.assertion,
+      JSON.stringify(policy),
+      provenance,
+    );
+  }
+  private scheduleEvent(slot: number, status: string, detail: unknown) {
+    this.ctx.storage.sql.exec(
+      'INSERT INTO scheduler_events(at,slot,status,detail) VALUES(?,?,?,?)',
+      this.now(),
+      slot,
+      status,
       JSON.stringify(detail),
     );
   }
@@ -104,10 +163,18 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
             JSON.stringify(defaultPolicy),
             JSON.stringify(initialMonitorState()),
             1,
-            Date.now(),
+            this.now(),
           );
+          this.recordVersion(target, 1, defaultPolicy, 'recorded');
           this.event('service.created', target.id, { name: target.name });
-        } else if (existing.target !== JSON.stringify(target)) {
+        } else {
+          this.recordVersion(
+            JSON.parse(existing.target),
+            existing.revision,
+            JSON.parse(existing.policy),
+            'recovered-current',
+          );
+          if (existing.target === JSON.stringify(target)) continue;
           // Target edits are deployment changes; discard old in-flight results and reset streaks.
           const state: MonitorState = JSON.parse(existing.state);
           state.failures = state.successes = 0;
@@ -119,6 +186,12 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
             JSON.stringify(state),
             target.id,
           );
+          this.recordVersion(
+            target,
+            existing.revision + 1,
+            JSON.parse(existing.policy),
+            'recorded',
+          );
           this.event('service.target-updated', target.id, { revision: existing.revision + 1 });
         }
       }
@@ -127,9 +200,33 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
   }
   async fetch(request: Request): Promise<Response> {
     const targets = this.syncTargets();
+    const activeIds = targets.map((target) => target.id);
     const url = new URL(request.url);
     if (request.method === 'GET' && url.pathname === '/status')
       return reply(this.snapshot(targets, url.searchParams.get('window') === '7d' ? 10080 : 1440));
+    if (request.method === 'GET' && url.pathname === '/ready') {
+      const monitoring = this.readiness(targets);
+      return reply(
+        { ok: monitoring.status === 'healthy', monitoring },
+        monitoring.status === 'healthy' ? 200 : 503,
+      );
+    }
+    if (request.method === 'GET' && url.pathname.startsWith('/incidents/')) {
+      const raw = url.searchParams.get('before');
+      if (raw !== null && !/^\d+$/.test(raw))
+        return reply({ error: 'before must be a nonnegative integer slot' }, 400);
+      try {
+        const detail = this.evidence.detail(
+          url.pathname.slice('/incidents/'.length),
+          activeIds,
+          raw === null ? undefined : Number(raw),
+          request.headers.get('X-Operator-Authorized') === 'true',
+        );
+        return detail ? reply(detail) : reply({ error: 'Incident not found' }, 404);
+      } catch (error) {
+        return reply({ error: (error as Error).message }, 400);
+      }
+    }
     if (request.method === 'GET' && url.pathname === '/audit')
       return reply({
         events: this.rows('SELECT * FROM audit ORDER BY id DESC LIMIT 100').map((r) => ({
@@ -142,15 +239,18 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
     const body = (await request.json()) as Record<string, unknown>;
     if (url.pathname === '/tick') {
       const slot = body.slot;
-      if (
-        !Number.isInteger(slot) ||
-        Number(slot) > Math.floor(Date.now() / MINUTE) ||
-        Number(slot) < Math.floor(Date.now() / MINUTE) - 5
-      )
-        return reply({ error: 'Schedule outside accepted window' }, 400);
+      const timing = classifyTick(Number(slot), this.now());
+      if (typeof slot !== 'number' || timing.status === 'invalid')
+        return reply({ error: 'Schedule outside current minute' }, 400);
+      if (!timing.accepted) {
+        this.scheduleEvent(slot, 'skipped-late', { reason: timing.reason });
+        return reply({ slot, status: timing.status, results: [] });
+      }
+      this.scheduleEvent(slot, 'started', {});
       const results = await Promise.all(targets.map((target) => this.check(target, Number(slot))));
       this.ctx.storage.transactionSync(() => {
-        const cutoff = Date.now() - RETENTION;
+        this.scheduleEvent(slot, 'completed', { results });
+        const cutoff = this.now() - RETENTION;
         this.ctx.storage.sql.exec('DELETE FROM checks WHERE at < ?', cutoff);
         this.ctx.storage.sql.exec('DELETE FROM jobs WHERE slot < ?', Math.floor(cutoff / MINUTE));
         this.ctx.storage.sql.exec(
@@ -158,8 +258,17 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
           cutoff,
         );
         this.ctx.storage.sql.exec('DELETE FROM audit WHERE at < ?', cutoff);
+        this.ctx.storage.sql.exec('DELETE FROM scheduler_events WHERE at < ?', cutoff);
+        this.evidence.prune(cutoff);
+        this.ctx.storage.sql.exec(
+          'DELETE FROM service_versions WHERE NOT EXISTS(SELECT 1 FROM checks WHERE checks.service=service_versions.service AND checks.revision=service_versions.revision) AND NOT EXISTS(SELECT 1 FROM services WHERE services.id=service_versions.service AND services.revision=service_versions.revision)',
+        );
       });
       return reply({ slot, results });
+    }
+    if (url.pathname === '/incident-note') {
+      const result = this.evidence.addNote(body, activeIds);
+      return reply(result.data, result.status);
     }
     if (url.pathname === '/policy') {
       if (
@@ -185,6 +294,12 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
             JSON.stringify(state),
             service.id,
           );
+          this.recordVersion(
+            targets.find((target) => target.id === service.id)!,
+            service.revision + 1,
+            policy,
+            'recorded',
+          );
           this.event('policy.updated', service.id, {
             before: JSON.parse(service.policy),
             after: policy,
@@ -209,12 +324,13 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
           'SELECT * FROM incidents WHERE id=?',
           String(body.incident),
         )[0];
-        if (!incident) return reply({ error: 'Incident not found' }, 404);
+        if (!incident || !activeIds.includes(incident.service))
+          return reply({ error: 'Incident not found' }, 404);
         if (incident.resolved) return reply({ error: 'Incident has already recovered' }, 409);
         if (incident.acknowledged) return reply({ ok: true, alreadyAcknowledged: true });
         this.ctx.storage.sql.exec(
           'UPDATE incidents SET acknowledged=?,note=? WHERE id=?',
-          Date.now(),
+          this.now(),
           String(body.note).trim(),
           incident.id,
         );
@@ -228,6 +344,9 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
     return reply({ error: 'Not found' }, 404);
   }
   private async check(target: MonitorTarget, slot: number) {
+    const observedAt = this.now();
+    if (!classifyTick(slot, observedAt).accepted)
+      return { service: target.id, result: 'window-closed' };
     const claim = this.ctx.storage.transactionSync(() => {
       const service = this.rows<ServiceRow>('SELECT * FROM services WHERE id=?', target.id)[0];
       if (this.rows('SELECT slot FROM checks WHERE service=? AND slot=?', target.id, slot).length)
@@ -236,7 +355,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         this.rows(
           'SELECT slot FROM jobs WHERE service=? AND done=0 AND lease>?',
           target.id,
-          Date.now(),
+          observedAt,
         ).length
       )
         return null;
@@ -246,7 +365,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         target.id,
         slot,
         token,
-        Date.now() + 30000,
+        observedAt + 30000,
       );
       return { token, service, policy: JSON.parse(service.policy) as MonitorPolicy };
     });
@@ -273,14 +392,15 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         return { service: target.id, result: 'policy-changed' };
       }
       this.ctx.storage.sql.exec(
-        'INSERT INTO checks VALUES(?,?,?,?,?,?,?)',
+        'INSERT INTO checks(service,slot,at,outcome,status,latency,revision,observed_at) VALUES(?,?,?,?,?,?,?,?)',
         target.id,
         slot,
-        Date.now(),
+        this.now(),
         result.outcome,
         result.status,
         result.latencyMs,
         current.revision,
+        observedAt,
       );
       this.ctx.storage.sql.exec(
         'UPDATE jobs SET done=1 WHERE service=? AND slot=?',
@@ -302,7 +422,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
             'INSERT INTO incidents(id,service,opened) VALUES(?,?,?)',
             state.incidentId,
             target.id,
-            Date.now(),
+            this.now(),
           );
           this.event('incident.opened', target.id, {
             incident: state.incidentId,
@@ -311,7 +431,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         } else if (next.change === 'resolve') {
           this.ctx.storage.sql.exec(
             'UPDATE incidents SET resolved=? WHERE id=?',
-            Date.now(),
+            this.now(),
             state.incidentId,
           );
           this.event('incident.recovered', target.id, { incident: state.incidentId });
@@ -326,15 +446,40 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       return { service: target.id, result: result.outcome };
     });
   }
+  private readiness(targets: MonitorTarget[]) {
+    const started = this.rows<{ at: number }>(
+      "SELECT at FROM scheduler_events WHERE status='started' ORDER BY id DESC LIMIT 1",
+    )[0];
+    const completed = this.rows<{ at: number; slot: number }>(
+      "SELECT at,slot FROM scheduler_events WHERE status='completed' ORDER BY id DESC LIMIT 1",
+    )[0];
+    return monitoringReadiness({
+      now: this.now(),
+      lastStartedAt: started?.at ?? null,
+      lastCompletedAt: completed?.at ?? null,
+      lastSlot: completed?.slot ?? null,
+      services: targets.map((target) => {
+        const row = this.rows<ServiceRow>('SELECT * FROM services WHERE id=?', target.id)[0];
+        const latest = this.rows<{ observed_at: number | null; revision: number }>(
+          'SELECT observed_at,revision FROM checks WHERE service=? ORDER BY slot DESC LIMIT 1',
+          target.id,
+        )[0];
+        return {
+          paused: (JSON.parse(row.policy) as MonitorPolicy).paused,
+          lastObservedAt: latest?.revision === row.revision ? latest.observed_at : null,
+        };
+      }),
+    });
+  }
   private snapshot(targets: MonitorTarget[], minutes: number) {
-    const now = Date.now();
+    const now = this.now();
     const services = targets.map((target) => {
       const row = this.rows<ServiceRow>('SELECT * FROM services WHERE id=?', target.id)[0];
       const policy: MonitorPolicy = JSON.parse(row.policy);
       const state: MonitorState = JSON.parse(row.state);
       const latest =
         this.rows<CheckRow>(
-          'SELECT * FROM checks WHERE service=? ORDER BY slot DESC LIMIT 1',
+          'SELECT service,slot,at,outcome,status,latency,revision,observed_at AS observedAt FROM checks WHERE service=? ORDER BY slot DESC LIMIT 1',
           target.id,
         )[0] ?? null;
       const bounds = windowBounds(row.created, now, minutes);
@@ -343,15 +488,16 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         observed: number;
         good: number;
         maintenance: number;
+        unverified: number;
       }>(
-        "SELECT COUNT(*) total, COALESCE(SUM(outcome!='maintenance'),0) observed, COALESCE(SUM(outcome='good'),0) good, COALESCE(SUM(outcome='maintenance'),0) maintenance FROM checks WHERE service=? AND slot BETWEEN ? AND ?",
+        "SELECT COUNT(*) total, COALESCE(SUM(outcome!='maintenance' AND observed_at IS NOT NULL),0) observed, COALESCE(SUM(outcome='good' AND observed_at IS NOT NULL),0) good, COALESCE(SUM(outcome='maintenance' AND observed_at IS NOT NULL),0) maintenance, COALESCE(SUM(observed_at IS NULL),0) unverified FROM checks WHERE service=? AND slot BETWEEN ? AND ?",
         target.id,
         bounds.start,
         bounds.end,
       )[0];
       const p95 = stats.observed
         ? (this.rows<{ latency: number }>(
-            "SELECT latency FROM checks WHERE service=? AND slot BETWEEN ? AND ? AND outcome!='maintenance' ORDER BY latency LIMIT 1 OFFSET ?",
+            "SELECT latency FROM checks WHERE service=? AND slot BETWEEN ? AND ? AND outcome!='maintenance' AND observed_at IS NOT NULL ORDER BY latency LIMIT 1 OFFSET ?",
             target.id,
             bounds.start,
             bounds.end,
@@ -372,8 +518,10 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         status: policy.paused
           ? 'maintenance'
           : !latest ||
+              latest.observedAt === null ||
               latest.revision !== row.revision ||
-              latest.slot < Math.floor(now / MINUTE) - 2
+              now - latest.observedAt > 180000 ||
+              latest.observedAt > now
             ? 'unknown'
             : state.incidentId
               ? 'incident'
@@ -394,28 +542,29 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
           windowEnd: (bounds.end + 1) * MINUTE,
         },
         history: this.rows<CheckRow>(
-          'SELECT * FROM checks WHERE service=? ORDER BY slot DESC LIMIT 60',
+          'SELECT service,slot,at,outcome,status,latency,revision,observed_at AS observedAt FROM checks WHERE service=? ORDER BY slot DESC LIMIT 60',
           target.id,
         ),
         hourly: this.rows(
-          "SELECT CAST(slot/60 AS INTEGER)*3600000 AS at, COUNT(*) AS total, SUM(outcome='good') AS good, SUM(outcome='maintenance') AS maintenance FROM checks WHERE service=? AND slot BETWEEN ? AND ? GROUP BY CAST(slot/60 AS INTEGER) ORDER BY at",
+          "SELECT CAST(slot/60 AS INTEGER)*3600000 AS at, COUNT(*) AS total, SUM(outcome='good' AND observed_at IS NOT NULL) AS good, SUM(outcome='maintenance' AND observed_at IS NOT NULL) AS maintenance, SUM(observed_at IS NULL) AS unverified FROM checks WHERE service=? AND slot BETWEEN ? AND ? GROUP BY CAST(slot/60 AS INTEGER) ORDER BY at",
           target.id,
           bounds.start,
           bounds.end,
         ),
       };
     });
-    const active = new Set(targets.map((t) => t.id));
     return {
-      version: '3.0.0',
+      version: '3.1.0',
       now,
       window: minutes === 1440 ? '24h' : '7d',
       retentionDays: 30,
       cadenceSeconds: 60,
       services,
-      incidents: this.rows<IncidentRow>('SELECT * FROM incidents ORDER BY opened DESC LIMIT 100')
-        .filter((i) => active.has(i.service))
-        .map(({ note: _note, ...publicIncident }) => publicIncident),
+      monitoring: this.readiness(targets),
+      scheduler: this.rows(
+        'SELECT at,slot,status,detail FROM scheduler_events ORDER BY id DESC LIMIT 20',
+      ).map((event) => ({ ...event, detail: JSON.parse(String(event.detail)) })),
+      incidents: this.evidence.list(targets.map((target) => target.id)),
     };
   }
 }

@@ -6,7 +6,9 @@ EdgeLab separates a public read model, a single-owner control plane, an approved
 
 The operator token grants policy and incident-management access. It is a Cloudflare Worker secret, generated with 256 bits of randomness, sent to Wrangler over stdin, and retained locally in an ignored mode-600 file. The UI retains it only in memory. Authorization compares SHA-256 digests without data-dependent early exit. This is a single-owner token model, not user identity, organization RBAC, MFA, or an attribution system: audit entries mean the deployment credential was used.
 
-Public snapshots omit target URLs, notes, and audit details. React renders notes as text, never HTML. Operator requests carry a bearer token, require the correct browser Origin when present, and accept bounded JSON. Tokens are never query parameters. A known incident ID cannot grant write access. Repeated acknowledgements are idempotent; concurrent policy edits use revision checks.
+Public snapshots, incident evidence, and operations exports omit target URLs, investigation notes, acknowledgement notes, and private audit details. Policy-version evidence exposes policy, service name, transport, assertion, revision, and provenance, without the enrolled URL. React renders notes as text, never HTML. Operator requests carry a bearer token, require the correct browser Origin when present, and accept bounded JSON. Tokens are never query parameters. A known incident ID cannot grant write access. Repeated acknowledgements are idempotent; concurrent policy edits use revision checks.
+
+`GET /api/ops/incidents/<id>?before=<slot>` is public and returns at most 50 descending check records plus their policy context per page, only for active deployment targets. A valid bearer token adds private notes. An invalid supplied bearer token returns 401 instead of silently falling back to public output. `POST /api/ops/incident-note` requires authorization and a UUID v4 request ID. The same ID and payload return the existing note; conflicting reuse returns 409. Request IDs provide retry deduplication, not authorization. Notes are nonblank, bounded to 500 characters, and capped at 100 retained appended notes per incident; resolved incidents still permit follow-up investigation.
 
 ## Network boundary
 
@@ -14,12 +16,18 @@ Targets come only from trusted deployment configuration, at most five per deploy
 
 This is not a DNS-rebinding defense for arbitrary untrusted user URLs. The deployer must control and trust configured DNS and endpoints. Do not offer untrusted self-service enrollment without a separate egress and ownership-verification design. Requests to the private monitor DO's tick route are not exposed by the gateway.
 
+Timing is an evidence boundary. Only the current scheduled minute may start a probe; a late invocation produces a diagnostic event without backfilling observations. Actual start timestamps distinguish verified observations from legacy timing that cannot be reconstructed. Policy migration recovers only the current stored policy with `recovered-current` provenance, rather than inventing historical versions.
+
 ## Operational risks
 
 Public reads and lab sessions can consume quota. The adjustable laboratory bucket protects the experimental origin path, not the application's perimeter. A UUID lab capability is not user authentication. For private review deployments use Cloudflare Access; for broad anonymous use add issuance and perimeter rate controls. No external notification channel is configured, so a dashboard incident is not guaranteed to wake an operator.
 
 A leaked token must be rotated and private audit data reviewed. Notes should not contain credentials or personal information. Dependencies, logging, the Cloudflare account, deployer machine, and same-origin script integrity remain trusted. No compliance certification, independent penetration test, or disaster-recovery guarantee is claimed.
 
+`GET /api/ready` reports persisted scheduler and active-service freshness, with an inclusive three-minute limit; only healthy readiness returns 200. Paused services are ignored, and public reads cannot renew scheduler evidence. This read-only endpoint provides an independent observer with a useful signal but shares Cloudflare's failure domain. Readiness can be healthy while monitored services fail because it evaluates monitoring operation. Scheduler diagnostics expose only the latest 20 public events and have 30-day retention.
+
+Appended private notes are retained for 30 days and removed when their resolved incident is pruned. Open incidents persist, while their older appended notes still expire. The original acknowledgement note follows the incident record's retention. Authenticated incident output therefore requires private handling even after upstream recovery; public schemaVersion 4 exports do not include it.
+
 ## Tests
 
-The actual runtime suite checks unauthenticated writes and audit reads, cross-origin requests, malformed/oversized data, non-public schedule routes, and private-note exclusion. Unit tests exercise target validation, redirect rejection, bounded body consumption, and public error categorization. These tests verify specific controls; they do not imply comprehensive security certification.
+The actual runtime suite checks unauthenticated writes and audit reads, cross-origin requests, malformed/oversized data, non-public schedule routes, and private-note exclusion. Incident evidence checks cover authenticated detail, cursor bounds, idempotent note writes, conflicting request IDs, resolved follow-up, and retention. Unit tests exercise target validation, redirect rejection, bounded body consumption, public error categorization, current-minute acceptance, and freshness boundaries. These tests verify specific controls; they do not imply comprehensive security certification.

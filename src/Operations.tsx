@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import type { OperationsSnapshot } from '../worker/monitor';
 import type { MonitorPolicy } from '../worker/monitor-domain';
+import { IncidentWorkspace } from './IncidentWorkspace';
 import './operations.css';
 type Service = OperationsSnapshot['services'][number];
 type Incident = OperationsSnapshot['incidents'][number];
@@ -58,6 +59,7 @@ export function Operations() {
   const saving = useRef(false);
   const [editing, setEditing] = useState<Service | null>(null);
   const [acknowledging, setAcknowledging] = useState<Incident | null>(null);
+  const [investigating, setInvestigating] = useState<Incident | null>(null);
   const [note, setNote] = useState('');
   const latest = useRef(0);
   const mounted = useRef(true);
@@ -106,6 +108,7 @@ export function Operations() {
     const next = await request<Audit>('audit', key);
     setAudit(next);
   }
+  const monitoring = data?.monitoring;
   const open = data?.incidents.filter((i) => !i.resolved) ?? [];
   const service = data?.services.find((s) => s.id === selected) ?? data?.services[0];
   const missing = data?.services.reduce((sum, s) => sum + s.metrics.missing, 0) ?? 0;
@@ -151,6 +154,27 @@ export function Operations() {
           {notice}
         </div>
       )}
+      {monitoring && (
+        <div className={`ops-monitoring ${monitoring.status}`} role="status">
+          <div>
+            <strong>
+              {monitoring.status === 'healthy'
+                ? 'Monitoring is current'
+                : monitoring.status === 'starting'
+                  ? 'Waiting for the first scheduled run'
+                  : monitoring.status === 'partial'
+                    ? 'Some observations need attention'
+                    : 'Monitoring has stalled'}
+            </strong>
+            <p>{monitoring.reason} Dashboard refreshes do not renew monitoring evidence.</p>
+          </div>
+          {monitoring.lastCompletedAt !== null && (
+            <time dateTime={new Date(monitoring.lastCompletedAt).toISOString()}>
+              Last completed run {when(monitoring.lastCompletedAt)}
+            </time>
+          )}
+        </div>
+      )}
       <div className="ops-overview">
         <div>
           <span>MONITORED SERVICES</span>
@@ -167,7 +191,7 @@ export function Operations() {
         <div>
           <span>OBSERVED CHECKS</span>
           <strong>{data ? checks.toLocaleString() : '—'}</strong>
-          <small>Finished minutes · {windowSize}</small>
+          <small>Verified finished minutes · {windowSize}</small>
         </div>
         <div>
           <span>MISSING CHECKS</span>
@@ -269,7 +293,9 @@ export function Operations() {
                         <span>Last 60 minutes</span>
                         <span>
                           {s.latest
-                            ? `Last check ${new Date(s.latest.at).toLocaleTimeString()}`
+                            ? s.latest.observedAt === null
+                              ? 'Legacy timing unverified'
+                              : `Observed ${new Date(s.latest.observedAt).toLocaleTimeString()}`
                             : 'First check pending'}
                         </span>
                       </div>
@@ -314,13 +340,16 @@ export function Operations() {
                         <small>
                           {service.metrics.maintenance} maintenance · {service.metrics.missing}{' '}
                           missing
+                          {service.metrics.unverified > 0 &&
+                            ` · ${service.metrics.unverified} unverified legacy checks`}
                         </small>
                       </div>
                     </div>
                     {!service.metrics.observed && (
                       <p className="ops-empty compact">
-                        No completed-minute observations in this window yet. Reliability values
-                        appear after scheduled checks arrive.
+                        No verified completed-minute observations in this window yet. Reliability
+                        values appear after scheduled checks arrive. Legacy checks with unverified
+                        observation timing are excluded from the SLO.
                       </p>
                     )}
                     <div className="ops-chart-heading">
@@ -340,7 +369,7 @@ export function Operations() {
                         </span>
                         <span>
                           <i />
-                          Unknown
+                          Unknown / unverified
                         </span>
                       </div>
                     </div>
@@ -353,6 +382,7 @@ export function Operations() {
                         <thead>
                           <tr>
                             <th>Scheduled minute</th>
+                            <th>Observed at</th>
                             <th>Result</th>
                             <th>HTTP</th>
                             <th>Elapsed</th>
@@ -363,6 +393,11 @@ export function Operations() {
                           {service.history.slice(0, 10).map((c) => (
                             <tr key={c.slot}>
                               <td>{when(c.slot * 60000)}</td>
+                              <td>
+                                {c.observedAt === null
+                                  ? 'Legacy timing unavailable'
+                                  : when(c.observedAt)}
+                              </td>
                               <td>
                                 <span
                                   className={`check-label ${c.outcome === 'good' ? 'good' : c.outcome === 'maintenance' ? 'maintenance' : 'bad'}`}
@@ -432,23 +467,28 @@ export function Operations() {
                       {i.acknowledged && (
                         <p className="ops-muted">Acknowledged {when(i.acknowledged)}</p>
                       )}
-                      {!i.resolved &&
-                        !i.acknowledged &&
-                        (token ? (
-                          <button
-                            className="button"
-                            onClick={() => {
-                              setAcknowledging(i);
-                              setNote('');
-                            }}
-                          >
-                            Acknowledge incident
-                          </button>
-                        ) : (
-                          <p className="ops-muted">
-                            Operator authentication required to acknowledge.
-                          </p>
-                        ))}
+                      <div className="incident-actions">
+                        <button className="button" onClick={() => setInvestigating(i)}>
+                          Inspect incident evidence
+                        </button>
+                        {!i.resolved &&
+                          !i.acknowledged &&
+                          (token ? (
+                            <button
+                              className="button"
+                              onClick={() => {
+                                setAcknowledging(i);
+                                setNote('');
+                              }}
+                            >
+                              Acknowledge incident
+                            </button>
+                          ) : (
+                            <p className="ops-muted">
+                              Operator authentication required to acknowledge.
+                            </p>
+                          ))}
+                      </div>
                     </div>
                   </article>
                 ))}
@@ -477,7 +517,9 @@ export function Operations() {
                 <p>
                   The fraction of observed, non-maintenance checks that met their policy. Error
                   budget consumed is bad checks divided by the number allowed at the current
-                  objective. Historical checks keep their original policy evaluation.
+                  objective. Historical checks keep their original policy evaluation. Checks whose
+                  observation time predates verified timing are disclosed separately; delayed runs
+                  do not fill old minutes.
                 </p>
               </article>
               <article>
@@ -509,7 +551,7 @@ export function Operations() {
                 <p>
                   This is one observation point, not a global uptime SLA. One-minute sampling can
                   miss short outages. The monitor and services share a Cloudflare dependency. Check
-                  freshness becomes unknown after two missed minutes.
+                  freshness is shown separately from the time this dashboard was refreshed.
                 </p>
               </article>
             </div>
@@ -651,6 +693,17 @@ export function Operations() {
           Source & reproducible tests <ArrowUpRight size={14} />
         </a>
       </footer>
+      {investigating && (
+        <IncidentWorkspace
+          incidentId={investigating.id}
+          serviceName={
+            data?.services.find((item) => item.id === investigating.service)?.name ??
+            investigating.service
+          }
+          token={token}
+          close={() => setInvestigating(null)}
+        />
+      )}
       {editing && (
         <PolicyEditor
           key={`${editing.id}-${editing.revision}`}
@@ -720,7 +773,7 @@ function CheckStrip({ service, now }: { service: Service; now: number }) {
           <span
             key={slot}
             className={
-              !c
+              !c || c.observedAt === null
                 ? 'unknown'
                 : c.outcome === 'good'
                   ? 'good'
@@ -728,7 +781,7 @@ function CheckStrip({ service, now }: { service: Service; now: number }) {
                     ? 'maintenance'
                     : 'bad'
             }
-            title={`${new Date(slot * 60000).toLocaleTimeString()}: ${c?.outcome ?? 'no observation'}`}
+            title={`${new Date(slot * 60000).toLocaleTimeString()}: ${!c ? 'no observation' : c.observedAt === null ? `${c.outcome} · legacy timing unverified` : c.outcome}`}
           />
         );
       })}
@@ -744,14 +797,16 @@ function HourlyChart({ service }: { service: Service }) {
     <div
       className="hourly-chart"
       role="img"
-      aria-label="Hourly good, bad, maintenance, and missing observations"
+      aria-label="Hourly verified good, bad, maintenance, and unknown or unverified observations"
     >
       {Array.from({ length: count }, (_, i) => {
         const at = start + i * 3600000;
         const h = buckets.get(at);
         const good = Number(h?.good ?? 0),
           total = Number(h?.total ?? 0),
-          maintenance = Number(h?.maintenance ?? 0);
+          maintenance = Number(h?.maintenance ?? 0),
+          unverified = Number(h?.unverified ?? 0),
+          bad = Math.max(0, total - good - maintenance - unverified);
         const expected = Math.max(
           1,
           (Math.min(at + 3600000, end) - Math.max(at, service.metrics.windowStart)) / 60000,
@@ -760,13 +815,10 @@ function HourlyChart({ service }: { service: Service }) {
           <div
             className="hour-column"
             key={at}
-            title={`${when(at)}: ${good} good, ${total - good - maintenance} bad, ${maintenance} maintenance, ${Math.max(0, expected - total)} missing`}
+            title={`${when(at)}: ${good} good, ${bad} bad, ${maintenance} maintenance, ${unverified} unverified, ${Math.max(0, expected - total)} missing`}
           >
             <span className="good" style={{ height: `${(100 * good) / expected}%` }} />
-            <span
-              className="bad"
-              style={{ height: `${(100 * (total - good - maintenance)) / expected}%` }}
-            />
+            <span className="bad" style={{ height: `${(100 * bad) / expected}%` }} />
             <span
               className="maintenance"
               style={{ height: `${(100 * maintenance) / expected}%` }}

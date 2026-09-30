@@ -8,7 +8,7 @@ const get = async (path, headers = {}) => {
   return { response: r, data: await r.json() };
 };
 const health = await get('/api/health');
-assert.equal(health.data.version, '3.0.0');
+assert.equal(health.data.version, '3.1.0');
 assert.equal((await get('/api/ops/audit')).response.status, 401);
 assert.equal(
   (await get('/api/ops/audit', { Authorization: `Bearer ${token}` })).response.status,
@@ -34,7 +34,14 @@ while (Date.now() - started < 16 * 60_000) {
     outcome: s.latest?.outcome ?? null,
     uniqueRecentSlots: [
       ...new Set(
-        s.history.filter((c) => c.at >= started && c.outcome === 'good').map((c) => c.slot),
+        s.history
+          .filter(
+            (c) =>
+              c.observedAt >= started &&
+              c.outcome === 'good' &&
+              Math.floor(c.observedAt / 60000) === c.slot,
+          )
+          .map((c) => c.slot),
       ),
     ],
   }));
@@ -44,6 +51,11 @@ while (Date.now() - started < 16 * 60_000) {
     previous = progress;
   }
   if (observed.every((s) => s.uniqueRecentSlots.length >= 2)) {
+    const ready = await get('/api/ready');
+    assert.equal(ready.response.status, 200);
+    assert.equal(ready.data.monitoring.status, 'healthy');
+    const exported = await get('/api/ops/export');
+    assert.equal(exported.data.schemaVersion, 4);
     await mkdir('docs/evidence', { recursive: true });
     await writeFile(
       'docs/evidence/live-monitoring.json',
@@ -53,7 +65,7 @@ while (Date.now() - started < 16 * 60_000) {
           startedAt: new Date(started).toISOString(),
           baseUrl: base,
           verification:
-            'Two distinct new good scheduled minutes for each service after verification began. No manual tick endpoint was invoked. Operator audit authentication and public privacy boundaries checked.',
+            'Two distinct new good scheduled minutes for each service after verification began, each actual observation start matching its UTC minute. No manual tick endpoint was invoked. Readiness healthy, schema4 export, operator audit authentication, and public privacy boundaries checked.',
           health: health.data,
           snapshot: data,
         },

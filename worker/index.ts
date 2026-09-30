@@ -232,22 +232,36 @@ export default {
         ok: true,
         colo: colo(request),
         platform: 'Cloudflare Workers + Durable Objects',
-        version: '3.0.0',
+        version: '3.1.0',
         origin: 'service-binding',
       });
+    if (url.pathname === '/api/ready') {
+      if (request.method !== 'GET')
+        return json({ error: 'Method not allowed' }, 405, { Allow: 'GET' });
+      return env.MONITORS.get(env.MONITORS.idFromName('operations')).fetch(
+        'https://monitor.internal/ready',
+      );
+    }
     if (url.pathname.startsWith('/api/ops/')) {
       const origin = request.headers.get('Origin');
       if (origin && origin !== url.origin)
         return json({ error: 'Cross-origin requests are not allowed' }, 403);
       const action = url.pathname.slice('/api/ops/'.length);
-      const method = ['status', 'audit', 'export'].includes(action) ? 'GET' : 'POST';
-      if (!['status', 'audit', 'export', 'policy', 'acknowledge'].includes(action))
+      const incidentDetail = /^incidents\/[0-9a-f-]{36}$/i.test(action);
+      const method =
+        ['status', 'audit', 'export'].includes(action) || incidentDetail ? 'GET' : 'POST';
+      if (
+        !['status', 'audit', 'export', 'policy', 'acknowledge', 'incident-note'].includes(action) &&
+        !incidentDetail
+      )
         return json({ error: 'Not found' }, 404);
       if (request.method !== method)
         return json({ error: 'Method not allowed' }, 405, { Allow: method });
+      const authorized = await operatorAuthorized(request, env.OPERATOR_TOKEN);
       if (
-        !['status', 'export'].includes(action) &&
-        !(await operatorAuthorized(request, env.OPERATOR_TOKEN))
+        ((!['status', 'export'].includes(action) && !incidentDetail) ||
+          (incidentDetail && request.headers.has('Authorization'))) &&
+        !authorized
       )
         return json({ error: 'Operator token required' }, 401, { 'WWW-Authenticate': 'Bearer' });
       let body: string | undefined;
@@ -271,21 +285,28 @@ export default {
           return json({ error: 'JSON object required' }, 400);
       }
       const stub = env.MONITORS.get(env.MONITORS.idFromName('operations'));
+      const internal = new URL(
+        `https://monitor.internal/${action === 'export' ? 'status' : action}`,
+      );
+      internal.searchParams.set('window', url.searchParams.get('window') === '7d' ? '7d' : '24h');
+      if (incidentDetail && url.searchParams.has('before'))
+        internal.searchParams.set('before', url.searchParams.get('before')!);
       const response = await stub.fetch(
-        new Request(
-          `https://monitor.internal/${action === 'export' ? 'status' : action}?window=${url.searchParams.get('window') === '7d' ? '7d' : '24h'}`,
-          { method, body },
-        ),
+        new Request(internal, {
+          method,
+          body,
+          headers: authorized ? { 'X-Operator-Authorized': 'true' } : {},
+        }),
       );
       if (action === 'export' && response.ok) {
         const snapshot = (await response.json()) as object;
         return new Response(
           JSON.stringify(
             {
-              schemaVersion: 3,
+              schemaVersion: 4,
               exportedAt: new Date().toISOString(),
               measurement:
-                'One scheduled observation per minute from the coordinator. Finished UTC minutes only. Gaps are unknown; maintenance is excluded; good checks meet the policy active when observed. Not global uptime.',
+                'One sampled observation per current UTC minute. Late schedules are skipped, never backfilled. Finished minutes only. Legacy checks without an observation start timestamp are excluded from verified metrics. Gaps are unknown; maintenance is excluded; good checks meet the policy active when observed. Not global uptime.',
               ...snapshot,
             },
             null,

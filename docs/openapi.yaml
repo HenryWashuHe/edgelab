@@ -1,11 +1,11 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.0.0
+  version: 3.1.0
   description: |
     Public monitoring read model and single-owner operator control plane.
     Laboratory endpoints are documented in LAB.md. No public probe or target-enrollment endpoint exists.
-    All responses disable caching. Browser Origins must match the API origin.
+    All responses disable caching. Operations API browser Origins must match the API origin.
 servers:
   - url: https://edgelab-reliability.edgelab-henrywashuhe.workers.dev
   - url: http://localhost:8787
@@ -27,6 +27,25 @@ paths:
                   colo: { type: string }
                   platform: { type: string }
                   origin: { type: string }
+  /api/ready:
+    get:
+      summary: Read-only readiness of autonomous monitoring
+      description: |
+        Ages persisted scheduler and current-revision service observations without renewing them.
+        Returns 200 only when monitoring is healthy. Service probe outcomes do not determine
+        readiness; an observed upstream failure can still prove that monitoring is running.
+      responses:
+        '200':
+          description: Scheduler and expected active-service observations are fresh
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReadinessResponse' }
+        '503':
+          description: Monitoring is starting, partially observed, or stalled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReadinessResponse' }
+        '405': { $ref: '#/components/responses/Error' }
   /api/ops/status:
     get:
       summary: Public observations, metrics, and incident timeline
@@ -40,23 +59,7 @@ paths:
           description: Public snapshot; excludes target URLs, notes, and credentials
           content:
             application/json:
-              schema:
-                type: object
-                required: [version, now, window, retentionDays, cadenceSeconds, services, incidents]
-                properties:
-                  version: { type: string }
-                  now: { type: integer, description: Unix milliseconds }
-                  window: { type: string, enum: [24h, 7d] }
-                  retentionDays: { type: integer, const: 30 }
-                  cadenceSeconds: { type: integer, const: 60 }
-                  services:
-                    type: array
-                    maxItems: 5
-                    items: { $ref: '#/components/schemas/Service' }
-                  incidents:
-                    type: array
-                    maxItems: 100
-                    items: { $ref: '#/components/schemas/Incident' }
+              schema: { $ref: '#/components/schemas/StatusSnapshot' }
         '403': { $ref: '#/components/responses/Error' }
         '405': { $ref: '#/components/responses/Error' }
   /api/ops/export:
@@ -75,9 +78,97 @@ paths:
               description: Attachment named edgelab-operations.json
           content:
             application/json:
-              schema: { type: object }
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StatusSnapshot'
+                  - type: object
+                    required: [schemaVersion, exportedAt, measurement]
+                    properties:
+                      schemaVersion: { type: integer, const: 4 }
+                      exportedAt: { type: string, format: date-time }
+                      measurement: { type: string }
         '403': { $ref: '#/components/responses/Error' }
         '405': { $ref: '#/components/responses/Error' }
+  /api/ops/incidents/{incidentId}:
+    get:
+      summary: Investigate incident observations, policy versions, and lifecycle
+      description: |
+        Anonymous requests receive public evidence. A valid bearer credential additionally
+        includes progress notes and the acknowledgement note; those fields are absent from
+        anonymous responses. A supplied invalid credential returns 401.
+        Returns at most 50 checks in descending slot order. Pass nextCursor as before to seek
+        the next page; the bound is exclusive and new recent observations do not shift older pages.
+        Evidence covers ten minutes before detection through one minute after recovery, or the
+        current minute for an open incident. Checks and progress notes retain at most 30 days.
+        Missing historical policy versions are omitted, never reconstructed from the current policy.
+      security: [{}, { operatorToken: [] }]
+      parameters:
+        - in: path
+          name: incidentId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: before
+          schema: { type: integer, minimum: 0, maximum: 9007199254740991 }
+          description: Exclusive Unix-minute cursor. Omit for the newest evidence page.
+      responses:
+        '200':
+          description: Public incident evidence with private fields only for an authenticated operator
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IncidentDetail' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '405': { $ref: '#/components/responses/Error' }
+  /api/ops/incident-note:
+    post:
+      summary: Add a private progress note or postmortem to an active-target incident
+      description: |
+        Accepts open or resolved incidents belonging to a configured service. At most 100 retained
+        progress notes are allowed per incident. A UUID v4 requestId identifies a retry: submitting
+        the same incident and note returns the original note without a second audit event, including
+        when the note limit has been reached. Reusing the requestId with changed content returns 409.
+        Notes do not acknowledge or resolve an incident. Note text must contain a non-whitespace
+        character and must be at most 500 UTF-16 code units. Bodies are limited to 4096 bytes.
+      security: [{ operatorToken: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [incident, requestId, note]
+              properties:
+                incident: { type: string, format: uuid }
+                requestId:
+                  type: string
+                  format: uuid
+                  pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+                note: { type: string, minLength: 1, maxLength: 500, pattern: '\S' }
+      responses:
+        '201':
+          description: New private note and one audit event recorded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IncidentNoteResponse' }
+        '200':
+          description: Idempotent retry; original note returned with alreadyRecorded true
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IncidentNoteResponse' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '405': { $ref: '#/components/responses/Error' }
+        '409':
+          description: requestId reused for a different payload, or incident already has 100 retained notes
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '413': { $ref: '#/components/responses/Error' }
   /api/ops/audit:
     get:
       summary: Latest 100 audit records and private incident notes
@@ -191,16 +282,76 @@ components:
     Error:
       description: |
         400 validation; 401 absent/invalid credential; 403 Origin mismatch;
-        404 missing route/incident; 405 method with Allow header; 409 revision/resolved conflict;
+        404 missing route/incident or removed service; 405 method with Allow header;
+        409 revision/resolved conflict, changed note retry, or note limit;
         413 request body over 4096 bytes.
       content:
         application/json:
-          schema:
-            type: object
-            required: [error]
-            properties:
-              error: { type: string }
+          schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+    MonitoringReadiness:
+      type: object
+      required: [status, lastStartedAt, lastCompletedAt, lastSlot, ageMs, reason]
+      properties:
+        status: { type: string, enum: [starting, healthy, partial, stalled] }
+        lastStartedAt: { type: [integer, 'null'], description: Scheduler start Unix milliseconds }
+        lastCompletedAt:
+          { type: [integer, 'null'], description: Scheduler completion Unix milliseconds }
+        lastSlot: { type: [integer, 'null'], description: Last completed Unix minute number }
+        ageMs: { type: [integer, 'null'], minimum: 0 }
+        reason: { type: string }
+    ReadinessResponse:
+      type: object
+      required: [ok, monitoring]
+      properties:
+        ok: { type: boolean }
+        monitoring: { $ref: '#/components/schemas/MonitoringReadiness' }
+    StatusSnapshot:
+      type: object
+      required:
+        [
+          version,
+          now,
+          window,
+          retentionDays,
+          cadenceSeconds,
+          services,
+          incidents,
+          monitoring,
+          scheduler,
+        ]
+      properties:
+        version: { type: string }
+        now: { type: integer, description: Unix milliseconds }
+        window: { type: string, enum: [24h, 7d] }
+        retentionDays: { type: integer, const: 30 }
+        cadenceSeconds: { type: integer, const: 60 }
+        services:
+          type: array
+          maxItems: 5
+          items: { $ref: '#/components/schemas/Service' }
+        incidents:
+          type: array
+          maxItems: 105
+          description: All active open incidents, followed by the newest 100 active resolved incidents.
+          items: { $ref: '#/components/schemas/Incident' }
+        monitoring: { $ref: '#/components/schemas/MonitoringReadiness' }
+        scheduler:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            required: [at, slot, status, detail]
+            properties:
+              at: { type: integer, description: Unix milliseconds }
+              slot: { type: integer }
+              status: { type: string, enum: [started, completed, skipped-late] }
+              detail: { type: object }
     PolicyPatch:
       type: object
       additionalProperties: false
@@ -210,22 +361,22 @@ components:
         timeoutMs: { type: integer, minimum: 100, maximum: 10000 }
         latencyObjectiveMs: { type: integer, minimum: 50, maximum: 10000 }
         availabilityTarget:
-          {
-            type: number,
-            minimum: 90,
-            maximum: 99.99,
-            description: Good-check objective,
-            including validity and latency,
-          }
+          type: number
+          minimum: 90
+          maximum: 99.99
+          description: Good-check objective, including validity and latency.
         failureThreshold: { type: integer, minimum: 1, maximum: 10 }
         recoveryThreshold: { type: integer, minimum: 1, maximum: 10 }
     Check:
       type: object
-      required: [service, slot, at, outcome, status, latency, revision]
+      required: [service, slot, at, outcome, status, latency, revision, observedAt]
       properties:
         service: { type: string }
         slot: { type: integer, description: Unix minute number }
         at: { type: integer, description: Completion Unix milliseconds }
+        observedAt:
+          type: [integer, 'null']
+          description: Observation start Unix milliseconds. Null for legacy checks whose timing cannot be verified.
         outcome:
           {
             type: string,
@@ -243,6 +394,81 @@ components:
         opened: { type: integer, description: Detection Unix milliseconds }
         resolved: { type: [integer, 'null'] }
         acknowledged: { type: [integer, 'null'] }
+    IncidentPolicyVersion:
+      type: object
+      required: [service, revision, recordedAt, name, transport, assertion, policy, provenance]
+      properties:
+        service: { type: string }
+        revision: { type: integer }
+        recordedAt: { type: integer, description: Version capture Unix milliseconds }
+        name: { type: string }
+        transport: { type: string, enum: [origin, https] }
+        assertion: { type: string, enum: [ok-json, catalog-json] }
+        policy: { $ref: '#/components/schemas/PolicyPatch' }
+        provenance:
+          type: string
+          enum: [recorded, recovered-current]
+          description: recorded captures a creation/change; recovered-current captures the current policy during upgrade and does not establish its historical capture time.
+    IncidentNote:
+      type: object
+      required: [id, at, note]
+      properties:
+        id: { type: string, format: uuid }
+        at: { type: integer, description: Note creation Unix milliseconds }
+        note: { type: string, minLength: 1, maxLength: 500 }
+    IncidentNoteResponse:
+      type: object
+      required: [ok, note]
+      properties:
+        ok: { type: boolean, const: true }
+        note: { $ref: '#/components/schemas/IncidentNote' }
+        alreadyRecorded: { type: boolean, const: true }
+    IncidentDetail:
+      type: object
+      required: [incident, checks, nextCursor, versions, range, lifecycle]
+      properties:
+        incident: { $ref: '#/components/schemas/Incident' }
+        checks:
+          type: array
+          maxItems: 50
+          items: { $ref: '#/components/schemas/Check' }
+        nextCursor:
+          type: [integer, 'null']
+          minimum: 0
+          description: Exclusive before cursor for the next older page, or null at the end.
+        versions:
+          type: array
+          description: Immutable versions for revisions on this page; unavailable revisions are omitted.
+          items: { $ref: '#/components/schemas/IncidentPolicyVersion' }
+        range:
+          type: object
+          required: [fromSlot, toSlot, retentionStart, limitedByRetention]
+          properties:
+            fromSlot:
+              { type: integer, description: Inclusive earliest retained incident evidence minute }
+            toSlot: { type: integer, description: Inclusive incident evidence end minute }
+            retentionStart: { type: integer, description: Retention boundary Unix milliseconds }
+            limitedByRetention: { type: boolean }
+        lifecycle:
+          type: array
+          maxItems: 3
+          items:
+            type: object
+            required: [action, at]
+            properties:
+              action:
+                type: string
+                enum: [incident.opened, incident.acknowledged, incident.recovered]
+              at: { type: integer, description: Event Unix milliseconds }
+        notes:
+          type: array
+          maxItems: 100
+          description: Private progress/postmortem notes; present only with a valid operator credential.
+          items: { $ref: '#/components/schemas/IncidentNote' }
+        acknowledgementNote:
+          type: string
+          maxLength: 500
+          description: Private original acknowledgement note; present only with a valid operator credential.
     Service:
       type: object
       required:
@@ -283,12 +509,13 @@ components:
             incidentId: { type: [string, 'null'] }
         metrics:
           type: object
-          description: Finished minutes only; null ratios when denominators are zero. Budget uses current target, outcomes use original policy.
+          description: Finished minutes only; legacy checks without observedAt are unverified and excluded from observed/good/maintenance/P95. Null ratios when denominators are zero. Budget uses current target; outcomes use original policy.
           properties:
             total: { type: integer }
             observed: { type: integer }
             good: { type: integer }
             maintenance: { type: integer }
+            unverified: { type: integer }
             expected: { type: integer }
             missing: { type: integer }
             coverage: { type: [number, 'null'] }
@@ -310,3 +537,4 @@ components:
               total: { type: integer }
               good: { type: integer }
               maintenance: { type: integer }
+              unverified: { type: integer }

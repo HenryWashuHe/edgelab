@@ -1,5 +1,15 @@
 import assert from 'node:assert/strict';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
+import { build } from 'esbuild';
+await build({
+  entryPoints: ['tests/fixtures/monitor-clock.ts'],
+  outfile: 'output/clock-worker/index.js',
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'esnext',
+  external: ['cloudflare:workers'],
+});
 const token = 'test-operator-token-not-a-production-credential';
 let unhealthy = true,
   delay = 0,
@@ -21,7 +31,7 @@ const mf = new Miniflare(
       {
         name: 'gateway',
         modules: true,
-        scriptPath: 'output/worker/index.js',
+        scriptPath: 'output/clock-worker/index.js',
         compatibilityDate: '2026-09-01',
         durableObjects: {
           LABS: { className: 'ReliabilityLab', useSQLite: true },
@@ -57,7 +67,15 @@ const publicCall = async (path, body, auth = true, headers = {}) => {
 try {
   const ns = await mf.getDurableObjectNamespace('MONITORS', 'gateway');
   const stub = ns.get(ns.idFromName('operations'));
-  const tick = async (slot) => {
+  const setClock = async (now) => {
+    const r = await stub.fetch('https://monitor.internal/test-clock', {
+      method: 'POST',
+      body: JSON.stringify({ now }),
+    });
+    assert.equal(r.status, 200);
+  };
+  const tick = async (slot, advance = true) => {
+    if (advance) await setClock(slot * 60000 + 1000);
     const r = await stub.fetch('https://monitor.internal/tick', {
       method: 'POST',
       body: JSON.stringify({ slot }),
@@ -73,10 +91,11 @@ try {
   assert.equal(exported.status, 200);
   assert.match(exported.headers.get('Content-Disposition'), /attachment/);
   const report = await exported.json();
-  assert.equal(report.schemaVersion, 3);
+  assert.equal(report.schemaVersion, 4);
   assert.equal(report.window, '7d');
   assert(!JSON.stringify(report).includes('origin.internal'));
   const base = Math.floor(Date.now() / 60000) - 5;
+  await setClock(base * 60000 + 1000);
   await storage.exec('UPDATE services SET created=?', (base - 10) * 60000);
   assert.equal(
     (
@@ -119,6 +138,19 @@ try {
   assert.equal(wrongMethod.headers.get('Allow'), 'GET');
   assert(!JSON.stringify((await publicCall('status')).data).includes('origin.internal'));
   console.log('PASS auth, origin boundary, body validation, and private scheduler route');
+  const starting = await mf.dispatchFetch('https://edgelab.example/api/ready');
+  assert.equal(starting.status, 503);
+  assert.equal((await starting.json()).monitoring.status, 'starting');
+  const late = await tick(base - 1, false);
+  assert.equal(late.status, 'skipped-late');
+  assert.equal(calls, 0);
+  assert.equal((await storage.exec('SELECT * FROM checks')).length, 0);
+  const future = await stub.fetch('https://monitor.internal/tick', {
+    method: 'POST',
+    body: JSON.stringify({ slot: base + 1 }),
+  });
+  assert.equal(future.status, 400);
+  console.log('PASS late schedules remain gaps and future schedules cannot probe');
   await tick(base);
   await tick(base + 1);
   const results = await Promise.all(Array.from({ length: 12 }, () => tick(base + 2)));
@@ -126,8 +158,8 @@ try {
   let snapshot = (await publicCall('status')).data;
   assert.equal(snapshot.incidents.length, 1);
   assert.equal(snapshot.services[0].state.failures, 3);
-  assert.equal(snapshot.services[0].metrics.observed, 3);
   assert.equal(snapshot.services[0].metrics.goodRatio, 0);
+  assert.equal(snapshot.services[0].metrics.observed, 2); // current minute still unfinished
   assert(snapshot.services[0].metrics.missing > 0);
   assert(snapshot.services[0].metrics.coverage < 100);
   assert.equal(results.filter((r) => r.results[0].result === 'http-error').length, 1);
@@ -200,7 +232,7 @@ try {
   assert.equal((await tick(base + 5)).results[0].result, 'duplicate-or-busy');
   await storage.exec(
     'UPDATE jobs SET lease=? WHERE service=? AND slot=?',
-    Date.now() - 1,
+    (base + 5) * 60000,
     'catalog',
     base + 5,
   );
@@ -239,7 +271,7 @@ try {
   console.log('PASS replaced lease token fences a real in-flight completion');
   const old = Date.now() - 31 * 86400000;
   await storage.exec(
-    'INSERT INTO checks VALUES(?,?,?,?,?,?,?)',
+    'INSERT INTO checks(service,slot,at,outcome,status,latency,revision) VALUES(?,?,?,?,?,?,?)',
     'catalog',
     Math.floor(old / 60000),
     old,
@@ -265,7 +297,17 @@ try {
     0,
   );
   const worker = await mf.getWorker('gateway');
-  await worker.scheduled({ scheduledTime: Date.now(), cron: '* * * * *' });
+  await worker.scheduled({ scheduledTime: (base + 5) * 60000, cron: '* * * * *' });
+  let ready = await mf.dispatchFetch('https://edgelab.example/api/ready');
+  assert.equal(ready.status, 200);
+  await setClock((base + 5) * 60000 + 181001);
+  ready = await mf.dispatchFetch('https://edgelab.example/api/ready');
+  assert.equal(ready.status, 503);
+  assert.equal((await ready.json()).monitoring.status, 'stalled');
+  await publicCall('status');
+  ready = await mf.dispatchFetch('https://edgelab.example/api/ready');
+  assert.equal(ready.status, 503);
+  console.log('PASS readiness fails on stale cron and dashboard reads do not renew evidence');
   console.log('PASS retention cleanup and actual scheduled handler invocation');
 } finally {
   await mf.dispose();

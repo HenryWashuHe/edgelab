@@ -1,18 +1,18 @@
 {
-  "verifiedAt": "2026-09-29T02:31:23.217Z",
-  "startedAt": "2026-09-29T02:27:42.512Z",
+  "verifiedAt": "2026-09-30T03:34:15.062Z",
+  "startedAt": "2026-09-30T03:32:54.734Z",
   "baseUrl": "https://edgelab-reliability.edgelab-henrywashuhe.workers.dev",
-  "verification": "Two distinct new good scheduled minutes for each service after verification began. No manual tick endpoint was invoked. Operator audit authentication and public privacy boundaries checked.",
+  "verification": "Two distinct new good scheduled minutes for each service after verification began, each actual observation start matching its UTC minute. No manual tick endpoint was invoked. Readiness healthy, schema4 export, operator audit authentication, and public privacy boundaries checked.",
   "health": {
     "ok": true,
     "colo": "EWR",
     "platform": "Cloudflare Workers + Durable Objects",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "origin": "service-binding"
   },
   "snapshot": {
-    "version": "3.0.0",
-    "now": 1790649083217,
+    "version": "3.1.0",
+    "now": 1790739254980,
     "window": "24h",
     "retentionDays": 30,
     "cadenceSeconds": 60,
@@ -34,60 +34,813 @@
         },
         "latest": {
           "service": "catalog",
-          "slot": 29844151,
-          "at": 1790649065315,
+          "slot": 29845654,
+          "at": 1790739240398,
           "outcome": "good",
           "status": 200,
-          "latency": 20,
-          "revision": 1
+          "latency": 22,
+          "revision": 1,
+          "observedAt": 1790739240376
         },
         "status": "healthy",
         "state": {
           "failures": 0,
           "successes": 2,
-          "lastSlot": 29844151,
+          "lastSlot": 29845654,
           "incidentId": null
         },
         "metrics": {
-          "total": 1,
+          "total": 1440,
           "observed": 1,
           "good": 1,
           "maintenance": 0,
-          "expected": 3,
-          "missing": 2,
-          "coverage": 33.333333333333336,
+          "unverified": 1439,
+          "expected": 1440,
+          "missing": 0,
+          "coverage": 0.06944444444444445,
           "goodRatio": 100,
-          "p95Ms": 29,
+          "p95Ms": 9,
           "budgetConsumed": 0,
-          "windowStart": 1790648880000,
-          "windowEnd": 1790649060000
+          "windowStart": 1790652840000,
+          "windowEnd": 1790739240000
         },
         "history": [
           {
             "service": "catalog",
-            "slot": 29844151,
-            "at": 1790649065315,
+            "slot": 29845654,
+            "at": 1790739240398,
             "outcome": "good",
             "status": 200,
-            "latency": 20,
-            "revision": 1
+            "latency": 22,
+            "revision": 1,
+            "observedAt": 1790739240376
           },
           {
             "service": "catalog",
-            "slot": 29844150,
-            "at": 1790649000617,
+            "slot": 29845653,
+            "at": 1790739180412,
             "outcome": "good",
             "status": 200,
-            "latency": 29,
-            "revision": 1
+            "latency": 9,
+            "revision": 1,
+            "observedAt": 1790739180403
+          },
+          {
+            "service": "catalog",
+            "slot": 29845652,
+            "at": 1790739120391,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845651,
+            "at": 1790739065800,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845650,
+            "at": 1790739000399,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845649,
+            "at": 1790738940400,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845648,
+            "at": 1790738880401,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845647,
+            "at": 1790738820391,
+            "outcome": "good",
+            "status": 200,
+            "latency": 8,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845646,
+            "at": 1790738760394,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845645,
+            "at": 1790738700401,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845644,
+            "at": 1790738640395,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845643,
+            "at": 1790738580397,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845642,
+            "at": 1790738520393,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845641,
+            "at": 1790738460393,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845640,
+            "at": 1790738400392,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845639,
+            "at": 1790738340399,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845638,
+            "at": 1790738280390,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845637,
+            "at": 1790738220396,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845636,
+            "at": 1790738160392,
+            "outcome": "good",
+            "status": 200,
+            "latency": 11,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845635,
+            "at": 1790738100396,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845634,
+            "at": 1790738040396,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845633,
+            "at": 1790737980398,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845632,
+            "at": 1790737920394,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845631,
+            "at": 1790737860588,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845630,
+            "at": 1790737800391,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845629,
+            "at": 1790737740486,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845628,
+            "at": 1790737680391,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845627,
+            "at": 1790737620395,
+            "outcome": "good",
+            "status": 200,
+            "latency": 11,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845626,
+            "at": 1790737560392,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845625,
+            "at": 1790737500390,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845624,
+            "at": 1790737440392,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845623,
+            "at": 1790737380392,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845622,
+            "at": 1790737320389,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845621,
+            "at": 1790737268598,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845620,
+            "at": 1790737200393,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845619,
+            "at": 1790737140403,
+            "outcome": "good",
+            "status": 200,
+            "latency": 21,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845618,
+            "at": 1790737080403,
+            "outcome": "good",
+            "status": 200,
+            "latency": 18,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845617,
+            "at": 1790737020393,
+            "outcome": "good",
+            "status": 200,
+            "latency": 12,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845616,
+            "at": 1790736960397,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845615,
+            "at": 1790736900399,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845614,
+            "at": 1790736840392,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845613,
+            "at": 1790736780396,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845612,
+            "at": 1790736720389,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845611,
+            "at": 1790736660402,
+            "outcome": "good",
+            "status": 200,
+            "latency": 11,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845610,
+            "at": 1790736600393,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845609,
+            "at": 1790736540397,
+            "outcome": "good",
+            "status": 200,
+            "latency": 11,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845608,
+            "at": 1790736480388,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845607,
+            "at": 1790736420392,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845606,
+            "at": 1790736360392,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845605,
+            "at": 1790736300400,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845604,
+            "at": 1790736240389,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845603,
+            "at": 1790736180392,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845602,
+            "at": 1790736120397,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845601,
+            "at": 1790736060402,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845600,
+            "at": 1790736000398,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845599,
+            "at": 1790735940397,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845598,
+            "at": 1790735880397,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845597,
+            "at": 1790735820397,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845596,
+            "at": 1790735760390,
+            "outcome": "good",
+            "status": 200,
+            "latency": 9,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "catalog",
+            "slot": 29845595,
+            "at": 1790735700393,
+            "outcome": "good",
+            "status": 200,
+            "latency": 10,
+            "revision": 1,
+            "observedAt": null
           }
         ],
         "hourly": [
           {
-            "at": 1790647200000,
-            "total": 1,
+            "at": 1790650800000,
+            "total": 26,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 26
+          },
+          {
+            "at": 1790654400000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790658000000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790661600000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790665200000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790668800000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790672400000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790676000000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790679600000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790683200000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790686800000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790690400000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790694000000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790697600000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790701200000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790704800000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790708400000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790712000000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790715600000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790719200000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790722800000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790726400000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790730000000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790733600000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790737200000,
+            "total": 34,
             "good": 1,
-            "maintenance": 0
+            "maintenance": 0,
+            "unverified": 33
           }
         ]
       },
@@ -108,62 +861,871 @@
         },
         "latest": {
           "service": "gateway",
-          "slot": 29844151,
-          "at": 1790649065318,
+          "slot": 29845654,
+          "at": 1790739240402,
           "outcome": "good",
           "status": 200,
-          "latency": 23,
-          "revision": 1
+          "latency": 26,
+          "revision": 1,
+          "observedAt": 1790739240376
         },
         "status": "healthy",
         "state": {
           "failures": 0,
           "successes": 2,
-          "lastSlot": 29844151,
+          "lastSlot": 29845654,
           "incidentId": null
         },
         "metrics": {
-          "total": 1,
+          "total": 1440,
           "observed": 1,
           "good": 1,
           "maintenance": 0,
-          "expected": 3,
-          "missing": 2,
-          "coverage": 33.333333333333336,
+          "unverified": 1439,
+          "expected": 1440,
+          "missing": 0,
+          "coverage": 0.06944444444444445,
           "goodRatio": 100,
-          "p95Ms": 47,
+          "p95Ms": 24,
           "budgetConsumed": 0,
-          "windowStart": 1790648880000,
-          "windowEnd": 1790649060000
+          "windowStart": 1790652840000,
+          "windowEnd": 1790739240000
         },
         "history": [
           {
             "service": "gateway",
-            "slot": 29844151,
-            "at": 1790649065318,
+            "slot": 29845654,
+            "at": 1790739240402,
             "outcome": "good",
             "status": 200,
-            "latency": 23,
-            "revision": 1
+            "latency": 26,
+            "revision": 1,
+            "observedAt": 1790739240376
           },
           {
             "service": "gateway",
-            "slot": 29844150,
-            "at": 1790649000635,
+            "slot": 29845653,
+            "at": 1790739180427,
             "outcome": "good",
             "status": 200,
-            "latency": 47,
-            "revision": 1
+            "latency": 24,
+            "revision": 1,
+            "observedAt": 1790739180403
+          },
+          {
+            "service": "gateway",
+            "slot": 29845652,
+            "at": 1790739120396,
+            "outcome": "good",
+            "status": 200,
+            "latency": 14,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845651,
+            "at": 1790739065803,
+            "outcome": "good",
+            "status": 200,
+            "latency": 12,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845650,
+            "at": 1790739000404,
+            "outcome": "good",
+            "status": 200,
+            "latency": 14,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845649,
+            "at": 1790738940405,
+            "outcome": "good",
+            "status": 200,
+            "latency": 14,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845648,
+            "at": 1790738880405,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845647,
+            "at": 1790738820395,
+            "outcome": "good",
+            "status": 200,
+            "latency": 12,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845646,
+            "at": 1790738760399,
+            "outcome": "good",
+            "status": 200,
+            "latency": 14,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845645,
+            "at": 1790738700407,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845644,
+            "at": 1790738640399,
+            "outcome": "good",
+            "status": 200,
+            "latency": 14,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845643,
+            "at": 1790738580400,
+            "outcome": "good",
+            "status": 200,
+            "latency": 12,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845642,
+            "at": 1790738520396,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845641,
+            "at": 1790738460396,
+            "outcome": "good",
+            "status": 200,
+            "latency": 12,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845640,
+            "at": 1790738400398,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845639,
+            "at": 1790738340404,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845638,
+            "at": 1790738280394,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845637,
+            "at": 1790738220400,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845636,
+            "at": 1790738160396,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845635,
+            "at": 1790738100402,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845634,
+            "at": 1790738040400,
+            "outcome": "good",
+            "status": 200,
+            "latency": 14,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845633,
+            "at": 1790737980402,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845632,
+            "at": 1790737920398,
+            "outcome": "good",
+            "status": 200,
+            "latency": 14,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845631,
+            "at": 1790737860591,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845630,
+            "at": 1790737800397,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845629,
+            "at": 1790737740489,
+            "outcome": "good",
+            "status": 200,
+            "latency": 12,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845628,
+            "at": 1790737680394,
+            "outcome": "good",
+            "status": 200,
+            "latency": 12,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845627,
+            "at": 1790737620399,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845626,
+            "at": 1790737560398,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845625,
+            "at": 1790737500397,
+            "outcome": "good",
+            "status": 200,
+            "latency": 16,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845624,
+            "at": 1790737440396,
+            "outcome": "good",
+            "status": 200,
+            "latency": 14,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845623,
+            "at": 1790737380398,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845622,
+            "at": 1790737320393,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845621,
+            "at": 1790737268603,
+            "outcome": "good",
+            "status": 200,
+            "latency": 14,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845620,
+            "at": 1790737200399,
+            "outcome": "good",
+            "status": 200,
+            "latency": 16,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845619,
+            "at": 1790737140407,
+            "outcome": "good",
+            "status": 200,
+            "latency": 25,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845618,
+            "at": 1790737080407,
+            "outcome": "good",
+            "status": 200,
+            "latency": 22,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845617,
+            "at": 1790737020396,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845616,
+            "at": 1790736960402,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845615,
+            "at": 1790736900406,
+            "outcome": "good",
+            "status": 200,
+            "latency": 16,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845614,
+            "at": 1790736840400,
+            "outcome": "good",
+            "status": 200,
+            "latency": 18,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845613,
+            "at": 1790736780400,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845612,
+            "at": 1790736720393,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845611,
+            "at": 1790736660405,
+            "outcome": "good",
+            "status": 200,
+            "latency": 14,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845610,
+            "at": 1790736600478,
+            "outcome": "good",
+            "status": 200,
+            "latency": 94,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845609,
+            "at": 1790736540400,
+            "outcome": "good",
+            "status": 200,
+            "latency": 14,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845608,
+            "at": 1790736480391,
+            "outcome": "good",
+            "status": 200,
+            "latency": 12,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845607,
+            "at": 1790736420401,
+            "outcome": "good",
+            "status": 200,
+            "latency": 18,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845606,
+            "at": 1790736360396,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845605,
+            "at": 1790736300406,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845604,
+            "at": 1790736240395,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845603,
+            "at": 1790736180395,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845602,
+            "at": 1790736120400,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845601,
+            "at": 1790736060406,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845600,
+            "at": 1790736000406,
+            "outcome": "good",
+            "status": 200,
+            "latency": 17,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845599,
+            "at": 1790735940401,
+            "outcome": "good",
+            "status": 200,
+            "latency": 14,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845598,
+            "at": 1790735880401,
+            "outcome": "good",
+            "status": 200,
+            "latency": 13,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845597,
+            "at": 1790735820403,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845596,
+            "at": 1790735760395,
+            "outcome": "good",
+            "status": 200,
+            "latency": 14,
+            "revision": 1,
+            "observedAt": null
+          },
+          {
+            "service": "gateway",
+            "slot": 29845595,
+            "at": 1790735700398,
+            "outcome": "good",
+            "status": 200,
+            "latency": 15,
+            "revision": 1,
+            "observedAt": null
           }
         ],
         "hourly": [
           {
-            "at": 1790647200000,
-            "total": 1,
+            "at": 1790650800000,
+            "total": 26,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 26
+          },
+          {
+            "at": 1790654400000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790658000000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790661600000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790665200000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790668800000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790672400000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790676000000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790679600000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790683200000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790686800000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790690400000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790694000000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790697600000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790701200000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790704800000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790708400000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790712000000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790715600000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790719200000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790722800000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790726400000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790730000000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790733600000,
+            "total": 60,
+            "good": 0,
+            "maintenance": 0,
+            "unverified": 60
+          },
+          {
+            "at": 1790737200000,
+            "total": 34,
             "good": 1,
-            "maintenance": 0
+            "maintenance": 0,
+            "unverified": 33
           }
         ]
+      }
+    ],
+    "monitoring": {
+      "status": "healthy",
+      "lastStartedAt": 1790739240376,
+      "lastCompletedAt": 1790739240402,
+      "lastSlot": 29845654,
+      "ageMs": 14578,
+      "reason": "The scheduler and all active service observations are fresh."
+    },
+    "scheduler": [
+      {
+        "at": 1790739240402,
+        "slot": 29845654,
+        "status": "completed",
+        "detail": {
+          "results": [
+            {
+              "service": "catalog",
+              "result": "good"
+            },
+            {
+              "service": "gateway",
+              "result": "good"
+            }
+          ]
+        }
+      },
+      {
+        "at": 1790739240376,
+        "slot": 29845654,
+        "status": "started",
+        "detail": {}
+      },
+      {
+        "at": 1790739180427,
+        "slot": 29845653,
+        "status": "completed",
+        "detail": {
+          "results": [
+            {
+              "service": "catalog",
+              "result": "good"
+            },
+            {
+              "service": "gateway",
+              "result": "good"
+            }
+          ]
+        }
+      },
+      {
+        "at": 1790739180403,
+        "slot": 29845653,
+        "status": "started",
+        "detail": {}
       }
     ],
     "incidents": []

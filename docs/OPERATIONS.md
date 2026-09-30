@@ -13,21 +13,29 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 ## Verify an actual release
 
 1. Confirm the published commit passes GitHub CI.
-2. `GET /api/health` must report version 3.0.0.
+2. For a v3.1 release, `GET /api/health` must report version 3.1.0. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
 3. `GET /api/ops/status` must list the expected target names. Public output must not contain the operator token, target URLs, or investigation notes.
-4. Allow cron propagation (Cloudflare documents up to 15 minutes). Verify each service receives observations in two distinct scheduled minutes without clicking a “run” button. Check `latest.slot` and `latest.at`, not just the page’s snapshot timestamp.
+4. Allow cron propagation ([Cloudflare documents up to 15 minutes](https://developers.cloudflare.com/workers/configuration/cron-triggers/)). Verify each service receives observations in two distinct scheduled minutes without clicking a “run” button. Check `latest.slot`, the actual probe start `latest.observedAt`, and completion `latest.at`, not just the page's snapshot timestamp. Trigger propagation is not permission to backfill: an invocation whose scheduled minute has passed is recorded as `skipped-late` and makes no observation.
 5. The private catalog probe must validate actual JSON through its service binding; the gateway probe must reach the configured public HTTPS health endpoint.
 6. Public policy/audit requests must return 401. `npm run operator -- audit` with the right deployment token must work.
 7. Run `BASE_URL=https://YOUR-WORKER.workers.dev npm run test:integration`. These create isolated lab sessions and do not modify monitor policies.
-8. Run the bounded benchmark if performance evidence is being updated. Save raw results and their environment; do not mix local and live observations.
+8. `GET /api/ready` must return HTTP 200 and `monitoring.status: "healthy"`. Starting, partial, and stalled states return 503. Inspect the persisted last-started, last-completed, and last-completed-slot fields and the latest 20 scheduler events in public status. Requests to the page or readiness endpoint cannot refresh them.
+9. Confirm `GET /api/ops/export` reports `schemaVersion: 4`, excludes private notes, and distinguishes unverified migrated checks from verified observations.
+10. Run the bounded benchmark if performance evidence is being updated. Save raw results and their environment; do not mix local and live observations.
 
 ## Incident response
 
-A bad check means non-200 HTTP, invalid/oversized JSON, transport error, timeout, or latency above its objective. Inspect the last 60 samples, outcome, status, latency, revision, and freshness. Three consecutive bad observations open an incident by default. A missing minute resets the detection streak, so the incident count alone never proves health.
+A bad check means non-200 HTTP, invalid/oversized JSON, transport error, timeout, or latency above its objective. Open an incident investigation to inspect its lifecycle, outcome, status, latency, revision, and freshness. Public status includes all open incidents for active targets plus their latest 100 resolved incidents, so recent recoveries cannot crowd out an older open incident. Three consecutive bad observations open an incident by default. A missing minute resets the detection streak, so the incident count alone never proves health.
 
 Authenticate and acknowledge the incident with a private investigation note, or use `operator ack`. Acknowledgement records an audit event and ownership; it does not resolve the incident. Inspect Worker logs and the upstream service. Correct the upstream issue. Two consecutive good observations resolve the incident by default. Resolution time is detection/recovery observation time, not a claim of precise outage onset/end.
 
-If monitoring itself stops, service status becomes unknown and missing coverage rises. Investigate cron configuration, deployment errors, quotas, and `monitor.tick` logs. Check the monitor from outside Cloudflare for correlated provider outages. The system deliberately does not convert missing probes into good samples or close incidents automatically.
+`GET /api/ops/incidents/<id>?before=<slot>` returns up to 50 retained checks, newest slot first, with the policy versions referenced on that page. Omit `before` for the first page and pass `nextCursor` as `before` to load older evidence. The range includes up to ten minutes before detection and the retained incident interval; `limitedByRetention` flags an incomplete historical range. Missing checks stay missing. Public evidence excludes target URLs and private notes. Supply `Authorization: Bearer ...` to include notes; an invalid supplied token returns 401.
+
+Append an investigation or follow-up note with `POST /api/ops/incident-note` and `{ "incident": "INCIDENT_ID", "requestId": "UUID-v4", "note": "Investigating the upstream timeout" }`. Generate one UUID v4 per intended note and retain it when retrying after a lost response. The identical request is idempotent; a different note or incident using that ID returns 409. The note must be 1–500 characters with non-whitespace content. Each incident is capped at 100 retained appended notes. Recovery does not prevent follow-up notes, while acknowledgement still applies only to open incidents.
+
+If monitoring itself stops, service status becomes unknown and missing coverage rises. `/api/ready` permits at most three minutes since the last completed scheduled run and the actual start of every active service's latest current-revision check. It returns `starting` before any run completes, `stalled` for stale or impossible scheduler evidence, and `partial` when the scheduler is fresh but an active service lacks fresh evidence. Paused services are ignored; a fresh scheduler with all services paused is healthy and states that no probes are expected. This endpoint measures monitoring freshness, not upstream success.
+
+Investigate cron configuration, deployment errors, quotas, `monitor.tick` logs, and the status snapshot's latest 20 persisted scheduler events. A skipped late event cannot fill a historical gap. Check `/api/ready` from outside Cloudflare for correlated provider outages. The system does not convert missing probes into good samples or close incidents automatically.
 
 ## Policy and maintenance
 
@@ -35,13 +43,13 @@ Edit the latency objective, timeout, good-check target, failure threshold, and r
 
 Pause records maintenance observations each minute without touching the upstream. Those observations are excluded from the SLO and coverage denominator. Unobserved minutes during a scheduler outage remain missing, including during a pause. Resume explicitly; there is no automatic maintenance end. An active incident during maintenance still needs subsequent successful probes to recover.
 
-The good-check objective evaluates both validity and latency. Historical outcomes retain the policy used at check time; changing a threshold does not rescore history. The current good-check target determines the displayed error budget. Export a report before large policy changes for interpretation.
+The good-check objective evaluates both validity and latency. New policy and target revisions store their policy context with `recorded` provenance; changing a threshold does not rescore historical outcomes. On migration, only the current v3 policy can be recovered, marked `recovered-current`. Earlier revisions lacking captured policy context cannot be reconstructed. Legacy checks without an actual observation start time remain visible as unverified evidence and receive no verified SLO credit. The current good-check target determines the displayed error budget. Export a report before large policy changes for interpretation.
 
 ## Retention, export, and backup limits
 
-Scheduled runs prune checks, completed jobs, resolved incidents, and audit events older than 30 days. Open incidents and service policies are retained. Removed deployment targets are no longer probed or publicly displayed; their retained data is not immediately deleted. Resolved incidents and audit history prune when cron runs.
+Scheduled runs prune checks, completed jobs, resolved incidents, audit events, scheduler diagnostics, and appended private notes older than 30 days. Appended notes expire even while their incident remains open. Open incidents and current service policies are retained; the original acknowledgement note follows the incident record's retention. Historical policy versions are kept while referenced by retained checks or the current service revision. Removed deployment targets are no longer probed or publicly displayed; their retained data is not immediately deleted. Pruning depends on completed scheduled runs.
 
-The dashboard exports the selected 24-hour or 7-day summary, hourly aggregates, latest 60 samples per service, and latest 100 incident records. This is a report, not a full database backup. The authenticated audit endpoint returns the latest 100 audit entries and incident notes. Keep exports private if they contain notes. No application-level disaster recovery backup is claimed; before destructive storage operations use Cloudflare's supported storage recovery/export tools and verify recovery separately.
+The dashboard exports the selected 24-hour or 7-day summary, hourly aggregates, latest 60 samples per service, all active-target open incidents, their latest 100 resolved incidents, readiness, and latest 20 scheduler diagnostics. Operations exports use `schemaVersion: 4`. Incident detail provides separate cursor-based evidence pages with their policy context. These are bounded reports, not full database backups. The authenticated audit endpoint returns the latest 100 audit entries and incident records; authenticated detail includes retained private notes. Keep any authenticated output private. No application-level disaster recovery backup is claimed; before destructive storage operations use Cloudflare's supported storage recovery/export tools and verify recovery separately.
 
 ## Stop, rotate, and roll back
 
@@ -49,13 +57,14 @@ The dashboard exports the selected 24-hour or 7-day summary, hourly aggregates, 
 - To stop all scheduled invocations, set `triggers.crons` to `[]` and deploy. Propagation is not immediate. Check Worker logs after the propagation window.
 - Rotate an exposed credential with `npm run operator:setup -- --rotate`. Old browser sessions fail their next authenticated request. Update any private CI secret copy. Never paste the token into a bug report.
 - v3 adds the `MonitorStore` class with an additive `v2` migration. Do not delete classes or migrations to roll back a UI issue. Prefer a forward fix or Cloudflare’s supported deployment rollback after checking migration compatibility. The old lab remains a separate class and namespace.
+- v3.1 adds observation-start timestamps, policy-version records, scheduler diagnostics, and appended incident notes to the existing SQLite coordinator. Existing checks migrate with unknown observation timing, not invented timestamps. Preserve these additive tables and columns when evaluating rollback compatibility.
 - To restore a known application revision, preserve current bindings, secrets, migration history, and the monitoring schema. A code checkout alone is not a database rollback. Record a before/after public status export.
 
 ## Local development and fault injection
 
 `npm run operator:setup -- --local` provisions `.dev.vars`. Restart Wrangler to load it. Local cron must be invoked explicitly through `/cdn-cgi/local/scheduled`; do not expect the passage of time to schedule checks. A local HTTPS target can still point at the live gateway; use private test bindings for isolated tests.
 
-`npm run test:monitor` creates an ephemeral workerd runtime. It injects HTTP failure, concurrency, policy races, a crashed persisted lease, object eviction, and old retention rows. Storage inspection is enabled only in that test harness. There is no public fault-injection endpoint on the monitor.
+`npm run test:monitor` creates an ephemeral workerd runtime. It injects HTTP failure, concurrency, policy races, a crashed persisted lease, object eviction, old retention rows, and controlled timing boundaries. Incident evidence tests verify pagination, policy context, private-note authorization, and idempotent retries. Storage inspection is enabled only in that test harness. There is no public fault-injection endpoint on the monitor.
 
 If workerd reports SQLite busy, another dev process likely uses the same `.wrangler` directory. Stop that process or start the new preview with a distinct `--persist-to` directory. Never delete a live application's storage to fix a preview lock.
 
