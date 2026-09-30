@@ -4,6 +4,17 @@ export { MonitorStore };
 const forwardMonitor = createMonitorForwarder();
 const forwardLab = createLabForwarder();
 import { callOrigin } from './origin-client';
+import {
+  LAB_OBSERVER_PROTOCOL,
+  LAB_OBSERVER_SNAPSHOT_EVENTS,
+  MAX_LAB_OBSERVERS,
+  MAX_LAB_OBSERVER_FRAME_BYTES,
+  captureLabObserverFrame,
+  parseLabObserverProtocols,
+  serializeLabObserverFrame,
+  type LabObserverDataFrame,
+  type LabObserverTerminalFrame,
+} from './lab-observer';
 import { DurableObject } from 'cloudflare:workers';
 import {
   defaults,
@@ -32,6 +43,7 @@ const json = (data: unknown, status = 200, extra: Record<string, string> = {}) =
     headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...extra },
   });
 export class ReliabilityLab extends DurableObject<Env> {
+  private schemaPresent = false;
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.ensureSchema();
@@ -43,19 +55,31 @@ export class ReliabilityLab extends DurableObject<Env> {
     this.ctx.storage.sql.exec(
       'CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT, value TEXT NOT NULL)',
     );
+    this.schemaPresent = true;
   }
-  private read(): LabState {
+  private readExisting(): LabState | null {
+    // A successful idle delete removes the tables in this still-warm instance.
+    // Observation must report absence without recreating them or renewing the lease.
+    if (!this.schemaPresent) return null;
     const row = this.ctx.storage.sql
       .exec<{ value: string }>('SELECT value FROM state WHERE id = 1')
       .toArray()[0];
-    const s: LabState = row ? JSON.parse(row.value) : initialState(Date.now(), crypto.randomUUID());
+    if (!row) return null;
+    const s: LabState = JSON.parse(row.value);
     // Preserve existing v1 runs while adding the new timeout and real-response cache.
     s.config = { ...defaults, ...s.config };
     s.cachedPayload ??= null;
     if (!s.cachedPayload) s.cachedAt = null;
     return s;
   }
-  private save(s: LabState) {
+  private read(): LabState {
+    return this.readExisting() ?? initialState(Date.now(), crypto.randomUUID());
+  }
+  private save(s: LabState, now = Date.now()) {
+    const previous = Number.isSafeInteger(s.revision) && s.revision! >= 0 ? s.revision! : 0;
+    if (previous >= Number.MAX_SAFE_INTEGER) throw new Error('Lab revision exhausted');
+    s.revision = previous + 1;
+    s.committedAt = now;
     this.ctx.storage.sql.exec(
       'INSERT INTO state (id, value) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET value = excluded.value',
       JSON.stringify(s),
@@ -76,36 +100,193 @@ export class ReliabilityLab extends DurableObject<Env> {
       latencyMs: Date.now() - started,
       circuit: s.circuit,
     };
-    this.ctx.storage.sql.exec('INSERT INTO events(value) VALUES (?)', JSON.stringify(item));
+    const id = this.ctx.storage.sql
+      .exec<{ id: number }>(
+        'INSERT INTO events(value) VALUES (?) RETURNING id',
+        JSON.stringify(item),
+      )
+      .toArray()[0].id;
     this.ctx.storage.sql.exec('DELETE FROM events WHERE id <= (SELECT MAX(id) - 180 FROM events)');
-    return item;
+    return { ...item, id } satisfies LabEvent;
   }
   async alarm() {
     await this.ctx.blockConcurrencyWhile(async () => {
-      const expiresAt = this.ctx.storage.kv.get<number>('expiresAt');
-      if (expiresAt && expiresAt > Date.now()) {
-        await this.ctx.storage.setAlarm(expiresAt);
-        return;
+      try {
+        const expiresAt = this.ctx.storage.kv.get<number>('expiresAt');
+        if (expiresAt && expiresAt > Date.now()) {
+          await this.ctx.storage.setAlarm(expiresAt);
+          return;
+        }
+        // Compatibility date >= 2026-02-24 also clears alarm metadata.
+        await this.ctx.storage.deleteAll();
+        this.schemaPresent = false;
+        // Close the expired run before a queued owner request can create a new one.
+        this.terminal('expired', 4001);
+      } catch (error) {
+        this.terminal('unavailable', 1011);
+        throw error;
       }
-      // Compatibility date >= 2026-02-24 also clears alarm metadata.
-      await this.ctx.storage.deleteAll();
     });
   }
   private async touch() {
     await this.ctx.blockConcurrencyWhile(async () => {
       this.ensureSchema();
       const configured = Number(this.env.LAB_IDLE_TTL_MS);
-      const ttl = Number.isFinite(configured) && configured >= 100 ? configured : 86_400_000;
-      const expiresAt = Date.now() + ttl;
-      this.ctx.storage.kv.put('expiresAt', expiresAt);
-      this.save(this.read());
+      const ttl = Number.isSafeInteger(configured) && configured >= 100 ? configured : 86_400_000;
+      const now = Date.now();
+      const expiresAt = now + ttl;
+      const committed = this.ctx.storage.transactionSync(() => {
+        const previous = this.readExisting();
+        const priorDeadline = this.ctx.storage.kv.get<number>('expiresAt');
+        const expired =
+          Number.isSafeInteger(priorDeadline) && priorDeadline! >= 0 && priorDeadline! <= now;
+        let s = previous ?? initialState(now, crypto.randomUUID());
+        if (expired) {
+          // Alarm delivery may be delayed. A known expired run cannot be revived by owner activity.
+          this.ctx.storage.sql.exec('DELETE FROM events');
+          s = initialState(now, crypto.randomUUID());
+          s.revision = previous?.revision;
+        }
+        this.ctx.storage.kv.put('expiresAt', expiresAt);
+        this.save(s, now);
+        return { frame: captureLabObserverFrame(s, 'update', [], now, expiresAt), expired };
+      });
       await this.ctx.storage.setAlarm(expiresAt);
+      // Keep ordering until both the source commit and required alarm setup succeed.
+      if (committed.expired) this.terminal('expired', 4001);
+      else this.publish(committed.frame);
     });
   }
+  private frame(s: LabState, events: LabEvent[] = [], deadline?: number): LabObserverDataFrame {
+    const expiresAt = deadline ?? this.ctx.storage.kv.get<number>('expiresAt');
+    if (!expiresAt) throw new Error('Lab deadline unavailable');
+    return captureLabObserverFrame(s, 'update', events, Date.now(), expiresAt);
+  }
+  private publish(frame: LabObserverDataFrame) {
+    const encoded = serializeLabObserverFrame(frame);
+    const sockets = this.ctx.getWebSockets();
+    for (const ws of sockets) {
+      if (ws.readyState !== WebSocket.OPEN) continue;
+      try {
+        ws.send(encoded);
+      } catch {
+        try {
+          ws.close(1011, 'Lab observer unavailable');
+        } catch {
+          // A closed recipient cannot affect an already committed owner action.
+        }
+      }
+    }
+  }
+  private terminal(kind: LabObserverTerminalFrame['kind'], code: number) {
+    const encoded = serializeLabObserverFrame({
+      schemaVersion: 1,
+      kind,
+      reason: kind === 'expired' ? 'idle-expired' : 'lab-unavailable',
+      now: Date.now(),
+    });
+    for (const ws of this.ctx.getWebSockets()) {
+      if (ws.readyState !== WebSocket.OPEN) continue;
+      try {
+        ws.send(encoded);
+        ws.close(
+          code,
+          kind === 'expired' ? 'Lab idle deadline expired' : 'Lab observer unavailable',
+        );
+      } catch {
+        // Best-effort notification; never expose the storage exception.
+      }
+    }
+  }
+  private observe(request: Request): Response {
+    const url = new URL(request.url);
+    const invalid = observerRequestFailure(request, url);
+    if (invalid) return invalid;
+    const now = Date.now();
+    const s = this.readExisting();
+    if (!s) {
+      this.terminal('unavailable', 1011);
+      return json({ error: 'No existing lab run' }, 404);
+    }
+    const expiresAt = this.ctx.storage.kv.get<number>('expiresAt');
+    if (!expiresAt) {
+      this.terminal('unavailable', 1011);
+      return json({ error: 'Lab deadline unavailable' }, 503);
+    }
+    if (expiresAt <= now) {
+      this.terminal('expired', 4001);
+      return json({ error: 'Lab idle deadline expired' }, 410);
+    }
+    if (
+      this.ctx.getWebSockets().filter((ws) => ws.readyState === WebSocket.OPEN).length >=
+      MAX_LAB_OBSERVERS
+    )
+      return json({ error: 'Live observer limit reached' }, 429);
+    const events = this.ctx.storage.sql
+      .exec<{ id: number; value: string }>(
+        'SELECT id, value FROM events ORDER BY id DESC LIMIT ?',
+        LAB_OBSERVER_SNAPSHOT_EVENTS,
+      )
+      .toArray()
+      .map((row) => ({ ...JSON.parse(row.value), id: row.id }) as LabEvent);
+    const encoded = serializeLabObserverFrame(
+      captureLabObserverFrame(s, 'snapshot', events, now, expiresAt),
+    );
+    const [client, server] = Object.values(new WebSocketPair());
+    this.ctx.acceptWebSocket(server);
+    server.serializeAttachment({
+      schemaVersion: 1,
+      protocol: LAB_OBSERVER_PROTOCOL,
+      joinedAt: now,
+    });
+    server.send(encoded);
+    return new Response(null, {
+      status: 101,
+      webSocket: client,
+      headers: { 'Sec-WebSocket-Protocol': LAB_OBSERVER_PROTOCOL, 'Cache-Control': 'no-store' },
+    });
+  }
+  webSocketMessage(ws: WebSocket, message: string | ArrayBuffer) {
+    const bytes =
+      typeof message === 'string'
+        ? new TextEncoder().encode(message).byteLength
+        : message.byteLength;
+    ws.close(
+      bytes > MAX_LAB_OBSERVER_FRAME_BYTES ? 1009 : 1008,
+      bytes > MAX_LAB_OBSERVER_FRAME_BYTES
+        ? 'Observer message too large'
+        : 'Observer channel is read-only',
+    );
+  }
+  webSocketClose(ws: WebSocket) {
+    // Runtime close handling removes the socket; do not echo arbitrary close text or invalid codes.
+    try {
+      ws.close();
+    } catch {
+      // The peer may have already completed the close handshake.
+    }
+  }
+  webSocketError(ws: WebSocket) {
+    try {
+      ws.close(1011, 'Lab observer unavailable');
+    } catch {
+      // A disconnected observer requires no storage cleanup.
+    }
+  }
   async fetch(request: Request): Promise<Response> {
+    try {
+      return await this.fetchLab(request);
+    } catch (error) {
+      this.terminal('unavailable', 1011);
+      throw error;
+    }
+  }
+  private async fetchLab(request: Request): Promise<Response> {
+    const action = new URL(request.url).pathname.split('/').pop();
+    // Observation cannot seed a run, save state, or renew the owner-maintained deadline.
+    if (action === 'observe') return this.observe(request);
     await this.touch();
     const requestId = crypto.randomUUID();
-    const action = new URL(request.url).pathname.split('/').pop();
     if (action === 'state' && request.method === 'GET') {
       const s = this.read();
       refill(s, Date.now());
@@ -125,10 +306,15 @@ export class ReliabilityLab extends DurableObject<Env> {
     if (request.method !== 'POST')
       return json({ error: 'Method not allowed' }, 405, { Allow: 'POST' });
     if (action === 'reset') {
-      this.ctx.storage.transactionSync(() => {
+      const frame = this.ctx.storage.transactionSync(() => {
+        const previous = this.read();
         this.ctx.storage.sql.exec('DELETE FROM events');
-        this.save(initialState(Date.now(), crypto.randomUUID()));
+        const s = initialState(Date.now(), crypto.randomUUID());
+        s.revision = previous.revision;
+        this.save(s);
+        return this.frame(s);
       });
+      this.publish(frame);
       return json({ ok: true });
     }
     if (action === 'config') {
@@ -138,28 +324,32 @@ export class ReliabilityLab extends DurableObject<Env> {
       } catch {
         return json({ error: 'Invalid JSON' }, 400);
       }
-      return this.ctx.storage.transactionSync(() => {
+      const result = this.ctx.storage.transactionSync(() => {
         const s = this.read();
         refill(s, Date.now());
         try {
           s.config = validateConfig(patch, s.config);
         } catch (e) {
-          return json({ error: (e as Error).message }, 400);
+          return { response: json({ error: (e as Error).message }, 400), frame: null };
         }
         s.tokens = Math.min(s.tokens, s.config.capacity);
         this.save(s);
-        return json({ ok: true });
+        return { response: json({ ok: true }), frame: this.frame(s) };
       });
+      if (result.frame) this.publish(result.frame);
+      return result.response;
     }
     if (action !== 'request') return json({ error: 'Not found' }, 404);
     const started = Date.now();
-    const admission = this.ctx.storage.transactionSync(() => {
+    const admitted = this.ctx.storage.transactionSync(() => {
       const s = this.read();
       const result = admit(s, started);
       this.save(s);
-      if ('outcome' in result) this.event(s, result, started, requestId);
-      return result;
+      const event = 'outcome' in result ? this.event(s, result, started, requestId) : null;
+      return { result, frame: this.frame(s, event ? [event] : []) };
     });
+    this.publish(admitted.frame);
+    const admission = admitted.result;
     if ('outcome' in admission) return this.respond(admission, requestId);
     const originResult = await callOrigin(
       this.env.ORIGIN,
@@ -167,18 +357,21 @@ export class ReliabilityLab extends DurableObject<Env> {
       admission.fails,
       admission.timeoutMs,
     );
-    const result = this.ctx.storage.transactionSync(() => {
-      if (!this.ctx.storage.kv.get('expiresAt')) return null;
+    const completed = this.ctx.storage.transactionSync(() => {
+      const expiresAt = this.ctx.storage.kv.get<number>('expiresAt');
+      if (!expiresAt || expiresAt <= Date.now()) return null;
       const s = this.read();
       const decision = complete(s, admission, Date.now(), originResult);
       if (decision) {
         this.save(s);
-        this.event(s, decision, started, requestId, true);
+        const event = this.event(s, decision, started, requestId, true);
+        return { decision, frame: this.frame(s, [event], expiresAt) };
       }
-      return decision;
+      return null;
     });
-    return result
-      ? this.respond(result, requestId)
+    if (completed) this.publish(completed.frame);
+    return completed
+      ? this.respond(completed.decision, requestId)
       : json({ error: 'Lab reset while request was in flight' }, 409);
   }
   private respond(decision: Decision, requestId: string) {
@@ -191,6 +384,16 @@ export class ReliabilityLab extends DurableObject<Env> {
       headers['Age'] = String(Math.floor(decision.cacheAgeMs / 1000));
     return json({ ...decision, requestId }, decision.status, headers);
   }
+}
+function observerRequestFailure(request: Request, url: URL): Response | null {
+  if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405, { Allow: 'GET' });
+  if (request.headers.get('Origin') !== url.origin)
+    return json({ error: 'Same-origin observer request required' }, 403);
+  if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket')
+    return json({ error: 'WebSocket upgrade required' }, 426, { Upgrade: 'websocket' });
+  if (url.search || !parseLabObserverProtocols(request.headers.get('Sec-WebSocket-Protocol')))
+    return json({ error: 'Exact observer protocol pair required' }, 400);
+  return null;
 }
 async function boundedBody(request: Request): Promise<string> {
   if (!request.body) return '';
@@ -236,7 +439,7 @@ export default {
         ok: true,
         colo: colo(request),
         platform: 'Cloudflare Workers + Durable Objects',
-        version: '3.4.2',
+        version: '3.5.0',
         origin: 'service-binding',
       });
     if (url.pathname === '/api/ready') {
@@ -346,6 +549,27 @@ export default {
         );
       }
       return response;
+    }
+    if (url.pathname === '/api/observe') {
+      const invalid = observerRequestFailure(request, url);
+      if (invalid) return invalid;
+      const id = parseLabObserverProtocols(request.headers.get('Sec-WebSocket-Protocol'))!;
+      const response = await forwardLab(
+        env.LABS.get(env.LABS.idFromName(id)),
+        new Request(request.url, {
+          method: 'GET',
+          headers: {
+            Origin: request.headers.get('Origin')!,
+            Upgrade: 'websocket',
+            'Sec-WebSocket-Protocol': request.headers.get('Sec-WebSocket-Protocol')!,
+          },
+        }),
+      );
+      const headers = new Headers(response.headers);
+      headers.set('X-Edge-Colo', String(colo(request)));
+      if (response.status === 101 && response.webSocket)
+        return new Response(null, { status: 101, headers, webSocket: response.webSocket });
+      return new Response(response.body, { status: response.status, headers });
     }
     if (!['/api/state', '/api/request', '/api/config', '/api/reset'].includes(url.pathname))
       return json({ error: 'Not found' }, 404);

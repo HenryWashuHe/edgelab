@@ -1,6 +1,6 @@
 {
   "name": "edgelab",
-  "version": "3.4.2",
+  "version": "3.5.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -28,7 +28,8 @@
     "test:monitor-cost": "node scripts/monitor-cost.mjs",
     "test:examples": "node scripts/brief-examples.mjs --check",
     "test:retention": "node scripts/monitor-retention.mjs",
-    "test:retention-cost": "node scripts/monitor-retention-cost.mjs"
+    "test:retention-cost": "node scripts/monitor-retention-cost.mjs",
+    "test:lab-observer": "node scripts/lab-observer.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.48.0",
@@ -39,13 +40,14 @@
     "@cloudflare/workers-types": "^5.20260928.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "esbuild": "^0.28.1",
     "miniflare": "^5.20260926.0-alpha",
     "prettier": "^3.9.9",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vitest": "^4.1.11",
     "wrangler": "^4.143.0",
-    "esbuild": "^0.28.1"
+    "ws": "8.21.0"
   },
   "overrides": {
     "undici": "^7.29.1"

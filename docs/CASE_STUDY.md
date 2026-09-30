@@ -69,6 +69,12 @@ The [3.4.2 comparison](evidence/releases/3.4.2-retention-cost.json) repeats the 
 
 The counters add 128 reads to each full combined catch-up batch, with zero extra SQL statements or writes; empty queues and retained metadata growth have unchanged measured steady costs. The [3.4.2 seven-day fixture](evidence/releases/3.4.2-monitor-cost.json) measures 162 reads per complete dashboard view for two targets and 369 for five, with zero view writes and the same steady cron costs. These measurements describe controlled local SQLite work, not total account usage or evidence of production recovery. Native inference calls remain zero.
 
+## Observe lab commits without repeated refreshes
+
+Version 3.5 adds a hibernating WebSocket observer to the existing resilience-lab Durable Object. It shows committed admission, pending work, outcomes and reset revisions in another tab without polling or renewing the run's idle lease. Frames omit cached bodies, request identifiers and capabilities. Transaction failure cannot publish a phantom event, and elapsed deadlines fence late origin work even before a delayed alarm executes.
+
+The [runtime record](evidence/releases/3.5.0-lab-observer.json) verifies original network sockets through forced hibernation and 26 groups of ordering, isolation, quota, rollback and expiry behavior. Its fixed owner workload uses 28 SQL rows read and 16 written with zero, one or four viewers; handshakes and constructor work are measured separately. This is controlled local resource evidence, with no claim of natural production hibernation timing or successful live observation while account storage remains unavailable. [ADR 008](adr/008-live-lab-observer.md) records the contract and limits.
+
 ## A separate write limit remains
 
 The historical [3.3.2 whole-monitor fixture](evidence/releases/3.3.2-monitor-cost.json) rechecked three consecutive warm cron minutes against synthetic seven-day history. It includes trigger/index work, one check/job per target, and two scheduler events expiring each minute. Its read counts predate the retention queues; the 3.4.1 comparison above records their additional work.
@@ -90,6 +96,7 @@ The archived boundary check was taken at 07:11 UTC on September 30 and reported 
 
 ## Resume bullets supported by this evidence
 
+- Built a hibernating WebSocket observer on Cloudflare Durable Objects with committed revisions, bounded privacy projections and deadline fencing; 26 actual workerd proof groups cover original-socket eviction recovery, ordering, rollback and expiry, with unchanged SQL work for one or four viewers in a controlled workload.
 - Implemented a persisted seven-day Cloudflare Durable Objects check projection with source-change repair and eviction recovery; a controlled local workerd fixture measured one SQLite row per repeated projection read versus 4,321 for the original budget source scan, with source-parity tests.
 - Reworked incident-history queries to preserve all active open incidents and the latest 100 resolved incidents; a controlled local SQLite fixture reduced examined rows from 48,660 to 421 while returning the same 320 incidents.
 - Implemented persisted, reference-aware retention queues in Cloudflare Durable Objects; a controlled two-target cron fixture reduced reads from 3,354 to 94 with grown policy/note history, preserving source evidence and public summary hashes across cleanup and rollback tests.

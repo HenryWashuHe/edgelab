@@ -2,7 +2,7 @@
 
 ## Deployment prerequisites
 
-Use Node 22.12+, a Cloudflare account with Workers and SQLite-backed Durable Objects, and Wrangler authentication. Clone the repository, run `npm ci`, then `npm run check`, `npm run test:lifecycle`, `npm run test:monitor`, `npm run test:incident`, `npm run test:upgrade`, and `npm run test:budget`.
+Use Node 22.12+, a Cloudflare account with Workers and SQLite-backed Durable Objects, and Wrangler authentication. Clone the repository, run `npm ci`, then `npm run check`, `npm run test:lifecycle`, `npm run test:lab-observer`, `npm run test:monitor`, `npm run test:incident`, `npm run test:upgrade`, and `npm run test:budget`. GitHub CI runs the complete runtime suite.
 
 Configure both Worker names and the gateway ORIGIN service binding together. `MONITOR_TARGETS` is a JSON string of at most five targets in `wrangler.jsonc`. Each has a unique lowercase ID, name, HTTPS URL, transport (`origin` for the fixed private binding or `https`), and assertion (`ok-json` requires `{ "ok": true }`; `catalog-json` validates the catalog contract). No credentials, query strings, fragments, or custom ports are accepted. Only enroll endpoints you own or are authorized to monitor.
 
@@ -13,7 +13,7 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 ## Verify an actual release
 
 1. Confirm the published commit passes GitHub CI.
-2. For a v3.4.2 release, `GET /api/health` must report version 3.4.2. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
+2. For a v3.5.0 release, `GET /api/health` must report version 3.5.0. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
 3. `GET /api/ops/status` must list the expected target names. Public output must not contain the operator token, target URLs, or investigation notes.
 4. Allow cron propagation ([Cloudflare documents up to 15 minutes](https://developers.cloudflare.com/workers/configuration/cron-triggers/)). Verify each service receives observations in two distinct scheduled minutes without clicking a “run” button. Check `latest.slot`, the actual probe start `latest.observedAt`, and completion `latest.at`, not just the page's snapshot timestamp. Trigger propagation is not permission to backfill: an invocation whose scheduled minute has passed is recorded as `skipped-late` and makes no observation.
 5. The private catalog probe must validate actual JSON through its service binding; the gateway probe must reach the configured public HTTPS health endpoint.
@@ -22,6 +22,16 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 8. `GET /api/ready` must return HTTP 200 and `monitoring.status: "healthy"`. Starting, partial, and stalled states return 503. Inspect the persisted last-started, last-completed, and last-completed-slot fields and the latest 20 scheduler events in public status. Requests to the page or readiness endpoint cannot refresh them.
 9. Confirm `GET /api/ops/export` reports `schemaVersion: 4`, excludes private notes, distinguishes unverified migrated checks from verified observations, and adds each service's `budget` evidence. Its evaluation must be computed by a scheduled run; repeated public reads must not renew `computedAt`.
 10. Run the bounded benchmark if performance evidence is being updated. Save raw results and their environment; do not mix local and live observations.
+
+## Laboratory observation
+
+Open an existing run in Playground, then use **Live observer** to open its committed evidence in another tab. Owner HTTP activity renews the run's idle lease; viewing, reconnecting and leaving a socket connected do not. A run whose known lease has already expired is replaced on the next owner activity, even when its alarm is delayed. Old observers expire and must reconnect explicitly to the current run.
+
+Expect a bounded snapshot followed by ordered revisions, committed token balances and at most twelve metadata events. Requests evaluated include immediate rate limits; settled outcomes plus pending requests account for that total. Reset changes the run ID and clears old events. The observer sends no commands or heartbeat and performs no state polling. A quiet connection alone does not establish origin health.
+
+Missing local session data requires an existing owner run. Upgrade failures can be opaque in browsers; generic unavailable or interrupted connections leave retained evidence clearly unconfirmed. Reconnect retrieves a snapshot without replaying a command. Watching an expired run cannot renew it. There are at most four viewers per object, and a fifth is rejected without displacing them.
+
+Warm handshakes and cold constructor/schema work consume resources separately from fanout. The controlled workload shows identical SQL and KV/alarm work with zero, one or four viewers; it does not establish production billing or natural TCP-close timing. The local network suite verifies received close frames with a bounded peer timeout. See [ADR 008](adr/008-live-lab-observer.md) and its raw evidence. A deployed quota failure verifies an unavailable boundary; successful live observation and fresh autonomous monitoring remain pending until storage actually recovers.
 
 ## Incident response
 

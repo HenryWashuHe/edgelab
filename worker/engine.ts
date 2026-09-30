@@ -25,6 +25,9 @@ export const defaults: Config = {
 };
 export interface LabState {
   runId: string;
+  /** Observer metadata is absent on legacy runs; reads never invent a commit. */
+  revision?: number;
+  committedAt?: number | null;
   config: Config;
   tokens: number;
   updatedAt: number;

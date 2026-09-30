@@ -1,8 +1,10 @@
 import { Operations } from './Operations';
 import { Architecture, Notes } from './Guide';
 import { RequestInspector } from './RequestInspector';
+import { LabObserver } from './LabObserver';
+import { getMainLabSession, LAB_SESSION_KEY, readExistingLabSession } from './lab-session';
 import { asCsv, report, saveFile, percentile95 } from './reports';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Activity,
@@ -45,24 +47,6 @@ const names: Record<Outcome, string> = {
   blocked: 'Circuit blocked',
   error: 'Origin error',
 };
-function getLabId() {
-  let id: string | null = null;
-  try {
-    id = localStorage.getItem('edgelab-session');
-  } catch {
-    /* Private browsers can deny storage. */
-  }
-  if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-    id = crypto.randomUUID();
-    try {
-      localStorage.setItem('edgelab-session', id);
-    } catch {
-      /* In-memory session still works. */
-    }
-  }
-  return id;
-}
-const labId = getLabId();
 const pause = (ms: number, signal?: AbortSignal) =>
   new Promise<void>((resolve, reject) => {
     if (signal?.aborted) {
@@ -96,10 +80,11 @@ class LabRequestError extends Error {
     super(payload.error || `Request failed (${status})`);
   }
 }
+type OwnerPageTask = { epoch: number };
 async function api<T = Record<string, unknown>>(path: string, body?: unknown) {
   const response = await fetch(`/api/${path}`, {
     method: body === undefined ? 'GET' : 'POST',
-    headers: { 'X-Lab-ID': labId, 'Content-Type': 'application/json' },
+    headers: { 'X-Lab-ID': getMainLabSession(), 'Content-Type': 'application/json' },
     body: body === undefined ? undefined : JSON.stringify(body),
     signal: AbortSignal.timeout(15000),
   });
@@ -111,14 +96,14 @@ function App() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [stateConfirmed, setStateConfirmed] = useState(false);
   const [page, setPage] = useState(() =>
-    ['playground', 'architecture', 'notes'].includes(location.hash.slice(1))
+    ['playground', 'observer', 'architecture', 'notes'].includes(location.hash.slice(1))
       ? location.hash.slice(1)
       : 'operations',
   );
   useEffect(() => {
     const change = () =>
       setPage(
-        ['playground', 'architecture', 'notes'].includes(location.hash.slice(1))
+        ['playground', 'observer', 'architecture', 'notes'].includes(location.hash.slice(1))
           ? location.hash.slice(1)
           : 'operations',
       );
@@ -126,6 +111,10 @@ function App() {
     return () => window.removeEventListener('hashchange', change);
   }, []);
   const [selectedEvent, setSelectedEvent] = useState<LabEvent | null>(null);
+  const [labSession, setLabSession] = useState<string | null>(null);
+  const [sessionSharing, setSessionSharing] = useState<
+    'pending' | 'shared' | 'unavailable' | 'changed'
+  >('pending');
   const [configBusy, setConfigBusy] = useState(false);
   const configLock = useRef(false);
   const [step, setStep] = useState(-1);
@@ -143,7 +132,27 @@ function App() {
   const [streaming, setStreaming] = useState(false);
   const streamRef = useRef(false);
   const lock = useRef(false);
-  function failLab(e: unknown) {
+  const ownerPageEpoch = useRef(0);
+  const ownerPageActive = useRef(false);
+  useLayoutEffect(() => {
+    ownerPageEpoch.current++;
+    ownerPageActive.current = page === 'playground';
+    return () => {
+      ownerPageEpoch.current++;
+      ownerPageActive.current = false;
+    };
+  }, [page]);
+  function ownerTask(): OwnerPageTask {
+    return { epoch: ownerPageEpoch.current };
+  }
+  function currentTask(task: OwnerPageTask) {
+    return ownerPageActive.current && task.epoch === ownerPageEpoch.current;
+  }
+  function checkTask(task: OwnerPageTask) {
+    if (!currentTask(task)) throw new Error('The originating lab page is no longer active.');
+  }
+  function failLab(e: unknown, task: OwnerPageTask) {
+    if (!currentTask(task)) return;
     refreshSeq.current++;
     streamRef.current = false;
     stopController.current?.abort();
@@ -168,9 +177,11 @@ function App() {
     );
     setNotice(LAB_UNCONFIRMED_NOTICE);
   }
-  async function refresh() {
+  async function refresh(task: OwnerPageTask) {
+    checkTask(task);
     const seq = ++refreshSeq.current;
     const result = await api<Omit<Snapshot, 'colo'>>('state');
+    checkTask(task);
     if (seq !== refreshSeq.current) return;
     receivedAt.current = Date.now();
     setSnapshot({ ...result.data, colo: result.colo });
@@ -184,10 +195,29 @@ function App() {
   }
   useEffect(() => {
     if (page !== 'playground') return;
+    const task = ownerTask();
+    if (!currentTask(task)) return;
     let active = true;
+    const id = getMainLabSession();
+    setLabSession(id);
+    const checkSharing = () => {
+      const existing = readExistingLabSession();
+      setSessionSharing(
+        existing.status === 'storage-unavailable'
+          ? 'unavailable'
+          : existing.status === 'available' && existing.id === id
+            ? 'shared'
+            : 'changed',
+      );
+    };
+    checkSharing();
+    const storageChanged = (event: StorageEvent) => {
+      if (event.key === LAB_SESSION_KEY || event.key === null) checkSharing();
+    };
+    window.addEventListener('storage', storageChanged);
     setStateConfirmed(false);
-    refresh().catch((e) => {
-      if (active) failLab(e);
+    refresh(task).catch((e) => {
+      if (active) failLab(e, task);
     });
     const timer = setInterval(() => setTick(Date.now()), 250);
     return () => {
@@ -196,43 +226,48 @@ function App() {
       streamRef.current = false;
       stopController.current?.abort();
       clearInterval(timer);
+      window.removeEventListener('storage', storageChanged);
     };
   }, [page]);
-  async function run(label: string, fn: () => Promise<void>) {
-    if (lock.current) return;
+  async function run(label: string, fn: (task: OwnerPageTask) => Promise<void>) {
+    const task = ownerTask();
+    if (lock.current || !currentTask(task)) return;
     lock.current = true;
     setBusy(label);
     setError('');
     try {
-      await fn();
-      await refresh();
+      await fn(task);
+      await refresh(task);
     } catch (e) {
+      if (!currentTask(task)) return;
       if ((e as Error).name === 'AbortError')
         setNotice((previous) =>
           previous === LAB_UNCONFIRMED_NOTICE
             ? previous
             : 'Experiment stopped. Completed requests are kept in the log.',
         );
-      else failLab(e);
+      else failLab(e, task);
     } finally {
       lock.current = false;
       setBusy('');
       stopController.current = null;
     }
   }
-  const update = async (patch: Partial<Config>) => {
+  const update = async (patch: Partial<Config>, task: OwnerPageTask) => {
+    checkTask(task);
     await api('config', patch);
-    await refresh();
+    await refresh(task);
   };
   async function configure(patch: Partial<Config>) {
-    if (configLock.current || (lock.current && !streamRef.current)) return;
+    const task = ownerTask();
+    if (!currentTask(task) || configLock.current || (lock.current && !streamRef.current)) return;
     configLock.current = true;
     setConfigBusy(true);
     setError('');
     try {
-      await update(patch);
+      await update(patch, task);
     } catch (e) {
-      failLab(e);
+      failLab(e, task);
     } finally {
       configLock.current = false;
       setConfigBusy(false);
@@ -242,62 +277,79 @@ function App() {
     streamRef.current = false;
     stopController.current?.abort();
   }
-  async function send() {
+  async function send(task: OwnerPageTask) {
+    checkTask(task);
     await api('request', {});
+    checkTask(task);
   }
   function burst() {
-    return run('burst', async () => {
+    return run('burst', async (task) => {
       setNotice(
         'Sending 24 concurrent requests. Watch the shared token bucket enforce one budget.',
       );
-      await Promise.all(Array.from({ length: 24 }, send));
+      await Promise.all(Array.from({ length: 24 }, () => send(task)));
+      checkTask(task);
       setNotice('Burst complete. Rejected requests return HTTP 429 with a Retry-After header.');
     });
   }
   function demo() {
-    return run('demo', async () => {
+    return run('demo', async (task) => {
       const controller = new AbortController();
       stopController.current = controller;
-      const check = () => controller.signal.throwIfAborted();
-      const wait = (ms: number) => pause(ms, controller.signal);
+      const check = () => {
+        checkTask(task);
+        controller.signal.throwIfAborted();
+      };
+      const wait = async (ms: number) => {
+        check();
+        await pause(ms, controller.signal);
+        check();
+      };
       setStep(0);
       setSent(0);
       setSelectedEvent(null);
       await api('reset', {});
       check();
-      await update({ capacity: 30, refillPerSecond: 10 });
+      await update({ capacity: 30, refillPerSecond: 10 }, task);
+      check();
       setNotice(
         'Warm the cache: healthy requests create a real catalog response in the origin Worker.',
       );
       for (let i = 0; i < 3; i++) {
         check();
-        await send();
+        await send(task);
+        check();
         setSent(i + 1);
-        await refresh();
+        await refresh(task);
         await wait(250);
       }
       check();
       setStep(1);
-      await update({ originMode: 'failing' });
+      await update({ originMode: 'failing' }, task);
+      check();
       setNotice('Inject an outage: the circuit opens and replays the last good response.');
       for (let i = 0; i < 7; i++) {
         check();
-        await send();
+        await send(task);
+        check();
         setSent(i + 4);
-        await refresh();
+        await refresh(task);
         await wait(200);
       }
       check();
       setStep(2);
-      await update({ originMode: 'healthy' });
+      await update({ originMode: 'healthy' }, task);
+      check();
       setNotice('Restore health: waiting for cooldown before one recovery probe.');
       await wait(4200);
       check();
-      await send();
-      setSent(11);
-      await refresh();
+      await send(task);
       check();
-      await update({ capacity: 12, refillPerSecond: 4 });
+      setSent(11);
+      await refresh(task);
+      check();
+      await update({ capacity: 12, refillPerSecond: 4 }, task);
+      check();
       setStep(3);
       setNotice(
         'Demo complete. Inspect a cached request to compare its payload revision with an origin response.',
@@ -309,23 +361,27 @@ function App() {
       stop();
       return;
     }
+    if (!currentTask(ownerTask())) return;
     streamRef.current = true;
     setStreaming(true);
     setSent(0);
     setStep(-1);
-    await run('stream', async () => {
+    await run('stream', async (task) => {
       const controller = new AbortController();
       stopController.current = controller;
       setNotice(
         'Steady traffic is running. Change origin health or the timeout budget to test a failure live.',
       );
       for (let i = 0; i < 60 && streamRef.current; i++) {
+        checkTask(task);
         controller.signal.throwIfAborted();
-        await send();
+        await send(task);
+        checkTask(task);
         setSent(i + 1);
-        await refresh();
+        await refresh(task);
         await pause(1000, controller.signal);
       }
+      checkTask(task);
       setNotice('Traffic complete. Inspect the log or export the experiment.');
     });
     streamRef.current = false;
@@ -360,7 +416,7 @@ function App() {
       ? Math.max(0, Math.ceil((s.config.cooldownMs - (serverNow - s.openedAt)) / 1000))
       : 0;
   return (
-    <div className="app-shell">
+    <div className={`app-shell${page === 'observer' ? ' observer-shell' : ''}`}>
       <aside className="sidebar">
         <a
           href="#"
@@ -428,7 +484,7 @@ function App() {
             </a>
           </div>
           <div className="sidebar-footer">
-            <span className="tiny-dot" /> EdgeLab v3.4.2 <span>TS</span>
+            <span className="tiny-dot" /> EdgeLab v3.5.0 <span>TS</span>
           </div>
         </div>
       </aside>
@@ -441,9 +497,11 @@ function App() {
                 ? 'Service operations'
                 : page === 'playground'
                   ? 'Reliability playground'
-                  : page === 'architecture'
-                    ? 'Architecture'
-                    : 'Field notes'}
+                  : page === 'observer'
+                    ? 'Live lab observer'
+                    : page === 'architecture'
+                      ? 'Architecture'
+                      : 'Field notes'}
             </span>
           </div>
           <div className="topbar-right">
@@ -453,15 +511,17 @@ function App() {
               />
               {page === 'operations'
                 ? 'Persistent monitoring'
-                : page !== 'playground'
-                  ? 'Read-only field guide'
-                  : !stateConfirmed
-                    ? 'Lab state unconfirmed'
-                    : snapshot
-                      ? snapshot.colo === 'LOCAL'
-                        ? 'Local runtime'
-                        : `${snapshot.colo} · Edge connected`
-                      : 'Connecting'}
+                : page === 'observer'
+                  ? 'Observer connection below'
+                  : page !== 'playground'
+                    ? 'Read-only field guide'
+                    : !stateConfirmed
+                      ? 'Lab state unconfirmed'
+                      : snapshot
+                        ? snapshot.colo === 'LOCAL'
+                          ? 'Local runtime'
+                          : `${snapshot.colo} · Edge connected`
+                        : 'Connecting'}
             </span>
             <a
               href="https://developers.cloudflare.com/workers/"
@@ -484,33 +544,65 @@ function App() {
                   ? 'Know when reliability slips.'
                   : page === 'playground'
                     ? 'Break things. Build resilience.'
-                    : page === 'architecture'
-                      ? 'Under the hood.'
-                      : 'Make the work count.'}
+                    : page === 'observer'
+                      ? 'Watch the same lab, live.'
+                      : page === 'architecture'
+                        ? 'Under the hood.'
+                        : 'Make the work count.'}
               </h1>
               <p>
                 {page === 'operations'
                   ? 'Continuous checks, accountable incidents, and reliability backed by evidence.'
                   : page === 'playground'
                     ? 'A hands-on lab for the systems that keep the Internet running.'
-                    : page === 'architecture'
-                      ? 'Scheduled monitoring and isolated resilience experiments, with durable coordination.'
-                      : 'Operating evidence, reproducible failures, and engineering tradeoffs you can explain.'}
+                    : page === 'observer'
+                      ? 'Committed decisions from your synthetic lab, streamed to a second tab.'
+                      : page === 'architecture'
+                        ? 'Scheduled monitoring and isolated resilience experiments, with durable coordination.'
+                        : 'Operating evidence, reproducible failures, and engineering tradeoffs you can explain.'}
               </p>
             </div>
             {page === 'playground' && (
-              <button
-                className="button primary"
-                disabled={busy !== 'demo' && disabled}
-                onClick={busy === 'demo' ? stop : demo}
-              >
-                {busy === 'demo' ? (
-                  <LoaderCircle className="spin" size={16} />
-                ) : (
-                  <Play size={15} fill="currentColor" />
-                )}{' '}
-                {busy === 'demo' ? 'Stop demo' : 'Run guided demo'}
-              </button>
+              <div className="lab-heading-actions">
+                <button
+                  className="button primary"
+                  disabled={busy !== 'demo' && disabled}
+                  onClick={busy === 'demo' ? stop : demo}
+                >
+                  {busy === 'demo' ? (
+                    <LoaderCircle className="spin" size={16} />
+                  ) : (
+                    <Play size={15} fill="currentColor" />
+                  )}{' '}
+                  {busy === 'demo' ? 'Stop demo' : 'Run guided demo'}
+                </button>
+                <div className="lab-observer-entry">
+                  {sessionSharing === 'shared' ? (
+                    <a
+                      className="button"
+                      href="#observer"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Open live observer in a new tab"
+                    >
+                      <Radio size={15} /> Open live observer <ArrowUpRight size={14} />
+                    </a>
+                  ) : (
+                    <>
+                      <button className="button" disabled aria-describedby="observer-sharing-help">
+                        <Radio size={15} /> Open live observer
+                      </button>
+                      <small id="observer-sharing-help">
+                        {sessionSharing === 'changed'
+                          ? 'The shared session is missing or has changed. Reload this lab before opening an observer.'
+                          : sessionSharing === 'pending'
+                            ? 'Preparing the shared lab session.'
+                            : 'Browser storage is unavailable; this lab session cannot be shared with another tab.'}
+                      </small>
+                    </>
+                  )}
+                </div>
+              </div>
             )}
           </div>
           {error && page === 'playground' && (
@@ -586,8 +678,9 @@ function App() {
                   className="scenario"
                   disabled={disabled}
                   onClick={() =>
-                    run('outage', async () => {
-                      await update({ originMode: 'failing' });
+                    run('outage', async (task) => {
+                      await update({ originMode: 'failing' }, task);
+                      checkTask(task);
                       setNotice(
                         'Origin is failing. Send requests to trip the circuit. Warm the cache first to see fallback.',
                       );
@@ -608,8 +701,9 @@ function App() {
                   className="scenario"
                   disabled={disabled}
                   onClick={() =>
-                    run('recover', async () => {
-                      await update({ originMode: 'healthy' });
+                    run('recover', async (task) => {
+                      await update({ originMode: 'healthy' }, task);
+                      checkTask(task);
                       setNotice(
                         'Origin is healthy. After cooldown, the next request becomes a recovery probe.',
                       );
@@ -1057,8 +1151,9 @@ function App() {
                         className="reset-button"
                         disabled={disabled}
                         onClick={() =>
-                          run('reset', async () => {
+                          run('reset', async (task) => {
                             await api('reset', {});
+                            checkTask(task);
                             setStep(-1);
                             setSelectedEvent(null);
                             setFilter('all');
@@ -1081,11 +1176,13 @@ function App() {
                   </div>
                   <div className="session-info">
                     <span className="tiny-dot" /> Expires after 24h idle · session{' '}
-                    <span className="mono">{labId.slice(0, 8)}</span>
+                    <span className="mono">{labSession?.slice(0, 8) ?? 'connecting'}</span>
                   </div>
                 </aside>
               </div>
             </>
+          ) : page === 'observer' ? (
+            <LabObserver />
           ) : page === 'architecture' ? (
             <Architecture />
           ) : (
@@ -1099,7 +1196,9 @@ function App() {
           </footer>
         </main>
       </div>
-      <RequestInspector event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+      {page === 'playground' && (
+        <RequestInspector event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+      )}
     </div>
   );
 }

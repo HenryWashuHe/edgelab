@@ -22,7 +22,7 @@ The [storage incident case study](docs/CASE_STUDY.md) explains a real quota fail
 - **Operator access:** a deployment secret gates writes and audit access. The browser stores the token only in memory. Same-origin checks, bounded payloads, optimistic writes, and deploy-time target enrollment define the boundary.
 - **Evidence-grounded incident briefs:** an operator can request a bounded Workers AI investigation brief when inference is enabled. Frozen observations, policy history, limits and a SHA-256 hash supply deterministic facts; separately labeled AI hypotheses must cite relevant evidence. Durable request IDs prevent automatic redispatch after response loss or interruption.
 - **Public evidence explorer:** three pinned controlled scenarios expose frozen facts, citations, policy context and input limits without operator access. Verify a snapshot hash or compare an altered copy locally. Explanations are human-authored canned test responses; interactions make no application API or native AI calls.
-- **Engineering lab:** isolated per-session token buckets, circuit breakers, actual cached payloads, timeout experiments, traces, CSV/JSON export, and cancellable guided runs.
+- **Engineering lab:** isolated per-session token buckets, circuit breakers, actual cached payloads, timeout experiments, traces, CSV/JSON export, and cancellable guided runs. A second tab observes committed changes through hibernating WebSockets without renewing the run's idle lease.
 - **Evidence:** deterministic unit tests, real workerd/SQLite fault tests, local and live HTTP verification, and repeatable concurrency benchmarks with raw results.
 
 ## Quick start
@@ -64,6 +64,7 @@ flowchart LR
   E[Public controlled explorer] --> F[Static assets / frozen examples]
   E --> V[Local browser hash verification]
   G --> L[ReliabilityLab / per-session SQLite DO]
+  O[Live lab observer / up to four tabs] <-->|Read-only WebSocket| G
   L --> P
 ```
 
@@ -92,6 +93,7 @@ No paid feature is required by the code. Usage depends on targets, probes, publi
 ```sh
 npm run check             # formatting, unit tests, TS/build, both deployment dry-runs
 npm run test:lifecycle    # actual lab eviction, expiry alarms, late completion fencing
+npm run test:lab-observer # live sockets, actual hibernation, committed ordering and cost parity
 npm run test:monitor      # actual monitor auth, incidents, concurrency, leases, retention
 npm run test:incident     # incident evidence, private notes, pagination, idempotency
 npm run test:upgrade      # migration and observation timing

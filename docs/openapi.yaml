@@ -1,10 +1,11 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.4.2
+  version: 3.5.0
   description: |
     Public monitoring read model and single-owner operator control plane.
-    Laboratory endpoints are documented in LAB.md. No public probe or target-enrollment endpoint exists.
+    HTTP laboratory controls are documented in LAB.md; the observer upgrade and message schema are below.
+    No public probe or target-enrollment endpoint exists.
     All responses disable caching. Operations API browser Origins must match the API origin.
     Sampled-check budget signals are recorded by scheduled monitoring runs; public reads only age
     persisted evidence. Signals do not deliver notifications or change incident state.
@@ -29,6 +30,93 @@ paths:
                   colo: { type: string }
                   platform: { type: string }
                   origin: { type: string }
+  /api/observe:
+    get:
+      summary: Read-only WebSocket observation of an existing synthetic lab
+      description: |
+        Requires a same-origin browser handshake, no query parameters and exactly two offered
+        subprotocols in order: edgelab-observer-v1, edgelab-cap.<UUID-v4>. The capability retains
+        authority over the HTTP lab controls; this interface is not a separate authorization role.
+        The server selects only edgelab-observer-v1. At most four observers attach to one run.
+        Attachment, reconnect and idle sockets never initialize state, renew the lease or set alarms.
+        A snapshot contains up to twelve outcomes; each update contains at most one. Frames are
+        allowlisted and bounded to 16384 encoded bytes. Tokens are committed, not estimated refill.
+        Legacy metadata is revision zero with null committedAt in a snapshot only. New writes have
+        positive revisions and an actual commit timestamp. Reset changes runId and advances revision.
+        No commands, application heartbeat or polling timer exist. Every incoming application message
+        closes the socket: 1008 for read-only violation, 1009 above the byte bound. Known idle expiry
+        sends an expired terminal frame and closes 4001. Handled storage failures attempt a sanitized
+        unavailable frame and close 1011; failures inside the concurrency block can reset the object
+        and interrupt the connection without that frame. Browser upgrade failures and interruptions
+        may be opaque and cannot identify a specific HTTP cause. Natural TCP shutdown timing is not
+        established by local tests; received close codes and application membership are verified.
+      x-websocket-message-schema:
+        $ref: '#/components/schemas/LabObserverFrame'
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: Must equal the request URL origin.
+          schema: { type: string, format: uri }
+        - in: header
+          name: Upgrade
+          required: true
+          schema: { type: string, enum: [websocket] }
+        - in: header
+          name: Sec-WebSocket-Protocol
+          required: true
+          description: The ordered version/capability pair; optional surrounding whitespace is trimmed.
+          schema: { type: string, maxLength: 128 }
+      responses:
+        '101':
+          description: WebSocket accepted; message schema is the x-websocket-message-schema extension, not an HTTP JSON body.
+          headers:
+            Sec-WebSocket-Protocol:
+              schema: { type: string, const: edgelab-observer-v1 }
+            Cache-Control:
+              schema: { type: string, const: no-store }
+        '400':
+          description: Query parameters or missing, malformed, oversized, extra or out-of-order protocols.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing or mismatched Origin.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: No existing source run; observation cannot create one.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '405': { $ref: '#/components/responses/Error' }
+        '410':
+          description: The existing run has passed its idle deadline.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '426':
+          description: WebSocket Upgrade required.
+          headers:
+            Upgrade:
+              schema: { type: string, const: websocket }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Four observers already attached; existing clients are not displaced.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '503':
+          description: Deadline unavailable, projection invalid or storage unavailable. Current state is unconfirmed.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Error'
+                  - $ref: '#/components/schemas/LabStorageUnavailable'
   /api/ready:
     get:
       summary: Read-only readiness of autonomous monitoring
@@ -449,6 +537,143 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    LabObserverTimestamp:
+      type: integer
+      minimum: 0
+      maximum: 8640000000000000
+      description: Safe renderable Unix milliseconds; never supplied by the browser.
+    LabStorageUnavailable:
+      type: object
+      additionalProperties: false
+      required: [error, code, reason, retryAtUTC]
+      properties:
+        error: { type: string }
+        code: { type: string, const: lab-storage-unavailable }
+        reason: { type: string, enum: [daily-read-limit, daily-write-limit, storage-unavailable] }
+        retryAtUTC: { type: [string, 'null'], format: date-time }
+    LabObserverFrame:
+      oneOf:
+        - $ref: '#/components/schemas/LabObserverDataFrame'
+        - $ref: '#/components/schemas/LabObserverTerminalFrame'
+    LabObserverTerminalFrame:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, kind, reason, now]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        kind: { type: string, enum: [expired, unavailable] }
+        reason: { type: string, enum: [idle-expired, lab-unavailable] }
+        now: { $ref: '#/components/schemas/LabObserverTimestamp' }
+      allOf:
+        - if:
+            properties:
+              kind: { const: expired }
+          then:
+            properties:
+              reason: { const: idle-expired }
+          else:
+            properties:
+              reason: { const: lab-unavailable }
+    LabObserverDataFrame:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, kind, runId, revision, committedAt, now, expiresAt, state, events]
+      description: |
+        expiresAt must be later than now; committedAt and event times must not be in the future.
+        Zero revision is legacy snapshot-only with null committedAt. Positive revision requires
+        nonnull committedAt. Each event ID is unique. Pending equals total minus the sum of counts.
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        kind: { type: string, enum: [snapshot, update] }
+        runId:
+          type: string
+          format: uuid
+          pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+        revision: { type: integer, minimum: 0, maximum: 9007199254740991 }
+        committedAt:
+          oneOf:
+            - $ref: '#/components/schemas/LabObserverTimestamp'
+            - { type: 'null' }
+        now: { $ref: '#/components/schemas/LabObserverTimestamp' }
+        expiresAt: { $ref: '#/components/schemas/LabObserverTimestamp' }
+        state: { $ref: '#/components/schemas/LabObserverState' }
+        events:
+          type: array
+          maxItems: 12
+          items: { $ref: '#/components/schemas/LabObserverEvent' }
+      allOf:
+        - if:
+            properties:
+              kind: { const: update }
+          then:
+            properties:
+              events: { maxItems: 1 }
+        - if:
+            properties:
+              revision: { const: 0 }
+          then:
+            properties:
+              kind: { const: snapshot }
+              committedAt: { type: 'null' }
+          else:
+            properties:
+              committedAt: { $ref: '#/components/schemas/LabObserverTimestamp' }
+    LabObserverState:
+      type: object
+      additionalProperties: false
+      required: [config, tokens, circuit, failures, total, originCalls, counts]
+      description: Tokens must not exceed capacity; originCalls and summed outcome counts must not exceed total.
+      properties:
+        config:
+          type: object
+          additionalProperties: false
+          required:
+            [
+              capacity,
+              refillPerSecond,
+              failureThreshold,
+              cooldownMs,
+              originLatencyMs,
+              originTimeoutMs,
+              staleFallback,
+              originMode,
+            ]
+          properties:
+            capacity: { type: integer, minimum: 1, maximum: 50 }
+            refillPerSecond: { type: integer, minimum: 1, maximum: 20 }
+            failureThreshold: { type: integer, minimum: 1, maximum: 10 }
+            cooldownMs: { type: integer, minimum: 1000, maximum: 15000 }
+            originLatencyMs: { type: integer, minimum: 20, maximum: 3000 }
+            originTimeoutMs: { type: integer, minimum: 100, maximum: 5000 }
+            staleFallback: { type: boolean }
+            originMode: { type: string, enum: [healthy, failing, flaky] }
+        tokens: { type: number, minimum: 0, maximum: 50 }
+        circuit: { type: string, enum: [closed, open, half-open] }
+        failures: { type: integer, minimum: 0, maximum: 9007199254740991 }
+        total: { type: integer, minimum: 0, maximum: 9007199254740991 }
+        originCalls: { type: integer, minimum: 0, maximum: 9007199254740991 }
+        counts:
+          type: object
+          additionalProperties: false
+          required: [origin, stale, limited, blocked, error]
+          properties:
+            origin: { type: integer, minimum: 0, maximum: 9007199254740991 }
+            stale: { type: integer, minimum: 0, maximum: 9007199254740991 }
+            limited: { type: integer, minimum: 0, maximum: 9007199254740991 }
+            blocked: { type: integer, minimum: 0, maximum: 9007199254740991 }
+            error: { type: integer, minimum: 0, maximum: 9007199254740991 }
+    LabObserverEvent:
+      type: object
+      additionalProperties: false
+      required: [id, at, latencyMs, outcome, status, circuit, originAttempted]
+      properties:
+        id: { type: integer, minimum: 1, maximum: 9007199254740991 }
+        at: { $ref: '#/components/schemas/LabObserverTimestamp' }
+        latencyMs: { type: number, minimum: 0 }
+        outcome: { type: string, enum: [origin, stale, limited, blocked, error] }
+        status: { type: integer, minimum: 100, maximum: 599 }
+        circuit: { type: string, enum: [closed, open, half-open] }
+        originAttempted: { type: boolean }
     MonitoringUnavailable:
       type: object
       required: [error, code, reason, retryAtUTC]

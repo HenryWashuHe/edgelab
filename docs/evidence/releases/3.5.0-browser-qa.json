@@ -1,0 +1,232 @@
+{
+  "verifiedAt": "2026-09-30T10:18:23.803249+00:00",
+  "release": "3.5.0",
+  "environment": {
+    "browser": "Codex in-app Chromium",
+    "gateway": "actual local workerd/SQLite via Miniflare",
+    "origin": "actual private origin Worker",
+    "localOnly": true,
+    "productionRequests": 0,
+    "nativeInferenceCalls": 0,
+    "idleTTLms": 60000
+  },
+  "finalSource": {
+    "measuredAt": "2026-09-30T10:15:55.552Z",
+    "sourceSHA256": {
+      "worker/index.ts": "83aa66600380d8688a7a311c2a605a7acf90b848437903dd5c1209be068ea53e",
+      "worker/engine.ts": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+      "worker/lab-observer.ts": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+      "src/main.tsx": "e27a9f6281af30172257223866be09953668a3de615a212cc7eb8093b688e2cc",
+      "src/LabObserver.tsx": "4ae8b541f4a5196039f2810eb8f0fbb4e65625a63457e94ff9406b08b6fa23b3",
+      "src/lab-session.ts": "fda5a9c5ee0303dfbf5330fd8583d47ed364ad29efb2cedce3dc8c8c6afb857e",
+      "src/lab-observer.css": "b3079ad984de1b60e54a4f961be68063211bd9418a8d1cc01133560e7c3e1783"
+    },
+    "bundleSHA256": "ade4d7e4a1f3dd8503b885c27490bdd7ab8c482af30d9fe6a6c242ddbbf2c87f",
+    "assetSHA256": {
+      "index-C6SbfejU.css": "e7fbe042a756b6e33f83c12eb4201cf6e2522ded214608e5a049963fc361e613",
+      "index-D4eEcigu.js": "4b445ebf9e3d15f236f3493476c3bfb98713065296d8577e64b8319099ded19a"
+    }
+  },
+  "assertions": [
+    "Final assets: 24 concurrent evaluated requests settle as 13 origin successes and 11 rate limits; pending is visible during completion, then zero; newest events stay bounded at twelve.",
+    "Final assets: two consecutive connected resets change run identity and emit distinct revision-bearing polite status announcements.",
+    "Final assets: deliberate disconnect retains cached/unconfirmed evidence; reconnect makes one GET /api/observe upgrade and no HTTP command/state request; source revision and actual commit time stay unchanged.",
+    "Final assets: actual 390px viewport has document clientWidth/scrollWidth 390/390; configuration disclosure wraps and stays keyboard focusable; viewport override reset.",
+    "Final assets: desktop document clientWidth/scrollWidth 1280/1280; final desktop and mobile console warning/error lists empty.",
+    "Earlier candidate: two browser sockets survive forced actual hibernation with a changed constructor boot ID and receive subsequent pending/settled revisions without reconnect.",
+    "Earlier candidate: navigation away during a slow dispatched owner request permits that request to settle but suppresses its abandoned follow-up state GET.",
+    "Earlier candidate: idle alarm expires connected viewers; retained evidence is historical/unconfirmed, and a later legitimate owner run requires manual observer reconnect.",
+    "Earlier candidate: an actually delivered invalid timestamp frame closes the view as invalid evidence without a Date formatting crash or renewed cached timestamps.",
+    "Earlier candidate: observer-only entry with no saved capability remains missing after Connect and makes zero application API requests."
+  ],
+  "witnesses": {
+    "consecutiveResetAnnouncements": {
+      "verifiedAt": "2026-09-30T10:16:11.935Z",
+      "first": ["New lab run loaded, revision 3. Showing its recorded outcomes."],
+      "second": ["New lab run loaded, revision 6. Showing its recorded outcomes."],
+      "distinct": true
+    },
+    "reconnect": {
+      "verifiedAt": "2026-09-30T10:16:52.258Z",
+      "before": "Committed evidenceRun 836a2528 \u00b7 revision 69Committed 2026-09-30 10:16:27.112 UTCSnapshot received from server time 2026-09-30 10:16:27.112 UTC",
+      "after": "Committed evidenceRun 836a2528 \u00b7 revision 69Committed 2026-09-30 10:16:27.112 UTCSnapshot received from server time 2026-09-30 10:16:51.866 UTC",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/observe",
+          "status": 101,
+          "at": "2026-09-30T10:16:51.867Z"
+        }
+      ]
+    },
+    "mobile": {
+      "verifiedAt": "2026-09-30T10:17:37.251Z",
+      "bounds": {
+        "client": 390,
+        "scroll": 390
+      },
+      "logs": []
+    },
+    "hibernation": {
+      "localOnly": true,
+      "before": {
+        "bootId": "8299d43a-4e52-45d9-b74c-19ef46724e22",
+        "runId": "0f1fe3af-0b9c-42d7-a275-fa0452fccd69",
+        "revision": 11,
+        "committedAt": 1790761757464,
+        "expiresAt": 1790761817464,
+        "alarmAt": 1790761817464,
+        "total": 1,
+        "counts": {
+          "origin": 1,
+          "stale": 0,
+          "limited": 0,
+          "blocked": 0,
+          "error": 0
+        },
+        "eventCount": 1,
+        "observerCount": 2
+      },
+      "evicted": {
+        "localOnly": true,
+        "hibernated": true
+      },
+      "after": {
+        "bootId": "2b5121ca-64b3-4195-8bd9-181e57b7e163",
+        "runId": "0f1fe3af-0b9c-42d7-a275-fa0452fccd69",
+        "revision": 11,
+        "committedAt": 1790761757464,
+        "expiresAt": 1790761817464,
+        "alarmAt": 1790761817464,
+        "total": 1,
+        "counts": {
+          "origin": 1,
+          "stale": 0,
+          "limited": 0,
+          "blocked": 0,
+          "error": 0
+        },
+        "eventCount": 1,
+        "observerCount": 2
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/state",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/api/observe",
+          "status": 101
+        },
+        {
+          "method": "GET",
+          "path": "/api/observe",
+          "status": 101
+        },
+        {
+          "method": "POST",
+          "path": "/api/config",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/api/state",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "path": "/api/config",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/api/state",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "path": "/api/request",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/api/state",
+          "status": 200
+        }
+      ]
+    },
+    "abandonedOwnerNavigation": {
+      "requestOffset": 18,
+      "at": "2026-09-30T09:52:45.396Z",
+      "case": "same-tab pending owner request followed by back to observer",
+      "verifiedAt": "2026-09-30T09:53:01.183Z",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/observe",
+          "status": 101
+        },
+        {
+          "method": "POST",
+          "path": "/api/request",
+          "status": 200
+        }
+      ],
+      "ownerFollowupStateReads": 0
+    },
+    "connectedReset": {
+      "before": {
+        "events": 1,
+        "provenance": "Committed evidenceRun 9b2ed7e9 \u00b7 revision 7Committed 2026-09-30 10:06:35.290 UTCSnapshot received from server time 2026-09-30 10:06:35.290 UTC",
+        "summary": "CircuitClosed0 consecutive failuresCommitted tokens11.0 / 12Balance at commit; refill is not simulated.Settled requests1 / 11 requests evaluated in this runPending requests01 origin attempts in this run"
+      },
+      "after": {
+        "events": 0,
+        "provenance": "Committed evidenceRun 4b84d7d8 \u00b7 revision 10Committed 2026-09-30 10:06:52.139 UTCSnapshot received from server time 2026-09-30 10:06:52.139 UTC",
+        "summary": "CircuitClosed0 consecutive failuresCommitted tokens12.0 / 12Balance at commit; refill is not simulated.Settled requests0 / 00 requests evaluated in this runPending requests00 origin attempts in this run"
+      }
+    },
+    "missingSession": {
+      "requestOffset": 23,
+      "at": "2026-09-30T09:59:32.168Z",
+      "verifiedAt": "2026-09-30T10:00:14.397Z",
+      "requests": [],
+      "assertion": "Observer-only missing session stays missing after Connect; no application API requests."
+    },
+    "invalidFrame": {
+      "at": "2026-09-30T09:55:20.336Z",
+      "status": 200,
+      "data": {
+        "localOnly": true,
+        "sent": 1
+      }
+    }
+  },
+  "captures": {
+    "edgelab-observer-desktop-v3.5.0.png": {
+      "localPath": "output/edgelab-observer-desktop-v3.5.0.png",
+      "sha256": "d521a291c7fd4b52f053e21ae9a90d6a74f2a17e29d5004a539035680a547182"
+    },
+    "edgelab-observer-mobile-v3.5.0.png": {
+      "localPath": "output/edgelab-observer-mobile-v3.5.0.png",
+      "sha256": "3634a334726ec9e3e077a888b78d1586ac25e9665ef8a082cb3496bfab97e3b0"
+    },
+    "edgelab-observer-invalid-frame-v3.5.0.png": {
+      "localPath": "output/edgelab-observer-invalid-frame-v3.5.0.png",
+      "sha256": "91e25fa4a2366eb6035081ab3a658b69e8b1989e75e683eeee8f8de291695b7d"
+    },
+    "edgelab-observer-no-session-v3.5.0.png": {
+      "localPath": "output/edgelab-observer-no-session-v3.5.0.png",
+      "sha256": "63c23059a9e7bd5a82fc95b28a8f8ae139d60ceaae591921001505d0c5110170"
+    }
+  },
+  "limitations": [
+    "Earlier candidate cases preceded the final warm-expiry/metadata guards and two small client review corrections. Final assets repeat burst, consecutive resets, reconnect and mobile verification; the final 26-group runtime report covers backend guards.",
+    "Actual browser testing did not separately inject storage denial, cross-tab capability replacement or a restored lower-revision snapshot. Those paths were reviewed in source; broad keyboard or assistive-technology compatibility is not claimed.",
+    "Forced hibernation and controlled local clocks/faults do not establish natural production timing, CPU, billing, throughput or healthy production storage.",
+    "Production successful observer upgrade remains pending the account storage reset; native inference remains disabled."
+  ],
+  "result": "passed within stated scope"
+}

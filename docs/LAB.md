@@ -10,6 +10,8 @@ The gateway calls a **separate private origin Worker through a service binding**
 
 Version 2 adds actual cached payloads, configurable timeouts, automatic idle cleanup, a keyboard-accessible request inspector, CSV exports, cancellable guided experiments, and controls that stay available during steady traffic.
 
+Version 3.5 adds a live observer in a second tab. It streams committed token reservations, circuit changes, pending requests and the latest twelve outcomes through the Durable Object's Hibernation WebSocket API. Watching sends no experiment commands and does not renew the run's idle deadline.
+
 Storage failures return JSON503 with code `lab-storage-unavailable`, a sanitized reason and a known UTC reset time when available. The browser marks current state unconfirmed, pauses experiments, and retains cached logs as historical evidence. Reconnect performs one state read and never repeats an uncertain request, reset or configuration write. With no loaded snapshot, metrics and history remain unknown.
 
 ## Run locally
@@ -34,12 +36,14 @@ Open http://localhost:8787 and select **Run guided demo**. Wrangler starts both 
 5. **Slow origin:** expand Timing & recovery settings. Set origin delay above the timeout budget. Without a populated cache, the gateway returns 504 and counts a circuit failure.
 6. **Inspect a response:** click a request time. Compare the revision and generatedAt fields of a fresh and cached response. Request IDs, retry hints, cache age, and origin attempts are recorded.
 7. **Export JSON / CSV:** JSON includes configuration and all-run counters. CSV includes chronological event rows. Both export the latest 180 events; the table shows 30 matching events and the chart shows 60.
+8. **Observe another tab:** select **Open live observer** beside the guided demo. Keep the main lab open and send a burst, change the origin, or reset. The observer shows actual committed token balances without simulating refill. Disconnect preserves clearly cached evidence; reconnect obtains a new snapshot without replaying a command. The tabs must share browser storage. Opening the observer alone cannot create a run.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     B[Browser / API client] --> W[Cloudflare Worker]
+    V[Observer tab] <-->|Read-only WebSocket| W
     W --> D[Per-lab Durable Object]
     D --> T[Token bucket + circuit breaker]
     T -->|Service binding + timeout| O[Private catalog Worker]
@@ -53,7 +57,8 @@ flowchart LR
 - **Generation fencing:** late completions from an older circuit generation cannot change the new circuit. A run ID invalidates requests admitted before reset. A ten-second persisted probe lease recovers interrupted probes.
 - **Origin:** a separate Worker returns a versioned catalog response. Its workers.dev and preview routes are disabled; only the service binding is used. The gateway validates its response and applies a configurable timeout, including response-body consumption.
 - **Cache:** the actual last successful catalog payload and its capture timestamp. Failures and circuit bypasses may serve it for up to 60 seconds. Rate-limited requests still return 429.
-- **Storage:** state and a 180-row event ring survive object eviction. Counters cover the entire run, including admitted requests still in flight. Every API request renews a 24-hour idle deadline. A Durable Object alarm deletes SQL, KV, and alarm metadata after inactivity; late origin completions cannot resurrect the expired run. State created before v2 gains cleanup on its next API request.
+- **Storage:** state and a 180-row event ring survive object eviction. Counters cover the entire run, including admitted requests still in flight. The existing HTTP lab controls, including state refresh, renew a 24-hour idle deadline. Observer attachment and reconnect do not. An alarm deletes SQL, KV, and alarm metadata after inactivity. If owner activity reaches an expired run before a delayed alarm, it starts a new run; late origin completions cannot write into that new run. State created before v2 gains cleanup on its next owner HTTP request.
+- **Live observation:** at most four sockets attach to an existing run. A bounded allowlisted snapshot includes the latest twelve outcomes; each update includes at most one new outcome. A revision and actual commit timestamp accompany existing state writes. Legacy runs retain an unknown commit time until a real owner write. Fanout captures each commit once, with no query per observer, heartbeat, polling timer or command replay. See [ADR 008](adr/008-live-lab-observer.md).
 
 See [the engineering walkthrough](ENGINEERING.md) for invariants, limitations, and extension ideas. The app also has Architecture and Field notes views.
 
@@ -64,6 +69,7 @@ npm test                 # deterministic engine tests
 npm run build            # strict TypeScript + production frontend bundle
 npm run check            # formatting, tests, build, deployment dry-runs
 npm run test:lifecycle   # actual eviction, idle alarms, and post-expiry recovery
+npm run test:lab-observer # actual sockets, hibernation, ordering, rollback and storage measurements
 ```
 
 With `npm run dev` running in another terminal:
@@ -90,15 +96,18 @@ A public anonymous lab can be abused to create sessions and consume your account
 
 ## API
 
-All lab endpoints require a UUID v4 `X-Lab-ID` header. Keep it out of public screenshots or URLs if you want your demo session private. Same-origin browser requests and non-browser clients with the capability are accepted. All API responses disable caching.
+HTTP lab controls require a UUID v4 `X-Lab-ID` header. Keep it out of public screenshots or URLs if you want your demo session private. Same-origin browser requests and non-browser clients with the capability are accepted. All API responses disable caching.
 
-| Endpoint       | Method | Behavior                                                               |
-| -------------- | ------ | ---------------------------------------------------------------------- |
-| `/api/health`  | GET    | Worker health and actual edge colo, or `LOCAL`                         |
-| `/api/state`   | GET    | State snapshot and latest 180 completed events                         |
-| `/api/request` | POST   | Run one protected request; returns 200, 429, 502, 503, or 504          |
-| `/api/config`  | POST   | Apply bounded configuration fields                                     |
-| `/api/reset`   | POST   | Clear lab history and restore defaults; in-flight old work returns 409 |
+| Endpoint       | Method      | Behavior                                                                |
+| -------------- | ----------- | ----------------------------------------------------------------------- |
+| `/api/health`  | GET         | Worker health and actual edge colo, or `LOCAL`                          |
+| `/api/state`   | GET         | State snapshot and latest 180 completed events                          |
+| `/api/request` | POST        | Run one protected request; returns 200, 429, 502, 503, or 504           |
+| `/api/config`  | POST        | Apply bounded configuration fields                                      |
+| `/api/reset`   | POST        | Clear lab history and restore defaults; in-flight old work returns 409  |
+| `/api/observe` | GET upgrade | Attach to an existing run; read-only committed frames, no lease renewal |
+
+The observer handshake requires a same-origin `Origin`, `Upgrade: websocket`, no query parameters and exactly two offered subprotocols in order: `edgelab-observer-v1`, then `edgelab-cap.<UUID-v4>`. The server selects only the version protocol. The UUID still grants access to the HTTP controls; this interface is not a separate read-only authorization role. Frames omit cached payloads, request IDs, raw messages and the capability. Browser upgrade failures are opaque, so an unavailable connection cannot identify a quota failure or a fifth observer. Known expiry is shown only from a validated terminal frame or close code. The [API contract](openapi.yaml) records the upgrade and frame schemas.
 
 ```sh
 LAB_ID=$(node -e 'console.log(crypto.randomUUID())')
@@ -115,7 +124,9 @@ worker/engine.ts          deterministic admission and recovery state machine
 worker/index.ts           gateway, Durable Object, SQLite, expiry alarms
 worker/origin.ts          private catalog Worker and response schema
 worker/origin-client.ts   validated service call with bounded timeout
+worker/lab-observer.ts    bounded committed-state and WebSocket protocol projection
 src/main.tsx             interactive dashboard and cancellable experiments
+src/LabObserver.tsx       second-tab observation and guarded manual reconnect
 src/RequestInspector.tsx accessible request details dialog
 src/reports.ts           report statistics and CSV/JSON export
 src/Guide.tsx             architecture and interview walkthrough
