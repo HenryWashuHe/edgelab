@@ -8,7 +8,7 @@ const get = async (path, headers = {}) => {
   return { response: r, data: await r.json() };
 };
 const health = await get('/api/health');
-assert.equal(health.data.version, '3.2.0');
+assert.equal(health.data.version, '3.2.1');
 assert.equal((await get('/api/ops/audit')).response.status, 401);
 assert.equal(
   (await get('/api/ops/audit', { Authorization: `Bearer ${token}` })).response.status,

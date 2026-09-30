@@ -5,6 +5,7 @@ import {
   type BurnRuleEvidence,
 } from './burn-rate';
 import { MINUTE, type MonitorPolicy } from './monitor-domain';
+import type { IncidentPolicyVersion } from './incident-evidence';
 
 export type BudgetFiringEvidence = {
   firstFiredAt: number;
@@ -12,6 +13,7 @@ export type BudgetFiringEvidence = {
   revision: number;
   rule: string;
   evidence: BurnRuleEvidence;
+  policyContext: IncidentPolicyVersion | null;
 };
 export type BudgetSignalSnapshot = {
   evaluation: BurnRateEvaluation | null;
@@ -23,6 +25,7 @@ export type BudgetSignalInput = {
   revision: number;
   policy: MonitorPolicy;
   policyRecordedAt: number;
+  policyContext: IncidentPolicyVersion;
   now: number;
 };
 type SignalRow = {
@@ -53,6 +56,13 @@ export class BudgetSignals {
   }
 
   update(input: BudgetSignalInput): BudgetSignalSnapshot {
+    if (
+      input.policyContext.service !== input.service ||
+      input.policyContext.revision !== input.revision ||
+      input.policyContext.recordedAt !== input.policyRecordedAt ||
+      JSON.stringify(input.policyContext.policy) !== JSON.stringify(input.policy)
+    )
+      throw new Error('Budget policy context must match the evaluated service revision and policy');
     return this.storage.transactionSync(() => {
       const end = Math.floor(input.now / MINUTE) - 1;
       const checks = this.rows<BurnRateCheck>(
@@ -89,6 +99,19 @@ export class BudgetSignals {
           revision: input.revision,
           rule: rule.id,
           evidence: rule,
+          policyContext:
+            continuing && lastFiring!.policyContext !== null
+              ? lastFiring!.policyContext
+              : structuredClone({
+                  service: input.policyContext.service,
+                  revision: input.policyContext.revision,
+                  recordedAt: input.policyContext.recordedAt,
+                  name: input.policyContext.name,
+                  transport: input.policyContext.transport,
+                  assertion: input.policyContext.assertion,
+                  policy: input.policyContext.policy,
+                  provenance: input.policyContext.provenance,
+                }),
         };
       }
       this.storage.sql.exec(
@@ -114,11 +137,15 @@ export class BudgetSignals {
         : !Number.isFinite(now) || !Number.isFinite(age) || age < 0 || age > EVALUATION_FRESHNESS_MS
           ? 'stale'
           : 'current';
+    const lastFiring =
+      row.last_firing === null ? null : (JSON.parse(row.last_firing) as BudgetFiringEvidence);
     return {
       evaluation: JSON.parse(row.evaluation) as BurnRateEvaluation,
       evaluationStatus,
       lastFiring:
-        row.last_firing === null ? null : (JSON.parse(row.last_firing) as BudgetFiringEvidence),
+        lastFiring === null
+          ? null
+          : { ...lastFiring, policyContext: lastFiring.policyContext ?? null },
     };
   }
 

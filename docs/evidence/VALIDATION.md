@@ -1,5 +1,17 @@
 # Verification record
 
+## EdgeLab 3.2.1
+
+Gateway deployment: `4f4abd2e-7004-466a-aaf2-577f2201b417`. The private origin implementation was unchanged.
+
+Formatting, 73 unit tests, strict TypeScript, the production build, and both Worker dry-run bundles passed. The monitoring, incident, schema-upgrade, and original lab lifecycle runtime suites passed. Ten actual workerd/SQLite budget groups plus a pre-storage metadata guard cover retained policy context, legacy null context, target/assertion/objective replacement, 31-day source-record pruning, and persistence across eviction, alongside the existing signal invariants.
+
+Browser tests used an isolated real Worker/SQLite fixture and a separate local fault proxy. A policy write committed and displayed its new revision while a failed audit read was reported separately. A note response was lost after the real commit; closing and reopening the investigation preserved the exact note and request ID. Retrying returned the already-recorded result, with two requests producing one additional persisted row. A concurrent acknowledgement preserved the later operator's unrecorded draft and accurately described the race. A real HTTP 409 preserved a policy draft; refreshing showed the newer saved revision and required explicit review before rebasing. Delayed private reads were aborted on Lock. A delayed committed write arriving after Lock could not restore private state or overwrite the locked notice. Earlier request timeouts and successes could not close, clear, or attach errors to a newer dialog. Retained warning details showed the original v3 timing objectives after the current policy had advanced to v8. Production history was not seeded for these tests.
+
+After status refreshes failed for over three minutes, cached browser evidence expired while the actual upstream readiness endpoint still returned healthy. The UI stated that current monitoring could not be confirmed, instead of claiming the server scheduler had stalled. The deployed original resilience lab also passed its real HTTP integration checks in an isolated disposable session.
+
+The [3.2.1 release evidence](releases/3.2.1-live-monitoring.json) records two new autonomous good observations per deployed service after verification began, with correct observation-start minutes, fresh persisted budget evaluations, healthy readiness, schema-4 export, and operator authentication/privacy checks. No manual scheduler endpoint was used for production verification.
+
 ## EdgeLab 3.2
 
 Gateway deployment: `71751324-800c-40d7-aaa3-adaf5535c334`. The private origin implementation was unchanged.

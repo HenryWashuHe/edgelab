@@ -1,6 +1,6 @@
 # Explain recurring reliability failures with paired windows
 
-Status: accepted for EdgeLab 3.2.
+Status: accepted for EdgeLab 3.2; retention contract extended in 3.2.1.
 
 ## Problem
 
@@ -15,6 +15,12 @@ Require a complete current-policy window, at least 95% coverage, at least 20 non
 Compute signals from finished UTC minutes after scheduled probes complete. Dashboard reads return persisted evidence, age it, and never trigger reevaluation or refresh its timestamp. Persist the last firing evidence across insufficient history, maintenance, and policy changes. A stale evaluation or changed revision cannot become a confident current clear result. The UI distinguishes a qualified rule that no longer fires from unavailable evidence and from a warning under an earlier policy.
 
 These signals do not create or recover consecutive-failure incidents, page operators, or send notifications. Highest-priority firing takes precedence, while each rule exposes its own state, counts, coverage, and reason. The warning evaluation is independent of the dashboard's selected reporting window.
+
+## Retained warning context
+
+An active service's most recent warning can outlive the 30-day check and policy-version retention window. Starting in 3.2.1, each newly confirmed warning captures its immutable policy version: service name, transport, response assertion, full policy, recorded time, revision, and provenance. The capture excludes private target URLs and credentials. Input metadata must match the evaluated service, revision, recorded time, and policy before any storage access.
+
+Older warnings without a captured version expose null context. Reads never reconstruct historical settings from the current policy or change stored evidence. A later confirmed firing under the same revision can capture the known immutable version, while preserving the warning's first-fired time; that earlier timestamp does not establish when metadata was captured. Warning evidence and context survive policy replacement, source-record pruning, and object eviction.
 
 ## Consequences
 

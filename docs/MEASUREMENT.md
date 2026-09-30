@@ -32,6 +32,8 @@ A probe samples one coordinator's network path. It is neither customer-request a
 
 The clock advances on a read, but the persisted heartbeat does not. Dashboard activity cannot keep a stopped scheduler healthy. The latest 20 scheduler diagnostics expose persisted events; they are not independent uptime observations. Fresh failed upstream probes can produce healthy monitoring readiness: this signal describes whether monitoring is operating, not whether monitored services are successful. Same-provider readiness still needs an independent observer to detect correlated provider failure.
 
+The browser continues aging its displayed evaluation with elapsed time after the last successful snapshot, including when refresh requests fail. A stale display means its available evidence is too old; the browser cannot determine whether scheduling stopped, the network failed, or a read was rejected. A successful new status response is needed to assess current server evidence.
+
 ## Paired-window sampled-check signals
 
 Version 3.2 adds fixed rule version 1. The thresholds follow the [Google SRE Workbook's 30-day-budget examples](https://sre.google/workbook/alerting-on-slos/), with a short window confirming that elevated long-window burn is still ongoing:
@@ -65,6 +67,10 @@ The coordinator computes signal evidence after scheduled probes complete and sto
 
 Only a current evaluation establishes a present firing or clear result. `lastFiring` retains the selected warning's rule, revision, recorded first firing, last confirmed firing, and paired-window evidence across insufficient observations, maintenance, policy changes, stale scheduling, and later qualified clear evaluations. One retained record is not a full alert history or proof of uninterrupted failure. The interface labels current firing evidence, a previous warning below its trigger, a warning under a previous policy, or a previous warning without confirmed clearance. A same-policy qualified clear result for the prior rule can establish that it was below its trigger at evaluation time; missing or stale data cannot.
 
+Version 3.2.1 adds nullable `lastFiring.policyContext`: a self-contained copy of the confirmed policy version's service ID/name, revision, recorded time, transport, response contract, full policy, and provenance. It preserves the historical good-check target and timing objectives even after 30-day checks and unreferenced policy-version rows are pruned. Known context on a retained warning remains unchanged across later confirmations, gaps, maintenance, clearance, and replacement policies; a newly firing warning can replace the retained record. It contains no private URL, credential, or operator note.
+
+Older warnings without captured context explicitly return `null`; reads neither reconstruct it from the mutable current policy nor write an upgrade. A new confirmed firing can capture the matching immutable version for an older warning while preserving its first-fired timestamp. That capture describes the confirmed revision, not proof that metadata was captured at the initial firing. `recordedAt` and `provenance` describe the source version; `recovered-current` still cannot establish earlier settings or their original application time.
+
 Signal records for configured services survive prolonged gaps. Records for removed services become eligible for 30-day pruning. Policy changes restart maturity; retained historical warnings are never rescored as if they occurred under the replacement policy.
 
 ## Incident evidence and exports
@@ -72,6 +78,8 @@ Signal records for configured services survive prolonged gaps. Records for remov
 Public incident lists retain all open incidents for active targets and their latest 100 resolved incidents. Detail pages return up to 50 retained checks in descending slot order, with an exclusive `before` cursor and policy context for that page. The evidence interval includes up to ten minutes before detection and the incident interval, subject to 30-day check retention. A retained open incident can outlive its earliest checks; `limitedByRetention` exposes that limit instead of implying a complete timeline.
 
 Operations export `schemaVersion: 4` contains bounded service history, summaries, incident records, readiness, scheduler diagnostics, and the additive per-service budget evidence. Public exports exclude appended investigation and acknowledgement notes. Authenticated detail includes those private fields. Exported summaries and paginated investigations are not a complete storage backup.
+
+A successful operator write and its subsequent read are separate evidence. A failed status or audit refresh does not undo a confirmed write. An uncertain note submission keeps its UUID and exact payload in authenticated browser memory so closing and reopening the investigation can retry the same request without creating another intended note. This state is session-only: locking, changing credentials, leaving Operations, or reloading clears it; no browser-storage recovery is promised.
 
 ## Concurrency benchmark
 

@@ -67,6 +67,9 @@ export function BudgetSignalsPanel({
                 ? 'First budget evaluation pending'
                 : 'More evidence is needed';
   const previous = budget.lastFiring;
+  // Only the retained warning's immutable version can describe its settings.
+  // Older records may have no context; current policy must not fill that gap.
+  const policyContext = previous?.policyContext ?? null;
   const priorRule = evaluation?.rules.find((rule) => rule.id === previous?.rule);
   const priorCleared =
     previous !== null &&
@@ -110,7 +113,7 @@ export function BudgetSignalsPanel({
             ? 'A scheduled monitoring run must record the first evaluation.'
             : effectiveStatus === 'policy-changed'
               ? 'The retained evaluation belongs to the previous policy. Its result does not establish the current budget state.'
-              : 'The retained evaluation is stale. A dashboard refresh cannot confirm that a budget warning has cleared.'}
+              : 'The displayed evaluation is stale. This browser cannot tell whether monitoring stopped or a refresh failed. Stale evidence cannot confirm that a warning cleared.'}
         </p>
       )}
       {evaluation && (
@@ -180,6 +183,64 @@ export function BudgetSignalsPanel({
                 <dd>{when(previous.lastConfirmedAt)}</dd>
               </div>
             </dl>
+            {policyContext ? (
+              <>
+                <p>
+                  Captured context for confirmed policy v{policyContext.revision}. These settings
+                  remain independent of the current policy. A later confirmation can capture context
+                  for an older warning; the first-fired timestamp alone does not prove when its
+                  metadata was captured.
+                </p>
+                <dl className="budget-prior-times">
+                  <div>
+                    <dt>Captured service</dt>
+                    <dd>{policyContext.name}</dd>
+                  </div>
+                  <div>
+                    <dt>Good-check target</dt>
+                    <dd>{policyContext.policy.availabilityTarget}%</dd>
+                  </div>
+                  <div>
+                    <dt>Latency objective</dt>
+                    <dd>{policyContext.policy.latencyObjectiveMs.toLocaleString()} ms</dd>
+                  </div>
+                  <div>
+                    <dt>Probe timeout</dt>
+                    <dd>{policyContext.policy.timeoutMs.toLocaleString()} ms</dd>
+                  </div>
+                  <div>
+                    <dt>Response contract</dt>
+                    <dd>{policyContext.assertion}</dd>
+                  </div>
+                  <div>
+                    <dt>Transport</dt>
+                    <dd>
+                      {policyContext.transport === 'origin' ? 'Private service binding' : 'HTTPS'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Policy version recorded</dt>
+                    <dd>{when(policyContext.recordedAt)}</dd>
+                  </div>
+                  <div>
+                    <dt>Context provenance</dt>
+                    <dd>{policyContext.provenance}</dd>
+                  </div>
+                </dl>
+                {policyContext.provenance === 'recovered-current' && (
+                  <p>
+                    This version was recovered from the stored current policy. Earlier settings and
+                    the time they first applied could not be reconstructed.
+                  </p>
+                )}
+              </>
+            ) : (
+              <p>
+                Original policy context is unavailable for this older warning. Its historical
+                target, contract, and timing objectives cannot be reconstructed from the current
+                policy.
+              </p>
+            )}
             <WindowEvidence long={previous.evidence.long} short={previous.evidence.short} />
           </div>
         </details>

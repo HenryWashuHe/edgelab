@@ -14,7 +14,7 @@ import {
   type ProbeResult,
 } from './monitor-domain';
 import { probe } from './monitor-probe';
-import { IncidentEvidence } from './incident-evidence';
+import { IncidentEvidence, type IncidentPolicyVersion } from './incident-evidence';
 import { classifyTick, monitoringReadiness } from './monitor-readiness';
 import { BudgetSignals } from './budget-signals';
 export interface MonitorEnv {
@@ -255,8 +255,13 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       // Evaluate finished-minute history once per scheduled run, never on dashboard reads.
       for (const target of targets) {
         const service = this.rows<ServiceRow>('SELECT * FROM services WHERE id=?', target.id)[0];
-        const version = this.rows<{ recorded_at: number }>(
-          'SELECT recorded_at FROM service_versions WHERE service=? AND revision=?',
+        const version = this.rows<
+          Omit<IncidentPolicyVersion, 'recordedAt' | 'policy'> & {
+            recorded_at: number;
+            policy: string;
+          }
+        >(
+          'SELECT * FROM service_versions WHERE service=? AND revision=?',
           target.id,
           service.revision,
         )[0];
@@ -265,6 +270,16 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
           revision: service.revision,
           policy: JSON.parse(service.policy),
           policyRecordedAt: version.recorded_at,
+          policyContext: {
+            service: version.service,
+            revision: version.revision,
+            recordedAt: version.recorded_at,
+            name: version.name,
+            transport: version.transport,
+            assertion: version.assertion,
+            policy: JSON.parse(version.policy),
+            provenance: version.provenance,
+          },
           now: this.now(),
         });
       }
@@ -576,7 +591,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       };
     });
     return {
-      version: '3.2.0',
+      version: '3.2.1',
       now,
       window: minutes === 1440 ? '24h' : '7d',
       retentionDays: 30,

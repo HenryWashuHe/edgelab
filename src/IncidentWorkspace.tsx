@@ -30,16 +30,21 @@ async function api<T>(path: string, token: string, options: RequestInit = {}): P
   if (!response.ok) throw new Error(value.error || `Request failed (${response.status})`);
   return value;
 }
+export type PendingIncidentNote = { requestId: string; note: string };
 /** Evidence is scoped to the current credential so locking never leaves private notes visible. */
 export function IncidentWorkspace({
   incidentId,
   serviceName,
   token,
+  submission,
+  changeSubmission,
   close,
 }: {
   incidentId: string;
   serviceName: string;
   token: string;
+  submission: PendingIncidentNote | null;
+  changeSubmission: (submission: PendingIncidentNote | null) => void;
   close: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -50,7 +55,6 @@ export function IncidentWorkspace({
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [draft, setDraft] = useState('');
-  const [submission, setSubmission] = useState<{ requestId: string; note: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
   const data = snapshot?.access === token ? snapshot.detail : null;
@@ -105,7 +109,6 @@ export function IncidentWorkspace({
   useEffect(() => {
     setSnapshot(null);
     setDraft('');
-    setSubmission(null);
     setNotice('');
     setSaving(false);
     savingRef.current = false;
@@ -123,7 +126,7 @@ export function IncidentWorkspace({
     setNotice('');
     setError('');
     const pending = submission ?? { requestId: crypto.randomUUID(), note: draft };
-    setSubmission(pending);
+    changeSubmission(pending);
     const sequence = current.current;
     try {
       const result = await api<{ ok: true; note: IncidentNote; alreadyRecorded?: boolean }>(
@@ -151,7 +154,7 @@ export function IncidentWorkspace({
           : previous,
       );
       setDraft('');
-      setSubmission(null);
+      changeSubmission(null);
       setNotice(
         result.alreadyRecorded
           ? 'The earlier submission was already recorded.'
@@ -394,8 +397,8 @@ export function IncidentWorkspace({
                     </div>
                     {submission && !saving && (
                       <p className="investigation-help">
-                        This pending note is preserved for a safe retry. A repeated submission
-                        cannot create a second copy.
+                        This pending note is kept when the workspace closes and reopens. Retrying
+                        sends the same note and submission ID, without creating a second copy.
                       </p>
                     )}
                   </form>

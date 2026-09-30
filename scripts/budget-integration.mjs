@@ -22,7 +22,7 @@ await build({
   external: ['cloudflare:workers'],
 });
 let calls = 0;
-const mf = new Miniflare(
+const runtimeOptions = (configuredTarget = target) =>
   convertV4MiniflareOptions({
     unsafeInspectDurableObjects: true,
     workers: [
@@ -35,21 +35,30 @@ const mf = new Miniflare(
           LABS: { className: 'ReliabilityLab', useSQLite: true },
           MONITORS: { className: 'MonitorStore', useSQLite: true },
         },
-        bindings: { MONITOR_TARGETS: JSON.stringify([target]), OPERATOR_TOKEN: token },
+        bindings: { MONITOR_TARGETS: JSON.stringify([configuredTarget]), OPERATOR_TOKEN: token },
         serviceBindings: {
           ORIGIN: async () => {
             calls++;
-            return Response.json({ ok: true });
+            return Response.json({
+              ok: true,
+              service: 'demo-catalog',
+              revision: 'fixture',
+              generatedAt: Date.now(),
+              products: [
+                { sku: 'fixture-one', available: 1 },
+                { sku: 'fixture-two', available: 2 },
+              ],
+            });
           },
         },
       },
     ],
-  }),
-);
+  });
+const mf = new Miniflare(runtimeOptions());
 
 try {
   const ns = await mf.getDurableObjectNamespace('MONITORS', 'gateway');
-  const stub = ns.get(ns.idFromName('operations'));
+  let stub = ns.get(ns.idFromName('operations'));
   const setClock = async (now) => {
     const response = await stub.fetch('https://monitor.internal/test-clock', {
       method: 'POST',
@@ -87,7 +96,7 @@ try {
   assert.equal(initial.evaluationStatus, 'not-evaluated');
   assert.equal(initial.evaluation, null);
   assert.equal(initial.lastFiring, null);
-  const storage = await mf.unsafeGetDurableObjectStorage('gateway', 'MonitorStore', {
+  let storage = await mf.unsafeGetDurableObjectStorage('gateway', 'MonitorStore', {
     name: 'operations',
   });
   const currentSlot = Math.floor(now / MINUTE);
@@ -134,6 +143,56 @@ try {
   assert.equal(firing.lastFiring.firstFiredAt, now);
   assert.equal(firing.lastFiring.lastConfirmedAt, now);
   assert.equal(firing.lastFiring.revision, 1);
+  assert.deepEqual(firing.lastFiring.policyContext, {
+    service: 'catalog',
+    revision: 1,
+    recordedAt: start * MINUTE,
+    name: 'Catalog',
+    transport: 'origin',
+    assertion: 'ok-json',
+    policy: (await read()).services[0].policy,
+    provenance: 'recorded',
+  });
+  assert(!JSON.stringify(firing.lastFiring).includes(target.url));
+  const helperBundle = await build({
+    entryPoints: ['worker/budget-signals.ts'],
+    bundle: true,
+    format: 'esm',
+    platform: 'node',
+    write: false,
+  });
+  const { BudgetSignals } = await import(
+    'data:text/javascript;base64,' +
+      Buffer.from(helperBundle.outputFiles[0].text).toString('base64')
+  );
+  const invalidContextSignals = new BudgetSignals({
+    transactionSync: () => assert.fail('Invalid policy context must not access storage'),
+  });
+  const validInput = {
+    service: 'catalog',
+    revision: 1,
+    policy: firing.lastFiring.policyContext.policy,
+    policyRecordedAt: start * MINUTE,
+    policyContext: firing.lastFiring.policyContext,
+    now,
+  };
+  for (const patch of [
+    { service: 'different-service' },
+    { revision: 2 },
+    { recordedAt: start * MINUTE + 1 },
+    { policy: { ...validInput.policy, availabilityTarget: 99.8 } },
+  ])
+    assert.throws(
+      () =>
+        invalidContextSignals.update({
+          ...validInput,
+          policyContext: { ...validInput.policyContext, ...patch },
+        }),
+      { message: 'Budget policy context must match the evaluated service revision and policy' },
+    );
+  console.log(
+    'PASS mismatched service, revision, capture time, or policy context is rejected before storage access',
+  );
   assert.equal((await read()).incidents.length, 0);
   await tick(now + 1000);
   const continuing = await budget();
@@ -314,6 +373,17 @@ try {
   const retained = await budget();
   assert.equal(retained.evaluation.state, 'insufficient-evidence');
   assert.deepEqual(retained.lastFiring, historicalWarning);
+  assert.equal(
+    (
+      await storage.exec(
+        'SELECT revision FROM service_versions WHERE service=? AND revision=?',
+        'catalog',
+        1,
+      )
+    ).length,
+    0,
+  );
+  assert.equal(retained.lastFiring.policyContext.policy.availabilityTarget, 99.9);
   assert.deepEqual(
     (await storage.exec('SELECT service FROM budget_signals')).map((row) => row.service),
     ['catalog'],
@@ -363,6 +433,98 @@ try {
   assert.equal(freshFiring.lastFiring.firstFiredAt, afterStall);
   assert.equal(freshFiring.lastFiring.lastConfirmedAt, afterStall);
   console.log('PASS requalified firing after a stale evaluation starts a fresh confirmed interval');
+
+  const { policyContext: legacyContext, ...legacyWarning } = freshFiring.lastFiring;
+  await storage.exec(
+    'UPDATE budget_signals SET last_firing=? WHERE service=?',
+    JSON.stringify(legacyWarning),
+    'catalog',
+  );
+  const legacyRead = await budget();
+  assert.deepEqual(legacyRead.lastFiring, { ...legacyWarning, policyContext: null });
+  assert.equal(
+    Object.hasOwn(
+      JSON.parse(
+        (await storage.exec('SELECT last_firing FROM budget_signals WHERE service=?', 'catalog'))[0]
+          .last_firing,
+      ),
+      'policyContext',
+    ),
+    false,
+  );
+  await mf.unsafeEvictDurableObject('gateway', 'MonitorStore', { name: 'operations' });
+  assert.equal((await budget()).lastFiring.policyContext, null);
+  await tick(afterStall + 1000);
+  const confirmedLegacy = await budget();
+  assert.equal(confirmedLegacy.evaluation.state, 'firing');
+  assert.equal(confirmedLegacy.lastFiring.firstFiredAt, legacyWarning.firstFiredAt);
+  assert.equal(confirmedLegacy.lastFiring.lastConfirmedAt, afterStall + 1000);
+  assert.deepEqual(confirmedLegacy.lastFiring.policyContext, legacyContext);
+  console.log(
+    'PASS legacy warnings expose unavailable policy context without mutating reads; a new confirmation captures it',
+  );
+
+  const originalWarning = confirmedLegacy.lastFiring;
+  const renamedTarget = {
+    ...target,
+    name: 'Replacement catalog contract',
+    assertion: 'catalog-json',
+  };
+  await mf.setOptions(runtimeOptions(renamedTarget));
+  const replacementNamespace = await mf.getDurableObjectNamespace('MONITORS', 'gateway');
+  stub = replacementNamespace.get(replacementNamespace.idFromName('operations'));
+  storage = await mf.unsafeGetDurableObjectStorage('gateway', 'MonitorStore', {
+    name: 'operations',
+  });
+  await setClock(afterStall + 2000);
+  const renamedService = (await read()).services[0];
+  assert.equal(renamedService.revision, 5);
+  assert.equal(renamedService.name, renamedTarget.name);
+  await policy(5, { availabilityTarget: 99.8, latencyObjectiveMs: 250 });
+  const replacementPolicy = (await read()).services[0];
+  assert.equal(replacementPolicy.revision, 6);
+  assert.equal(replacementPolicy.policy.availabilityTarget, 99.8);
+  assert.equal(replacementPolicy.policy.latencyObjectiveMs, 250);
+  assert.deepEqual(replacementPolicy.budget.lastFiring, originalWarning);
+  const afterContextRetention = afterStall + 31 * DAY;
+  await tick(afterContextRetention);
+  const contextRetained = await budget();
+  assert.equal(contextRetained.evaluation.revision, 6);
+  assert.equal(contextRetained.evaluation.state, 'insufficient-evidence');
+  assert.deepEqual(contextRetained.lastFiring, originalWarning);
+  assert.equal(
+    (
+      await storage.exec(
+        'SELECT revision FROM service_versions WHERE service=? AND revision=?',
+        'catalog',
+        originalWarning.revision,
+      )
+    ).length,
+    0,
+  );
+  assert.equal(
+    (
+      await storage.exec(
+        'SELECT slot FROM checks WHERE service=? AND revision=?',
+        'catalog',
+        originalWarning.revision,
+      )
+    ).length,
+    0,
+  );
+  assert.equal(contextRetained.lastFiring.policyContext.name, target.name);
+  assert.equal(contextRetained.lastFiring.policyContext.assertion, target.assertion);
+  assert.equal(contextRetained.lastFiring.policyContext.policy.availabilityTarget, 99.95);
+  assert.notEqual(
+    contextRetained.lastFiring.policyContext.policy.availabilityTarget,
+    replacementPolicy.policy.availabilityTarget,
+  );
+  assert(!JSON.stringify(contextRetained.lastFiring.policyContext).includes(target.url));
+  await mf.unsafeEvictDurableObject('gateway', 'MonitorStore', { name: 'operations' });
+  assert.deepEqual(await budget(), contextRetained);
+  console.log(
+    'PASS immutable warning policy survives target/name/assertion/objective replacement, 31-day source pruning, and eviction',
+  );
 } finally {
   await mf.dispose();
 }

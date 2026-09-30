@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.2.0
+  version: 3.2.1
   description: |
     Public monitoring read model and single-owner operator control plane.
     Laboratory endpoints are documented in LAB.md. No public probe or target-enrollment endpoint exists.
@@ -575,19 +575,21 @@ components:
         burnRate:
           type: [number, 'null']
           minimum: 0
-          description: Observed bad fraction divided by the current policy's allowed bad fraction; null with no observations.
+          description: Observed bad fraction divided by the evaluated policy's allowed bad fraction; null with no observations. Retained firing evidence keeps its original evaluation policy.
         mature:
           type: boolean
           description: Entire window starts at or after the first complete minute of the current policy.
     BudgetFiringEvidence:
       type: object
-      required: [firstFiredAt, lastConfirmedAt, revision, rule, evidence]
+      required: [firstFiredAt, lastConfirmedAt, revision, rule, evidence, policyContext]
       description: |
         Last qualified highest-priority warning, retained even when later evidence cannot confirm
         its state. First-fired time continues only while the previous evaluation is current and
         firing under the same revision and highest rule. Clear, insufficient evidence, changed
         policy/rule, or stale evaluation starts a new confirmed interval on subsequent firing.
         These timestamps describe evaluations; they are not outage or incident timestamps.
+        Captured policy context is self-contained and survives pruning of the original checks
+        and policy-version rows. It never includes target URLs, credentials, headers, or private notes.
       properties:
         firstFiredAt:
           {
@@ -599,6 +601,16 @@ components:
         revision: { type: integer, minimum: 1 }
         rule: { type: string, description: Retained firing rule identifier }
         evidence: { $ref: '#/components/schemas/BurnRuleEvidence' }
+        policyContext:
+          description: |
+            Immutable public-safe policy version captured for the confirmed warning revision.
+            Null for older serialized warnings whose context was not captured. Reads never guess
+            context from the current configuration. A later matched firing confirmation may capture
+            context while preserving the interval's first-fired time; this does not prove that context
+            was available when an older warning first fired. Later policy edits do not replace it.
+          oneOf:
+            - $ref: '#/components/schemas/IncidentPolicyVersion'
+            - type: 'null'
     Service:
       type: object
       required:

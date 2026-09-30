@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import type { OperationsSnapshot } from '../worker/monitor';
 import type { MonitorPolicy } from '../worker/monitor-domain';
-import { IncidentWorkspace } from './IncidentWorkspace';
+import { IncidentWorkspace, type PendingIncidentNote } from './IncidentWorkspace';
 import { BudgetSignalsPanel } from './BudgetSignalsPanel';
 import { monitoringReadiness, MONITOR_FRESHNESS_MS } from '../worker/monitor-readiness';
 import './operations.css';
@@ -32,7 +32,20 @@ const labels: Record<string, string> = {
   unknown: 'Awaiting checks',
   maintenance: 'Maintenance',
 };
-async function request<T>(path: string, token = '', body?: unknown): Promise<T> {
+class OperationsRequestError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+async function request<T>(
+  path: string,
+  token = '',
+  body?: unknown,
+  signal?: AbortSignal,
+): Promise<T> {
   const response = await fetch(`/api/ops/${path}`, {
     method: body === undefined ? 'GET' : 'POST',
     headers: {
@@ -40,10 +53,16 @@ async function request<T>(path: string, token = '', body?: unknown): Promise<T> 
       'Content-Type': 'application/json',
     },
     body: body === undefined ? undefined : JSON.stringify(body),
-    signal: AbortSignal.timeout(15000),
+    signal: signal
+      ? AbortSignal.any([signal, AbortSignal.timeout(15000)])
+      : AbortSignal.timeout(15000),
   });
   const data = (await response.json()) as T & { error?: string };
-  if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
+  if (!response.ok)
+    throw new OperationsRequestError(
+      data.error || `Request failed (${response.status})`,
+      response.status,
+    );
   return data;
 }
 export function Operations() {
@@ -53,16 +72,25 @@ export function Operations() {
   const [windowSize, setWindowSize] = useState('24h');
   const [error, setError] = useState('');
   const [formError, setFormError] = useState('');
+  const [formErrorOwner, setFormErrorOwner] = useState<object | null>(null);
   const [notice, setNotice] = useState('');
   const [tab, setTab] = useState('services');
   const [selected, setSelected] = useState<string | null>(null);
   const [token, setToken] = useState('');
   const [credential, setCredential] = useState('');
   const [audit, setAudit] = useState<Audit | null>(null);
+  const [auditWarning, setAuditWarning] = useState('');
+  const [pendingNotes, setPendingNotes] = useState<Record<string, PendingIncidentNote>>({});
+  const operatorSession = useRef({ token: '', generation: 0 });
+  const privateReads = useRef(new Set<AbortController>());
+  const actionSequence = useRef(0);
   const [busy, setBusy] = useState(false);
   const saving = useRef(false);
   const [editing, setEditing] = useState<Service | null>(null);
+  const policyForm = useRef<Service | null>(null);
   const [acknowledging, setAcknowledging] = useState<Incident | null>(null);
+  const [acknowledgementNotice, setAcknowledgementNotice] = useState('');
+  const acknowledgementForm = useRef<Incident | null>(null);
   const [investigating, setInvestigating] = useState<Incident | null>(null);
   const [note, setNote] = useState('');
   const latest = useRef(0);
@@ -105,30 +133,145 @@ export function Operations() {
       document.removeEventListener('visibilitychange', visible);
     };
   }, [windowSize]);
-  async function action(fn: () => Promise<void>) {
+  useEffect(
+    () => () => {
+      actionSequence.current++;
+      abortPrivateReads();
+      operatorSession.current = { token: '', generation: operatorSession.current.generation + 1 };
+    },
+    [],
+  );
+  async function action(
+    fn: () => Promise<void | 'unchanged'>,
+    options: {
+      mutation?: 'policy' | 'acknowledgement';
+      auditAfterSuccess?: boolean;
+      dialog?: object;
+      source?: string;
+    } = {},
+  ) {
     if (saving.current) return;
+    const sequence = ++actionSequence.current;
+    const active = () => mounted.current && sequence === actionSequence.current;
     saving.current = true;
     setFormError('');
+    setFormErrorOwner(null);
+    setAuditWarning('');
     setBusy(true);
-    setError('');
     setNotice('');
+    let succeeded = false;
+    let changed = false;
     try {
-      await fn();
-      await refresh();
-    } catch (e) {
-      setFormError((e as Error).message);
+      try {
+        const result = await fn();
+        succeeded = true;
+        changed = result !== 'unchanged';
+      } catch (e) {
+        if (active()) {
+          const message = (e as Error).message;
+          const originalFormOpen =
+            options.dialog !== undefined &&
+            (policyForm.current === options.dialog ||
+              acknowledgementForm.current === options.dialog);
+          const preserved = originalFormOpen ? 'Your draft is preserved. ' : '';
+          const failure =
+            options.mutation && !(e instanceof OperationsRequestError)
+              ? `The ${options.mutation} save could not be confirmed. ${message} ${preserved}Check the refreshed observations before retrying.`
+              : e instanceof OperationsRequestError && e.status === 409
+                ? `${message} ${preserved}Review the current ${options.mutation === 'acknowledgement' ? 'incident state' : 'revision'} before retrying.`
+                : message;
+          setFormError(`${options.source ? `${options.source}: ` : ''}${failure}`);
+          setFormErrorOwner(options.dialog ?? null);
+        }
+      }
+      if (active()) {
+        // A write confirmation stands independently of these follow-up reads.
+        // Even a rejected or ambiguous write refreshes the authoritative public revision.
+        const reads: Promise<unknown>[] = [refresh()];
+        if (succeeded && options.auditAfterSuccess) reads.push(loadAudit());
+        const results = await Promise.allSettled(reads);
+        if (active() && results[1]?.status === 'rejected')
+          setAuditWarning(
+            `${changed ? 'Saved; audit refresh unavailable.' : 'Audit refresh unavailable.'} Use Refresh audit to load the latest audit trail.`,
+          );
+      }
     } finally {
-      saving.current = false;
-      setBusy(false);
+      if (active()) {
+        saving.current = false;
+        setBusy(false);
+      }
     }
   }
-  async function loadAudit(key = token) {
-    const next = await request<Audit>('audit', key);
+  function abortPrivateReads() {
+    privateReads.current.forEach((controller) => controller.abort());
+    privateReads.current.clear();
+  }
+  async function readAudit(key: string) {
+    const controller = new AbortController();
+    privateReads.current.add(controller);
+    try {
+      return await request<Audit>('audit', key, undefined, controller.signal);
+    } finally {
+      privateReads.current.delete(controller);
+    }
+  }
+  async function loadAudit() {
+    const session = operatorSession.current;
+    if (!session.token) return;
+    const next = await readAudit(session.token);
+    if (!mounted.current || operatorSession.current !== session) return;
     setAudit(next);
+    setAuditWarning('');
+  }
+  function lockOperator() {
+    abortPrivateReads();
+    operatorSession.current = { token: '', generation: operatorSession.current.generation + 1 };
+    actionSequence.current++;
+    saving.current = false;
+    setBusy(false);
+    setToken('');
+    setCredential('');
+    setAudit(null);
+    setAuditWarning('');
+    setPendingNotes({});
+    setNote('');
+    setAcknowledgementNotice('');
+    setEditing(null);
+    policyForm.current = null;
+    acknowledgementForm.current = null;
+    setAcknowledging(null);
+    setInvestigating(null);
+    setFormError('');
+    setFormErrorOwner(null);
+    setNotice('Operator session locked.');
+  }
+  function openPolicy(value: Service) {
+    // Each opening has its own identity, even when the snapshot has not changed.
+    const form = { ...value };
+    policyForm.current = form;
+    setEditing(form);
+  }
+  function closePolicy() {
+    policyForm.current = null;
+    setEditing(null);
+  }
+  function openAcknowledgement(value: Incident) {
+    const form = { ...value };
+    acknowledgementForm.current = form;
+    setAcknowledging(form);
+    setNote('');
+    setAcknowledgementNotice('');
+  }
+  function closeAcknowledgement() {
+    acknowledgementForm.current = null;
+    setAcknowledging(null);
   }
   // Age cached evidence even if a subsequent HTTP refresh fails. Use a monotonic
   // elapsed interval with the server snapshot time, avoiding browser clock skew.
-  const displayNow = data ? data.now + Math.max(0, performance.now() - receivedAt.current) : 0;
+  const snapshotAge = data ? Math.max(0, performance.now() - receivedAt.current) : 0;
+  const displayNow = data ? data.now + snapshotAge : 0;
+  const freshServerSnapshot = data !== null && snapshotAge <= MONITOR_FRESHNESS_MS;
+  const renderedOperatorSession = operatorSession.current;
   const monitoring = data
     ? monitoringReadiness({
         now: displayNow,
@@ -151,6 +294,9 @@ export function Operations() {
         : s.status;
   const open = data?.incidents.filter((i) => !i.resolved) ?? [];
   const service = data?.services.find((s) => s.id === selected) ?? data?.services[0];
+  const currentAcknowledgement = acknowledging
+    ? data?.incidents.find((incident) => incident.id === acknowledging.id)
+    : undefined;
   const missing = data?.services.reduce((sum, s) => sum + s.metrics.missing, 0) ?? 0;
   const checks = data?.services.reduce((sum, s) => sum + s.metrics.observed, 0) ?? 0;
   return (
@@ -183,9 +329,20 @@ export function Operations() {
           </a>
         </div>
       </div>
-      {(error || formError) && (
+      {formError && (
         <div className="error-banner" role="alert">
-          {formError || `${error} · Displayed observations may be stale.`}
+          {formError}
+        </div>
+      )}
+      {error && (
+        <div className="error-banner" role="alert">
+          Status refresh unavailable: {error}. Cached observations are shown; current monitoring
+          cannot be confirmed.
+        </div>
+      )}
+      {auditWarning && (
+        <div className="error-banner" role="alert">
+          {auditWarning}
         </div>
       )}
       {notice && (
@@ -198,15 +355,26 @@ export function Operations() {
         <div className={`ops-monitoring ${monitoring.status}`} role="status">
           <div>
             <strong>
-              {monitoring.status === 'healthy'
-                ? 'Monitoring is current'
-                : monitoring.status === 'starting'
-                  ? 'Waiting for the first scheduled run'
-                  : monitoring.status === 'partial'
-                    ? 'Some observations need attention'
-                    : 'Monitoring has stalled'}
+              {error
+                ? monitoring.status === 'stalled'
+                  ? 'Cached monitoring evidence has expired'
+                  : 'Current monitoring cannot be confirmed'
+                : monitoring.status === 'healthy'
+                  ? 'Monitoring is current'
+                  : monitoring.status === 'starting'
+                    ? 'Waiting for the first scheduled run'
+                    : monitoring.status === 'partial'
+                      ? 'Some observations need attention'
+                      : freshServerSnapshot && data?.monitoring.status === 'stalled'
+                        ? 'Monitoring has stalled'
+                        : 'Cached monitoring evidence has expired'}
             </strong>
-            <p>{monitoring.reason} Dashboard refreshes do not renew monitoring evidence.</p>
+            <p>
+              {error || !freshServerSnapshot
+                ? 'Showing evidence from the last successful status response. Reconnect or refresh to verify current monitoring.'
+                : monitoring.reason}{' '}
+              Dashboard refreshes do not renew monitoring evidence.
+            </p>
           </div>
           {monitoring.lastCompletedAt !== null && (
             <time dateTime={new Date(monitoring.lastCompletedAt).toISOString()}>
@@ -351,7 +519,7 @@ export function Operations() {
                         {service.name} <span className="ops-muted">/ reliability record</span>
                       </h2>
                       {token && (
-                        <button className="button" onClick={() => setEditing(service)}>
+                        <button className="button" onClick={() => openPolicy(service)}>
                           <Settings2 size={15} /> Edit policy
                         </button>
                       )}
@@ -517,13 +685,7 @@ export function Operations() {
                         {!i.resolved &&
                           !i.acknowledged &&
                           (token ? (
-                            <button
-                              className="button"
-                              onClick={() => {
-                                setAcknowledging(i);
-                                setNote('');
-                              }}
-                            >
+                            <button className="button" onClick={() => openAcknowledgement(i)}>
                               Acknowledge incident
                             </button>
                           ) : (
@@ -615,15 +777,7 @@ export function Operations() {
                 <LockKeyhole size={19} /> Operator console
               </h2>
               {token && (
-                <button
-                  className="button"
-                  onClick={() => {
-                    setToken('');
-                    setAudit(null);
-                    setEditing(null);
-                    setNotice('Operator session locked.');
-                  }}
-                >
+                <button className="button" onClick={lockOperator}>
                   Lock console
                 </button>
               )}
@@ -633,11 +787,19 @@ export function Operations() {
                 className="operator-login"
                 onSubmit={(e) => {
                   e.preventDefault();
+                  const session = operatorSession.current;
+                  const key = credential;
                   action(async () => {
-                    await loadAudit(credential);
-                    setToken(credential);
+                    const nextAudit = await readAudit(key);
+                    if (!mounted.current || operatorSession.current !== session) return;
+                    abortPrivateReads();
+                    operatorSession.current = { token: key, generation: session.generation + 1 };
+                    setPendingNotes({});
+                    setAudit(nextAudit);
+                    setAuditWarning('');
+                    setToken(key);
                     setCredential('');
-                    setNotice('Operator session unlocked in this tab.');
+                    setNotice('Operator session unlocked in this browser tab.');
                   });
                 }}
               >
@@ -660,8 +822,9 @@ export function Operations() {
                   Unlock console
                 </button>
                 <small>
-                  The token stays in memory and is cleared when this view is unmounted or the page
-                  reloads. Provision or rotate it with the repository’s operator setup command.
+                  The token and pending notes stay in this browser tab until Lock, leaving
+                  Operations, or page reload. Provision or rotate the token with the repository’s
+                  operator setup command.
                 </small>
               </form>
             ) : (
@@ -676,7 +839,7 @@ export function Operations() {
                           {s.policy.paused ? 'Maintenance paused' : 'Monitoring active'}
                         </small>
                       </div>
-                      <button className="button" onClick={() => setEditing(s)}>
+                      <button className="button" onClick={() => openPolicy(s)}>
                         Edit policy
                       </button>
                     </div>
@@ -744,46 +907,125 @@ export function Operations() {
             investigating.service
           }
           token={token}
+          submission={token ? (pendingNotes[investigating.id] ?? null) : null}
+          changeSubmission={(submission) => {
+            if (
+              !mounted.current ||
+              !renderedOperatorSession.token ||
+              operatorSession.current !== renderedOperatorSession
+            )
+              return;
+            setPendingNotes((previous) => {
+              if (operatorSession.current !== renderedOperatorSession) return previous;
+              const next = { ...previous };
+              if (submission) next[investigating.id] = submission;
+              else delete next[investigating.id];
+              return next;
+            });
+          }}
           close={() => setInvestigating(null)}
         />
       )}
       {editing && (
         <PolicyEditor
-          key={`${editing.id}-${editing.revision}`}
+          key={editing.id}
           service={editing}
+          currentService={data?.services.find((item) => item.id === editing.id)}
+          reviewCurrent={(currentService) => {
+            policyForm.current = currentService;
+            setEditing(currentService);
+            setFormError('');
+            setFormErrorOwner(null);
+          }}
           busy={busy}
-          error={formError}
-          close={() => setEditing(null)}
+          error={formErrorOwner === editing ? formError : ''}
+          close={closePolicy}
           save={(policy) =>
-            action(async () => {
-              await request('policy', token, {
-                service: editing.id,
-                revision: editing.revision,
-                policy,
-              });
-              setEditing(null);
-              await loadAudit();
-              setNotice('Policy saved. The next scheduled check uses the new revision.');
-            })
+            action(
+              async () => {
+                const session = operatorSession.current;
+                const result = await request<{ revision: number }>('policy', session.token, {
+                  service: editing.id,
+                  revision: editing.revision,
+                  policy,
+                });
+                if (!mounted.current || operatorSession.current !== session) return;
+                setEditing((previous) => (previous === editing ? null : previous));
+                if (policyForm.current === editing) policyForm.current = null;
+                setNotice(
+                  `${editing.name}: policy saved as revision ${result.revision}. Scheduled checks will use this revision.`,
+                );
+              },
+              {
+                mutation: 'policy',
+                auditAfterSuccess: true,
+                dialog: editing,
+                source: editing.name,
+              },
+            )
           }
         />
       )}
       {acknowledging && (
-        <Modal title="Acknowledge incident" close={() => setAcknowledging(null)}>
-          {formError && (
+        <Modal title="Acknowledge incident" close={closeAcknowledgement}>
+          {formError && formErrorOwner === acknowledging && (
             <p role="alert" className="ops-red">
               {formError}
+            </p>
+          )}
+          {acknowledgementNotice && (
+            <p role="status" className="ops-muted">
+              {acknowledgementNotice}
+            </p>
+          )}
+          {(currentAcknowledgement?.acknowledged || currentAcknowledgement?.resolved) && (
+            <p role="status" className="ops-muted">
+              {currentAcknowledgement.acknowledged
+                ? `The refreshed incident is already acknowledged at ${when(currentAcknowledgement.acknowledged)}.`
+                : `The refreshed incident recovered at ${when(currentAcknowledgement.resolved)}.`}{' '}
+              Your draft remains below for review. Close this dialog and inspect the incident’s
+              private notes before deciding whether to add an investigation update.
             </p>
           )}
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              action(async () => {
-                await request('acknowledge', token, { incident: acknowledging.id, note });
-                setAcknowledging(null);
-                await loadAudit();
-                setNotice('Incident acknowledged. Recovery still requires successful checks.');
-              });
+              action(
+                async () => {
+                  const session = operatorSession.current;
+                  const result = await request<{ ok: true; alreadyAcknowledged?: boolean }>(
+                    'acknowledge',
+                    session.token,
+                    { incident: acknowledging.id, note },
+                  );
+                  if (!mounted.current || operatorSession.current !== session) return;
+                  if (result.alreadyAcknowledged) {
+                    const message =
+                      'This incident was already acknowledged. Your draft note was not recorded. Inspect the incident’s private notes before adding an investigation update.';
+                    if (acknowledgementForm.current === acknowledging)
+                      setAcknowledgementNotice(message);
+                    setNotice(
+                      `Incident ${acknowledging.id} was already acknowledged; the submitted note was not recorded.`,
+                    );
+                    return 'unchanged';
+                  }
+                  setAcknowledging((previous) => (previous === acknowledging ? null : previous));
+                  if (acknowledgementForm.current === acknowledging) {
+                    acknowledgementForm.current = null;
+                    setNote('');
+                    setAcknowledgementNotice('');
+                  }
+                  setNotice(
+                    `Incident ${acknowledging.id} acknowledged. Recovery still requires successful checks.`,
+                  );
+                },
+                {
+                  mutation: 'acknowledgement',
+                  auditAfterSuccess: true,
+                  dialog: acknowledging,
+                  source: `Incident ${acknowledging.id}`,
+                },
+              );
             }}
           >
             <label htmlFor="incident-note">Investigation note (operator-only)</label>
@@ -795,7 +1037,13 @@ export function Operations() {
               maxLength={500}
               rows={4}
             />
-            <button className="button primary" disabled={busy}>
+            <button
+              className="button primary"
+              disabled={
+                busy ||
+                Boolean(currentAcknowledgement?.acknowledged || currentAcknowledgement?.resolved)
+              }
+            >
               Record acknowledgement
             </button>
           </form>
@@ -907,12 +1155,16 @@ function Modal({
 }
 function PolicyEditor({
   service,
+  currentService,
+  reviewCurrent,
   busy,
   error,
   close,
   save,
 }: {
   service: Service;
+  currentService?: Service;
+  reviewCurrent: (currentService: Service) => void;
   busy: boolean;
   error: string;
   close: () => void;
@@ -926,6 +1178,13 @@ function PolicyEditor({
     ['failureThreshold', 'Failures to open incident', 1, 10, 1],
     ['recoveryThreshold', 'Successes to recover', 1, 10, 1],
   ];
+  const revisionChanged =
+    currentService !== undefined && currentService.revision !== service.revision;
+  const matchesCurrent =
+    currentService !== undefined &&
+    (Object.keys(policy) as (keyof MonitorPolicy)[]).every(
+      (key) => policy[key] === currentService.policy[key],
+    );
   return (
     <Modal title={`${service.name} policy`} close={close}>
       {error && (
@@ -943,6 +1202,54 @@ function PolicyEditor({
           Editing revision {service.revision}. Changes reset failure and recovery streaks; existing
           incidents stay open until measured recovery.
         </p>
+        {revisionChanged && currentService && (
+          <div>
+            <p role="status" className="ops-muted">
+              Current saved revision: {currentService.revision}. Your draft remains unchanged.
+              {matchesCurrent
+                ? ' Its values already match the saved policy; another save is unnecessary.'
+                : ' Review the current values before submitting against the new revision.'}
+            </p>
+            <details>
+              <summary>Compare current policy with your draft</summary>
+              <div className="ops-table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Setting</th>
+                      <th>Current</th>
+                      <th>Your draft</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fields.map(([key, label]) => (
+                      <tr key={key}>
+                        <td>{label}</td>
+                        <td>{currentService.policy[key]}</td>
+                        <td>{policy[key]}</td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td>Maintenance</td>
+                      <td>{currentService.policy.paused ? 'Paused' : 'Active'}</td>
+                      <td>{policy.paused ? 'Paused' : 'Active'}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </details>
+            {!matchesCurrent && (
+              <button
+                type="button"
+                className="button"
+                disabled={busy}
+                onClick={() => reviewCurrent(currentService)}
+              >
+                Keep draft and use revision {currentService.revision}
+              </button>
+            )}
+          </div>
+        )}
         {fields.map(([key, label, min, max, step]) => (
           <label key={key}>
             {label}
@@ -969,7 +1276,7 @@ function PolicyEditor({
           Maintenance is recorded separately and excluded from the SLO. Public visitors cannot
           change this policy.
         </p>
-        <button className="button primary" disabled={busy}>
+        <button className="button primary" disabled={busy || revisionChanged || matchesCurrent}>
           Save policy
         </button>
       </form>
