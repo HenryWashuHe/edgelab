@@ -1,0 +1,116 @@
+{
+  "projectVersion": "3.3.2",
+  "verifiedAt": "2026-09-30T07:47:00.000Z",
+  "environment": "Local browser at127.0.0.1:8794, real Worker/SQLite at8793, ignored fault proxy, synthetic incident history and explicit fake-provider binding only.",
+  "productionWrites": 0,
+  "nativeInferenceCalls": 0,
+  "fakeProviderCalls": 0,
+  "lab": {
+    "controlledLocalFixture": true,
+    "labCalls": [
+      {
+        "at": 1790754040480,
+        "path": "/api/state",
+        "method": "GET",
+        "injectedFailure": false
+      },
+      {
+        "at": 1790754053908,
+        "path": "/api/request",
+        "method": "POST",
+        "injectedFailure": false
+      },
+      {
+        "at": 1790754053917,
+        "path": "/api/state",
+        "method": "GET",
+        "injectedFailure": false
+      },
+      {
+        "at": 1790754080441,
+        "path": "/api/config",
+        "method": "POST",
+        "injectedFailure": false
+      },
+      {
+        "at": 1790754099508,
+        "path": "/api/state",
+        "method": "GET",
+        "injectedFailure": false
+      },
+      {
+        "at": 1790754214844,
+        "path": "/api/request",
+        "method": "POST",
+        "injectedFailure": true
+      }
+    ],
+    "confirmedDroppedConfiguration": [
+      {
+        "at": 1790754080445,
+        "action": "dropped-confirmed-lab",
+        "path": "/api/config",
+        "upstreamStatus": 200
+      }
+    ],
+    "reconnectStateGets": 1,
+    "automaticMutationRetries": 0
+  },
+  "checks": [
+    "Committed configuration response lost: cached evidence retained, current state unconfirmed, writes paused.",
+    "Reconnect executed one GET /api/state, revealed committed configuration, and replayed no mutation.",
+    "Injected daily storage503 preserved one recorded event and displayed unknown current circuit/cache/token/origin state.",
+    "Reload under storage503 showed no loaded snapshot, unknown metrics and history, and disabled experiments.",
+    "After injection removal, reconnect restored confirmed state and enabled controls using a read only.",
+    "Browser-generated insufficient brief consumed one record reservation with zero provider calls.",
+    "15 additional controlled insufficient records filled independent daily admission; seventeenth rejected without row or AI attempt.",
+    "Retrieve latest showed16/16 records,0remaining,0/4AIattempts,disabled new generation, and preserved this session\u2019s earlier request beside latest five.",
+    "Advancing only the fixture UTC clock one day restored16new-record slots, retained all16rows, and enabled generation without generating another record."
+  ],
+  "briefAdmissionTransport": {
+    "controlledLocalFixture": true,
+    "seededAdditionalRecords": 15,
+    "onePriorBrowserGeneratedRecord": true,
+    "admission": {
+      "day": "2026-09-30",
+      "recordsCreated": 16,
+      "remaining": 0,
+      "maxRecordsPerDay": 16,
+      "retainedRecords": 16,
+      "maxRetainedRecords": 256,
+      "maxRecordBytes": 131072,
+      "upgradeDayClosed": false
+    },
+    "inferenceQuota": {
+      "day": "2026-09-30",
+      "attempts": 0,
+      "remaining": 4,
+      "nextAllowedAt": null,
+      "pendingUntil": null
+    },
+    "rejectedNewRequest": {
+      "status": 429,
+      "data": {
+        "error": "At most sixteen new brief records are permitted per UTC day.",
+        "code": "brief-record-limit",
+        "admission": {
+          "day": "2026-09-30",
+          "recordsCreated": 16,
+          "remaining": 0,
+          "maxRecordsPerDay": 16,
+          "retainedRecords": 16,
+          "maxRetainedRecords": 256,
+          "maxRecordBytes": 131072,
+          "upgradeDayClosed": false
+        }
+      }
+    },
+    "nativeCalls": 0,
+    "fakeProviderCalls": 0
+  },
+  "limitations": [
+    "Desktop browser verification only; no new mobile viewport claim.",
+    "Transport faults and virtual UTC rollover are controlled local scenarios, not production incident observations.",
+    "Native provider access, model quality and shared account allowance remain unverified."
+  ]
+}

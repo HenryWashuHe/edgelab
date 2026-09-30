@@ -1,0 +1,153 @@
+{
+  "projectVersion": "3.3.2",
+  "verifiedAt": "2026-09-30T07:30:22.515Z",
+  "measurement": "Actual Miniflare SQLite cursor rowsRead/rowsWritten, including trigger work.",
+  "fixture": "Synthetic seven-day history, three warm consecutive cron minutes, one check/job per target and two scheduler events expiring each minute. No production requests, history deletion, AI, or billing changes.",
+  "caveat": "Daily projections cover this measured cron shape only; fixture clock operations conservatively add overhead. Dashboard traffic and owner writes consume additional account quota. Free capacity for five targets is not claimed.",
+  "samples": [
+    {
+      "targetCount": 2,
+      "step": 1,
+      "operation": "status-24h",
+      "rowsRead": 160,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 2,
+      "step": 1,
+      "operation": "status-7d",
+      "rowsRead": 160,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 2,
+      "step": 1,
+      "operation": "cron-with-retention",
+      "rowsRead": 79,
+      "rowsWritten": 40,
+      "projectedDailyReads": 113760,
+      "projectedDailyWrites": 57600,
+      "fitsFreeDailyWrites": true
+    },
+    {
+      "targetCount": 2,
+      "step": 2,
+      "operation": "status-24h",
+      "rowsRead": 160,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 2,
+      "step": 2,
+      "operation": "status-7d",
+      "rowsRead": 160,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 2,
+      "step": 2,
+      "operation": "cron-with-retention",
+      "rowsRead": 79,
+      "rowsWritten": 40,
+      "projectedDailyReads": 113760,
+      "projectedDailyWrites": 57600,
+      "fitsFreeDailyWrites": true
+    },
+    {
+      "targetCount": 2,
+      "step": 3,
+      "operation": "status-24h",
+      "rowsRead": 160,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 2,
+      "step": 3,
+      "operation": "status-7d",
+      "rowsRead": 160,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 2,
+      "step": 3,
+      "operation": "cron-with-retention",
+      "rowsRead": 79,
+      "rowsWritten": 40,
+      "projectedDailyReads": 113760,
+      "projectedDailyWrites": 57600,
+      "fitsFreeDailyWrites": true
+    },
+    {
+      "targetCount": 5,
+      "step": 1,
+      "operation": "status-24h",
+      "rowsRead": 364,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 5,
+      "step": 1,
+      "operation": "status-7d",
+      "rowsRead": 364,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 5,
+      "step": 1,
+      "operation": "cron-with-retention",
+      "rowsRead": 168,
+      "rowsWritten": 82,
+      "projectedDailyReads": 241920,
+      "projectedDailyWrites": 118080,
+      "fitsFreeDailyWrites": false
+    },
+    {
+      "targetCount": 5,
+      "step": 2,
+      "operation": "status-24h",
+      "rowsRead": 364,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 5,
+      "step": 2,
+      "operation": "status-7d",
+      "rowsRead": 364,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 5,
+      "step": 2,
+      "operation": "cron-with-retention",
+      "rowsRead": 168,
+      "rowsWritten": 82,
+      "projectedDailyReads": 241920,
+      "projectedDailyWrites": 118080,
+      "fitsFreeDailyWrites": false
+    },
+    {
+      "targetCount": 5,
+      "step": 3,
+      "operation": "status-24h",
+      "rowsRead": 364,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 5,
+      "step": 3,
+      "operation": "status-7d",
+      "rowsRead": 364,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 5,
+      "step": 3,
+      "operation": "cron-with-retention",
+      "rowsRead": 168,
+      "rowsWritten": 82,
+      "projectedDailyReads": 241920,
+      "projectedDailyWrites": 118080,
+      "fitsFreeDailyWrites": false
+    }
+  ]
+}

@@ -1,7 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import { createMonitorForwarder, monitorFailureReason } from '../worker/monitor-forwarder';
+import {
+  createLabForwarder,
+  createMonitorForwarder,
+  monitorFailureReason,
+} from '../worker/monitor-forwarder';
 
 describe('monitor failure boundary', () => {
+  it('identifies unconfirmed experiment storage without inventing a decision', async () => {
+    const forward = createLabForwarder(() => Date.UTC(2026, 8, 30, 23, 59));
+    const response = await forward(
+      {
+        async fetch() {
+          throw new Error('Exceeded allowed rows read in Durable Objects free tier.');
+        },
+      } as unknown as Pick<Fetcher, 'fetch'>,
+      new Request('https://lab.internal/state'),
+    );
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({
+      error:
+        'Experiment storage is temporarily unavailable. This request could not confirm a stored result.',
+      code: 'lab-storage-unavailable',
+      reason: 'daily-read-limit',
+      retryAtUTC: '2026-10-01T00:00:00.000Z',
+    });
+    const circuit = Response.json({ decision: 'CIRCUIT_OPEN' }, { status: 503 });
+    const fresh = createLabForwarder();
+    expect(
+      await fresh(
+        { fetch: async () => circuit } as unknown as Pick<Fetcher, 'fetch'>,
+        new Request('https://lab.internal/request'),
+      ),
+    ).toBe(circuit);
+  });
   it('reports quota exhaustion with a bounded cooldown and retries after it', async () => {
     let now = Date.UTC(2026, 8, 30, 23, 59, 30);
     let calls = 0;

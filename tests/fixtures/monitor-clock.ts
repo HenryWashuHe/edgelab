@@ -1,8 +1,13 @@
 import app, { MonitorStore as ProductionMonitorStore } from '../../worker/index';
+import type { MonitorEnv } from '../../worker/monitor';
 export { ReliabilityLab } from '../../worker/index';
 
 /** Test-only clock lives in SQLite so eviction exercises the same timeline. */
 export class MonitorStore extends ProductionMonitorStore {
+  constructor(ctx: DurableObjectState, env: MonitorEnv) {
+    ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS test_clock (at INTEGER NOT NULL)');
+    super(ctx, env);
+  }
   protected override now() {
     const row = this.ctx.storage.sql
       .exec<{ at: number }>('SELECT at FROM test_clock LIMIT 1')

@@ -1,6 +1,6 @@
 {
   "name": "edgelab",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,7 +12,7 @@
     "deploy": "npm run build && wrangler deploy -c wrangler.origin.jsonc && wrangler deploy -c wrangler.jsonc",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "dev:workers": "wrangler dev -c wrangler.jsonc -c wrangler.origin.jsonc --port 8787",
+    "dev:workers": "wrangler dev --local -c wrangler.jsonc -c wrangler.origin.jsonc --port 8787 --var AI_BRIEFS_ENABLED:false",
     "test:lifecycle": "node scripts/lifecycle.mjs",
     "test:monitor": "node scripts/monitor-integration.mjs",
     "benchmark": "node scripts/benchmark.mjs",
@@ -22,6 +22,7 @@
     "test:upgrade": "node scripts/monitor-upgrade.mjs",
     "test:budget": "node scripts/budget-integration.mjs",
     "test:brief": "node scripts/brief-integration.mjs",
+    "test:brief-evaluate": "node scripts/brief-evaluate.mjs && node scripts/brief-evaluate.mjs --verify",
     "test:check-cache": "node scripts/check-cache-integration.mjs",
     "test:monitor-unavailable": "node scripts/monitor-unavailable.mjs",
     "test:monitor-cost": "node scripts/monitor-cost.mjs"

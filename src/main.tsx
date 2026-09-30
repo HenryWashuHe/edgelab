@@ -79,6 +79,23 @@ const pause = (ms: number, signal?: AbortSignal) =>
     }, ms);
     signal?.addEventListener('abort', stop, { once: true });
   });
+type LabFailure = {
+  error?: string;
+  outcome?: string;
+  code?: string;
+  reason?: string;
+  retryAtUTC?: string | null;
+};
+const LAB_UNCONFIRMED_NOTICE =
+  'Experiments are paused until lab state can be read. A previous write may have completed; reconnect before deciding whether to repeat it.';
+class LabRequestError extends Error {
+  constructor(
+    readonly payload: LabFailure,
+    readonly status: number,
+  ) {
+    super(payload.error || `Request failed (${status})`);
+  }
+}
 async function api<T = Record<string, unknown>>(path: string, body?: unknown) {
   const response = await fetch(`/api/${path}`, {
     method: body === undefined ? 'GET' : 'POST',
@@ -86,13 +103,13 @@ async function api<T = Record<string, unknown>>(path: string, body?: unknown) {
     body: body === undefined ? undefined : JSON.stringify(body),
     signal: AbortSignal.timeout(15000),
   });
-  const data = (await response.json()) as T & { error?: string; outcome?: string };
-  if (!response.ok && !data.outcome)
-    throw new Error(data.error || `Request failed (${response.status})`);
+  const data = (await response.json()) as T & LabFailure;
+  if (!response.ok && !data.outcome) throw new LabRequestError(data, response.status);
   return { data, colo: response.headers.get('X-Edge-Colo') ?? 'LOCAL' };
 }
 function App() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [stateConfirmed, setStateConfirmed] = useState(false);
   const [page, setPage] = useState(() =>
     ['playground', 'architecture', 'notes'].includes(location.hash.slice(1))
       ? location.hash.slice(1)
@@ -126,18 +143,56 @@ function App() {
   const [streaming, setStreaming] = useState(false);
   const streamRef = useRef(false);
   const lock = useRef(false);
+  function failLab(e: unknown) {
+    refreshSeq.current++;
+    streamRef.current = false;
+    stopController.current?.abort();
+    setStateConfirmed(false);
+    const payload = e instanceof LabRequestError ? e.payload : null;
+    const resetAt = Date.parse(payload?.retryAtUTC ?? '');
+    const knownDailyLimit =
+      payload?.code === 'lab-storage-unavailable' &&
+      ['daily-read-limit', 'daily-write-limit'].includes(payload.reason ?? '');
+    setError(
+      `${
+        payload?.code === 'lab-storage-unavailable'
+          ? 'Lab storage is unavailable.'
+          : (e as Error).message
+      } Current lab state cannot be confirmed. ${
+        snapshot ? 'Cached results are shown.' : 'No lab snapshot has loaded.'
+      }${
+        knownDailyLimit
+          ? ` A daily storage limit was reached.${Number.isFinite(resetAt) ? ` The server reports a quota reset at ${new Date(resetAt).toUTCString()}.` : ''}`
+          : ''
+      } Reconnect reads state only; it does not repeat a request, reset, or configuration change.`,
+    );
+    setNotice(LAB_UNCONFIRMED_NOTICE);
+  }
   async function refresh() {
     const seq = ++refreshSeq.current;
     const result = await api<Omit<Snapshot, 'colo'>>('state');
     if (seq !== refreshSeq.current) return;
     receivedAt.current = Date.now();
     setSnapshot({ ...result.data, colo: result.colo });
+    setStateConfirmed(true);
+    setError('');
+    setNotice((previous) =>
+      previous === LAB_UNCONFIRMED_NOTICE
+        ? 'Lab state reloaded. Previous requests were not replayed; review the log before repeating an experiment.'
+        : previous,
+    );
   }
   useEffect(() => {
     if (page !== 'playground') return;
-    refresh().catch((e) => setError(e.message));
+    let active = true;
+    setStateConfirmed(false);
+    refresh().catch((e) => {
+      if (active) failLab(e);
+    });
     const timer = setInterval(() => setTick(Date.now()), 250);
     return () => {
+      active = false;
+      refreshSeq.current++;
       streamRef.current = false;
       stopController.current?.abort();
       clearInterval(timer);
@@ -153,8 +208,12 @@ function App() {
       await refresh();
     } catch (e) {
       if ((e as Error).name === 'AbortError')
-        setNotice('Experiment stopped. Completed requests are kept in the log.');
-      else setError((e as Error).message);
+        setNotice((previous) =>
+          previous === LAB_UNCONFIRMED_NOTICE
+            ? previous
+            : 'Experiment stopped. Completed requests are kept in the log.',
+        );
+      else failLab(e);
     } finally {
       lock.current = false;
       setBusy('');
@@ -173,7 +232,7 @@ function App() {
     try {
       await update(patch);
     } catch (e) {
-      setError((e as Error).message);
+      failLab(e);
     } finally {
       configLock.current = false;
       setConfigBusy(false);
@@ -285,8 +344,8 @@ function App() {
   const settled = s ? Object.values(s.counts).reduce((a, b) => a + b, 0) : 0;
   const success = s ? s.counts.origin + s.counts.stale : 0;
   const p95 = percentile95(events);
-  const disabled = !!busy || configBusy || !s;
-  const configDisabled = !s || configBusy || (!!busy && !streaming);
+  const disabled = !!busy || configBusy || !s || !stateConfirmed;
+  const configDisabled = !s || !stateConfirmed || configBusy || (!!busy && !streaming);
   const serverNow = (snapshot?.now ?? tick) + Math.max(0, tick - receivedAt.current);
   const tokens = s
     ? Math.min(
@@ -369,7 +428,7 @@ function App() {
             </a>
           </div>
           <div className="sidebar-footer">
-            <span className="tiny-dot" /> EdgeLab v3.3.1 <span>TS</span>
+            <span className="tiny-dot" /> EdgeLab v3.3.2 <span>TS</span>
           </div>
         </div>
       </aside>
@@ -389,14 +448,18 @@ function App() {
           </div>
           <div className="topbar-right">
             <span className="runtime-pill">
-              <span className={`tiny-dot ${snapshot ? '' : 'muted-dot'}`} />
+              <span
+                className={`tiny-dot ${snapshot && (page !== 'playground' || stateConfirmed) ? '' : 'muted-dot'}`}
+              />
               {page === 'operations'
                 ? 'Persistent monitoring'
-                : snapshot
-                  ? snapshot.colo === 'LOCAL'
-                    ? 'Local runtime'
-                    : `${snapshot.colo} · Edge connected`
-                  : 'Connecting'}
+                : page === 'playground' && !stateConfirmed
+                  ? 'Lab state unconfirmed'
+                  : snapshot
+                    ? snapshot.colo === 'LOCAL'
+                      ? 'Local runtime'
+                      : `${snapshot.colo} · Edge connected`
+                    : 'Connecting'}
             </span>
             <a
               href="https://developers.cloudflare.com/workers/"
@@ -451,7 +514,9 @@ function App() {
           {error && page === 'playground' && (
             <div className="error-banner" role="alert">
               {error}
-              <button onClick={() => run('retry', refresh)}>Reconnect</button>
+              <button disabled={!!busy || configBusy} onClick={() => run('retry', async () => {})}>
+                Reconnect
+              </button>
             </div>
           )}
           {page === 'operations' ? (
@@ -611,11 +676,13 @@ function App() {
                         </span>
                         <b>Origin Worker</b>
                         <small>
-                          {s?.config.originMode === 'failing'
-                            ? 'Failure injected'
-                            : s?.config.originMode === 'flaky'
-                              ? 'Every third call fails'
-                              : 'Healthy service'}
+                          {!stateConfirmed
+                            ? 'Current state unconfirmed'
+                            : s?.config.originMode === 'failing'
+                              ? 'Failure injected'
+                              : s?.config.originMode === 'flaky'
+                                ? 'Every third call fails'
+                                : 'Healthy service'}
                         </small>
                       </div>
                     </div>
@@ -628,8 +695,14 @@ function App() {
                   <div className="metrics">
                     <Metric
                       label="TOTAL REQUESTS"
-                      value={String(s?.total ?? 0)}
-                      detail="Since the last reset"
+                      value={s ? String(s.total) : '—'}
+                      detail={
+                        stateConfirmed
+                          ? 'Since the last reset'
+                          : s
+                            ? 'Last confirmed snapshot'
+                            : 'No snapshot loaded'
+                      }
                       icon={<Activity size={15} />}
                     />
                     <Metric
@@ -641,7 +714,7 @@ function App() {
                     />
                     <Metric
                       label="ORIGIN BYPASSED"
-                      value={String(s ? s.total - s.originCalls : 0)}
+                      value={s ? String(s.total - s.originCalls) : '—'}
                       detail="Limited or circuit-blocked"
                       icon={<Layers size={15} />}
                     />
@@ -656,9 +729,11 @@ function App() {
                   <section className="panel chart-panel">
                     <div className="panel-heading">
                       <h2>Traffic, decoded</h2>
-                      <span className="subtle">Last {Math.min(events.length, 60)} requests</span>
+                      <span className="subtle">
+                        {s ? `Last ${Math.min(events.length, 60)} requests` : 'History unavailable'}
+                      </span>
                     </div>
-                    <TrafficChart events={events} />
+                    <TrafficChart events={events} unavailable={!s} />
                     <div className="legend">
                       {Object.entries(names).map(([key, label]) => (
                         <span key={key}>
@@ -672,7 +747,7 @@ function App() {
                     <div className="panel-heading">
                       <h2>
                         <Terminal size={16} /> Request log{' '}
-                        <span className="count-badge">{events.length}</span>
+                        <span className="count-badge">{s ? events.length : '—'}</span>
                       </h2>
                       <select
                         aria-label="Filter request log"
@@ -743,14 +818,18 @@ function App() {
                         <div className="empty-log">
                           <Radio size={23} />
                           <b>
-                            {events.length
-                              ? 'No matching requests'
-                              : 'Waiting for your first request'}
+                            {!s
+                              ? 'Lab history is unavailable'
+                              : events.length
+                                ? 'No matching requests'
+                                : 'Waiting for your first request'}
                           </b>
                           <span>
-                            {events.length
-                              ? 'Choose another outcome to inspect.'
-                              : 'Send some traffic and see every decision appear here.'}
+                            {!s
+                              ? 'Reconnect to retrieve recorded requests.'
+                              : events.length
+                                ? 'Choose another outcome to inspect.'
+                                : 'Send some traffic and see every decision appear here.'}
                           </span>
                         </div>
                       )}
@@ -797,7 +876,9 @@ function App() {
                       <div className="control-row">
                         <label className="control-label">TOKEN BUCKET</label>
                         <span className="mono">
-                          {Math.floor(tokens)} / {s?.config.capacity ?? 12}
+                          {stateConfirmed && s
+                            ? `${Math.floor(tokens)} / ${s.config.capacity}`
+                            : 'Unconfirmed'}
                         </span>
                       </div>
                       <div className="token-meter">
@@ -805,13 +886,17 @@ function App() {
                           <i
                             key={i}
                             className={
-                              i / 20 < (s ? tokens / s.config.capacity : 1) ? 'filled' : ''
+                              stateConfirmed && s && i / 20 < tokens / s.config.capacity
+                                ? 'filled'
+                                : ''
                             }
                           />
                         ))}
                       </div>
                       <p className="control-help">
-                        Live refill estimate · enforced by the coordinator.
+                        {stateConfirmed
+                          ? 'Live refill estimate · enforced by the coordinator.'
+                          : 'Reconnect to verify the current token balance.'}
                       </p>
                       <Range
                         label="Burst capacity"
@@ -834,25 +919,42 @@ function App() {
                       <div className="divider" />
                       <div className="control-row">
                         <label className="control-label">CIRCUIT BREAKER</label>
-                        <span className={`circuit-tag ${s?.circuit ?? 'closed'}`}>
+                        <span className={`circuit-tag ${stateConfirmed ? (s?.circuit ?? '') : ''}`}>
                           <span className="tiny-dot" />
-                          {s?.circuit ?? 'closed'}
+                          {stateConfirmed ? (s?.circuit ?? 'Unconfirmed') : 'Unconfirmed'}
                         </span>
                       </div>
                       <p className="control-help">
-                        Opens after {s?.config.failureThreshold ?? 3} consecutive origin failures.
-                        {s?.circuit === 'open'
-                          ? cooldown
-                            ? `Probe available in ${cooldown}s.`
-                            : 'Next request can probe recovery.'
-                          : `Cooldown: ${(s?.config.cooldownMs ?? 4000) / 1000}s.`}
+                        {!stateConfirmed ? (
+                          'Reconnect to verify the current circuit state.'
+                        ) : (
+                          <>
+                            Opens after {s?.config.failureThreshold ?? 3} consecutive origin
+                            failures.
+                            {s?.circuit === 'open'
+                              ? cooldown
+                                ? `Probe available in ${cooldown}s.`
+                                : 'Next request can probe recovery.'
+                              : `Cooldown: ${(s?.config.cooldownMs ?? 4000) / 1000}s.`}
+                          </>
+                        )}
                       </p>
                       <div className="circuit-steps">
-                        <span className={s?.circuit === 'closed' ? 'current' : ''}>Closed</span>
+                        <span
+                          className={stateConfirmed && s?.circuit === 'closed' ? 'current' : ''}
+                        >
+                          Closed
+                        </span>
                         <ChevronRight size={12} />
-                        <span className={s?.circuit === 'open' ? 'current' : ''}>Open</span>
+                        <span className={stateConfirmed && s?.circuit === 'open' ? 'current' : ''}>
+                          Open
+                        </span>
                         <ChevronRight size={12} />
-                        <span className={s?.circuit === 'half-open' ? 'current' : ''}>Probe</span>
+                        <span
+                          className={stateConfirmed && s?.circuit === 'half-open' ? 'current' : ''}
+                        >
+                          Probe
+                        </span>
                       </div>
                       <div className="divider" />
                       <div className="control-row">
@@ -862,7 +964,7 @@ function App() {
                         <button
                           id="fallback"
                           role="switch"
-                          aria-checked={s?.config.staleFallback ?? true}
+                          aria-checked={s?.config.staleFallback ?? false}
                           aria-label="Serve cached fallback"
                           className={`toggle ${s?.config.staleFallback ? 'on' : ''}`}
                           disabled={configDisabled}
@@ -872,14 +974,16 @@ function App() {
                         </button>
                       </div>
                       <div
-                        className={`cache-status ${cacheAge !== null && cacheAge <= 60000 ? 'warm' : ''}`}
+                        className={`cache-status ${stateConfirmed && cacheAge !== null && cacheAge <= 60000 ? 'warm' : ''}`}
                       >
                         <Database size={13} />
-                        {cacheAge === null
-                          ? 'Cache empty · send a healthy request'
-                          : cacheAge > 60000
-                            ? 'Cache expired · a healthy response will refresh it'
-                            : `Cached response · ${Math.floor(cacheAge / 1000)}s old / 60s limit`}
+                        {!stateConfirmed
+                          ? 'Current fallback cache unconfirmed'
+                          : cacheAge === null
+                            ? 'Cache empty · send a healthy request'
+                            : cacheAge > 60000
+                              ? 'Cache expired · a healthy response will refresh it'
+                              : `Cached response · ${Math.floor(cacheAge / 1000)}s old / 60s limit`}
                       </div>
                       <details className="advanced-controls">
                         <summary>Timing & recovery settings</summary>
@@ -937,7 +1041,7 @@ function App() {
                       </button>
                       <button
                         className="button full"
-                        disabled={(!!busy && !streaming) || !s}
+                        disabled={(!!busy && !streaming) || !s || (!stateConfirmed && !streaming)}
                         onClick={startStream}
                       >
                         {streaming ? (
@@ -1067,7 +1171,13 @@ function Range({
     </div>
   );
 }
-function TrafficChart({ events }: { events: LabEvent[] }) {
+function TrafficChart({
+  events,
+  unavailable = false,
+}: {
+  events: LabEvent[];
+  unavailable?: boolean;
+}) {
   const recent = events.slice(0, 60).reverse();
   const max = Math.max(200, ...recent.map((e) => e.latencyMs));
   return (
@@ -1116,9 +1226,13 @@ function TrafficChart({ events }: { events: LabEvent[] }) {
           <div className="chart-empty">
             <Activity size={22} />
             <span>
-              Your traffic tells a story.
+              {unavailable ? 'Lab observations are unavailable.' : 'Your traffic tells a story.'}
               <br />
-              <b>Send a request to start recording.</b>
+              <b>
+                {unavailable
+                  ? 'Reconnect to read the lab state.'
+                  : 'Send a request to start recording.'}
+              </b>
             </span>
           </div>
         )}

@@ -8,6 +8,8 @@ The operating system comprises a public gateway, a private catalog Worker, and t
 
 The included deployment monitors its actual public gateway and private catalog service. It starts with an empty incident history and accumulates real checks over time. The catalog contains controlled example data. This is an independently built engineering project, not a claim of production customers or global uptime measurement.
 
+The [storage incident case study](docs/CASE_STUDY.md) explains a real quota failure, the measured repair, and evidence-backed resume bullets.
+
 ## What is implemented
 
 - **Continuous checks:** one observation opportunity per current UTC minute per deployment-approved target; HTTP status, bounded JSON contract validation, latency objective, timeout, and 16 KB body limit. Redirects are not followed. Delayed schedules are skipped rather than backfilled.
@@ -40,6 +42,8 @@ curl 'http://localhost:8787/cdn-cgi/local/scheduled?cron=*+*+*+*+*'
 ```
 
 Local Wrangler does not automatically simulate the production cron. The included HTTPS monitor points at the public deployment; edit `MONITOR_TARGETS` for your own deployment. The private catalog monitor uses the local binding. Tests use isolated fixtures without depending on public services.
+
+The development command uses `wrangler dev --local` and forces AI generation off, so it starts without Cloudflare authentication or a remote AI proxy. Workers AI has no local model simulation; the offline brief evaluator uses explicit canned responses. [Local binding behavior](https://developers.cloudflare.com/workers/local-development/)
 
 Frontend edits require `npm run build` followed by refresh. Worker code reloads automatically. Do not run multiple dev servers against the same persistence directory; use `--persist-to /tmp/edgelab-isolated` for another checkout.
 
@@ -89,6 +93,7 @@ npm run test:incident     # incident evidence, private notes, pagination, idempo
 npm run test:upgrade      # migration and observation timing
 npm run test:budget       # persisted budget signals, eviction, gaps, revision changes
 npm run test:brief        # frozen evidence, AI fakes, quotas, retry and deadline fencing
+npm run test:brief-evaluate # controlled preparation/validation report and exact offline replay
 npm run test:check-cache  # source parity, mutation repair, eviction and measured SQL reads
 npm run test:monitor-unavailable # safe quota failures and authentication precedence
 npm run test:monitor-cost # whole-cron read/write measurements in isolated SQLite
@@ -134,7 +139,9 @@ Open an incident investigation after unlocking Operations to inspect private bri
 
 Each request freezes up to 50 observations, referenced policies, lifecycle, deterministic counts and explicit evidence limits. A SHA-256 hash identifies the captured snapshot. The bounded prompt selects representative references and reports omissions. The response may contain up to two hypotheses with applicable evidence IDs and allowlisted investigation suggestions. Citations establish relevance to recorded symptoms, not causality. The UI renders model strings as text and never executes suggestions or modifies incident state.
 
-The application permits four inference attempts per UTC day, one start per UTC minute and one pending request, with a 20-second deadline. Failed attempts consume their reservation. While its record is retained, reusing a UUID returns its original state without another dispatch; failures and interrupted requests are terminal. The AI quota does not limit deterministic records or total storage. This bounds application dispatch, without claiming exactly-once provider billing. Records expire 30 days after creation. Missing verified failures produce deterministic insufficient evidence, with no AI call.
+The application permits four inference attempts per UTC day, one start per UTC minute and one pending request, with a 20-second deadline. Failed attempts consume their reservation. A separate admission limit permits 16 new records per UTC day, at most 256 physically retained rows, and 128 KiB per new serialized record with completion headroom reserved. Insufficient-evidence and preparation-failure records consume record admission without consuming an AI attempt. Cleanup never refunds daily counters. While its record is retained, reusing a UUID returns its original state before these admission gates; failures and interrupted requests are terminal. This bounds application dispatch and storage, without claiming exactly-once provider billing. Records expire 30 days after creation. Missing verified failures produce deterministic insufficient evidence, with no AI call. Older records are preserved; a counterless-store upgrade conservatively closes new record creation for its first UTC day because deleted legacy creation history is unknown.
+
+The [offline evaluation walkthrough](docs/BRIEF_EVALUATION.md) exercises actual capture, prompt preparation, decoding and citation validation against three labeled controlled scenarios. It writes a replayable report with snapshot/input hashes, byte counts, supplied references and omissions. Canned acceptance measures neither native model quality nor a proven cause.
 
 Inference uses the fixed [Llama 3.3 70B model](https://developers.cloudflare.com/workers-ai/models/llama-3.3-70b-instruct-fp8-fast/) through the native AI binding, with 2 KiB message content, 4 KiB serialized input and 512 output tokens. Ordinary tests use fakes. `AI_BRIEFS_ENABLED` defaults to `false`; verify the account's plan and shared [Workers AI allocation](https://developers.cloudflare.com/workers-ai/platform/pricing/) before deliberately enabling it. No billing upgrade is performed by this project. The binding alone does not prove a real model call succeeded. See the [operator runbook](docs/OPERATIONS.md) and release validation for the actual verified capability.
 

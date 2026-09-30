@@ -12,12 +12,22 @@ export function monitorFailureReason(error: unknown): MonitorUnavailableReason {
 
 /** Failure responses contain no provider exception, target, or private operator data. */
 export function monitorUnavailable(reason: MonitorUnavailableReason, now: number) {
+  return storageUnavailable('monitor', reason, now);
+}
+
+function storageUnavailable(
+  area: 'monitor' | 'lab',
+  reason: MonitorUnavailableReason,
+  now: number,
+) {
   const quota = reason !== 'storage-unavailable';
   return Response.json(
     {
       error:
-        'Monitoring storage is temporarily unavailable. Current monitoring cannot be confirmed.',
-      code: 'monitor-storage-unavailable',
+        area === 'monitor'
+          ? 'Monitoring storage is temporarily unavailable. Current monitoring cannot be confirmed.'
+          : 'Experiment storage is temporarily unavailable. This request could not confirm a stored result.',
+      code: area === 'monitor' ? 'monitor-storage-unavailable' : 'lab-storage-unavailable',
       reason,
       retryAtUTC: quota
         ? new Date((Math.floor(now / 86400000) + 1) * 86400000).toISOString()
@@ -39,10 +49,18 @@ export function monitorUnavailable(reason: MonitorUnavailableReason, now: number
  * It neither caches successful evidence nor guarantees a shared account limit.
  */
 export function createMonitorForwarder(clock: () => number = () => Date.now()) {
+  return createStorageForwarder('monitor', clock);
+}
+
+export function createLabForwarder(clock: () => number = () => Date.now()) {
+  return createStorageForwarder('lab', clock);
+}
+
+function createStorageForwarder(area: 'monitor' | 'lab', clock: () => number) {
   let cooldown: { reason: MonitorUnavailableReason; until: number } | null = null;
   return async (stub: Pick<Fetcher, 'fetch'>, request: Request): Promise<Response> => {
     const now = clock();
-    if (cooldown && now < cooldown.until) return monitorUnavailable(cooldown.reason, now);
+    if (cooldown && now < cooldown.until) return storageUnavailable(area, cooldown.reason, now);
     cooldown = null;
     try {
       const response = await stub.fetch(request);
@@ -51,13 +69,13 @@ export function createMonitorForwarder(clock: () => number = () => Date.now()) {
         response.status >= 500 &&
         !response.headers.get('Content-Type')?.includes('application/json')
       )
-        return monitorUnavailable('storage-unavailable', clock());
+        return storageUnavailable(area, 'storage-unavailable', clock());
       return response;
     } catch (error) {
       const reason = monitorFailureReason(error);
       const failedAt = clock();
       if (reason !== 'storage-unavailable') cooldown = { reason, until: failedAt + 60000 };
-      return monitorUnavailable(reason, failedAt);
+      return storageUnavailable(area, reason, failedAt);
     }
   };
 }

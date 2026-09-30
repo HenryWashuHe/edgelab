@@ -47,10 +47,21 @@ export type BriefQuota = {
   nextAllowedAt: number | null;
   pendingUntil: number | null;
 };
+export type BriefAdmission = {
+  day: string;
+  recordsCreated: number;
+  remaining: number;
+  maxRecordsPerDay: 16;
+  retainedRecords: number;
+  maxRetainedRecords: 256;
+  maxRecordBytes: 131072;
+  upgradeDayClosed: boolean;
+};
 export type BriefListResponse = {
   capability: 'enabled' | 'disabled';
   records: BriefRecord[];
   quota: BriefQuota;
+  admission: BriefAdmission;
 };
 export type BriefResponse = { brief: BriefRecord; alreadyRecorded?: true };
 export type BriefErrorResponse = {
@@ -58,6 +69,8 @@ export type BriefErrorResponse = {
   brief?: BriefRecord;
   capability?: 'disabled';
   quota?: BriefQuota;
+  admission?: BriefAdmission;
+  code?: 'brief-record-limit' | 'brief-record-size';
 };
 export type BriefResult<T = BriefResponse> = { status: number; data: T | BriefErrorResponse };
 type BriefRow = {
@@ -72,9 +85,16 @@ type BriefRow = {
 };
 type IncidentRow = { id: string; service: string };
 type QuotaRow = { day: string; attempts: number; last_slot: number };
+type AdmissionRow = { day: string; records_created: number };
+type AdmissionMetaRow = { id: number; closed_day: string | null };
 const DAY = 86400000;
 const DAILY_ATTEMPTS = 4;
 const DEADLINE_MS = 20000;
+const DAILY_RECORDS = 16;
+const RETAINED_RECORDS = 256;
+const RECORD_BYTES = 131072;
+const FINALIZATION_HEADROOM = 9 * 1024;
+const bytes = (value: string) => new TextEncoder().encode(value).byteLength;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const dayOf = (now: number) => new Date(Math.floor(now / DAY) * DAY).toISOString().slice(0, 10);
@@ -90,15 +110,49 @@ export class IncidentBriefs {
   }
 
   ensureSchema() {
-    this.storage.sql.exec(
-      'CREATE TABLE IF NOT EXISTS incident_briefs (request_id TEXT PRIMARY KEY, incident TEXT NOT NULL, service TEXT NOT NULL, created_at INTEGER NOT NULL, state TEXT NOT NULL, record TEXT NOT NULL, dispatch_token TEXT, deadline INTEGER)',
-    );
-    this.storage.sql.exec(
-      'CREATE INDEX IF NOT EXISTS incident_briefs_by_incident ON incident_briefs(incident,created_at,request_id)',
-    );
-    this.storage.sql.exec(
-      'CREATE TABLE IF NOT EXISTS brief_quota (day TEXT PRIMARY KEY, attempts INTEGER NOT NULL, last_slot INTEGER NOT NULL)',
-    );
+    this.storage.transactionSync(() => {
+      const existingTable =
+        this.rows<{ name: string }>(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='incident_briefs'",
+        ).length > 0;
+      this.storage.sql.exec(
+        'CREATE TABLE IF NOT EXISTS incident_briefs (request_id TEXT PRIMARY KEY, incident TEXT NOT NULL, service TEXT NOT NULL, created_at INTEGER NOT NULL, state TEXT NOT NULL, record TEXT NOT NULL, dispatch_token TEXT, deadline INTEGER)',
+      );
+      this.storage.sql.exec(
+        'CREATE INDEX IF NOT EXISTS incident_briefs_by_incident ON incident_briefs(incident,created_at,request_id)',
+      );
+      this.storage.sql.exec(
+        'CREATE TABLE IF NOT EXISTS brief_quota (day TEXT PRIMARY KEY, attempts INTEGER NOT NULL, last_slot INTEGER NOT NULL)',
+      );
+      this.storage.sql.exec(
+        'CREATE TABLE IF NOT EXISTS brief_admission (day TEXT PRIMARY KEY, records_created INTEGER NOT NULL)',
+      );
+      this.storage.sql.exec(
+        'CREATE TABLE IF NOT EXISTS brief_admission_meta (id INTEGER PRIMARY KEY CHECK(id=1), closed_day TEXT)',
+      );
+      if (!this.rows<AdmissionMetaRow>('SELECT * FROM brief_admission_meta WHERE id=1')[0]) {
+        const now = this.clock();
+        const day = dayOf(now);
+        const counter = this.rows<AdmissionRow>(
+          'SELECT * FROM brief_admission WHERE day=?',
+          day,
+        )[0];
+        const closed = existingTable && counter === undefined;
+        if (!counter) {
+          // Old retained rows are a known lower bound, not an invented count of
+          // all past creations. Unknown deleted history closes this day once.
+          const known = existingTable
+            ? this.rows<{ count: number }>(
+                'SELECT COUNT(*) AS count FROM incident_briefs WHERE created_at>=? AND created_at<?',
+                Math.floor(now / DAY) * DAY,
+                (Math.floor(now / DAY) + 1) * DAY,
+              )[0].count
+            : 0;
+          this.storage.sql.exec('INSERT INTO brief_admission VALUES(?,?)', day, known);
+        }
+        this.storage.sql.exec('INSERT INTO brief_admission_meta VALUES(1,?)', closed ? day : null);
+      }
+    });
   }
 
   private rows<T extends Record<string, SqlStorageValue>>(
@@ -161,6 +215,25 @@ export class IncidentBriefs {
       pendingUntil: pending?.deadline ?? null,
     };
   }
+  private admission(now: number): BriefAdmission {
+    const day = dayOf(now);
+    const counter = this.rows<AdmissionRow>('SELECT * FROM brief_admission WHERE day=?', day)[0];
+    const marker = this.rows<AdmissionMetaRow>('SELECT * FROM brief_admission_meta WHERE id=1')[0];
+    const upgradeDayClosed = marker?.closed_day === day;
+    const recordsCreated = counter?.records_created ?? 0;
+    return {
+      day,
+      recordsCreated,
+      remaining: upgradeDayClosed ? 0 : Math.max(0, DAILY_RECORDS - recordsCreated),
+      maxRecordsPerDay: DAILY_RECORDS,
+      retainedRecords: this.rows<{ count: number }>(
+        'SELECT COUNT(*) AS count FROM incident_briefs',
+      )[0].count,
+      maxRetainedRecords: RETAINED_RECORDS,
+      maxRecordBytes: RECORD_BYTES,
+      upgradeDayClosed,
+    };
+  }
 
   read(requestId: string, activeIds: Iterable<string>, now: number): BriefResult {
     if (!UUID_V4.test(requestId))
@@ -200,6 +273,7 @@ export class IncidentBriefs {
             now - RETENTION,
           ).map((row) => this.record(row)),
           quota: this.quota(now),
+          admission: this.admission(now),
         },
       };
     });
@@ -252,6 +326,7 @@ export class IncidentBriefs {
             error: 'AI briefs unavailable in this deployment',
             capability: 'disabled' as const,
             quota: this.quota(now),
+            admission: this.admission(now),
           },
         };
       return null;
@@ -294,7 +369,7 @@ export class IncidentBriefs {
         requestId,
         incident: incidentId,
         service: incident.service,
-        createdAt: now,
+        createdAt: reservationTime,
         completedAt: prepared === null ? reservationTime : null,
         state: preparationFailure ? 'failed' : prepared ? 'pending' : 'insufficient-evidence',
         evidence: snapshot.evidence,
@@ -309,6 +384,35 @@ export class IncidentBriefs {
         generated: null,
         failure: preparationFailure,
       };
+      const serialized = JSON.stringify(record);
+      const admission = this.admission(reservationTime);
+      if (bytes(serialized) > RECORD_BYTES - FINALIZATION_HEADROOM)
+        return {
+          result: {
+            status: 422,
+            data: {
+              error:
+                'The frozen brief exceeds its storage limit with completion headroom reserved. No record or AI attempt was created.',
+              code: 'brief-record-size' as const,
+              admission,
+            },
+          },
+        };
+      if (admission.remaining === 0 || admission.retainedRecords >= RETAINED_RECORDS)
+        return {
+          result: {
+            status: 429,
+            data: {
+              error: admission.upgradeDayClosed
+                ? 'New brief records are closed for this UTC upgrade day because prior creations are unknown.'
+                : admission.remaining === 0
+                  ? 'At most sixteen new brief records are permitted per UTC day.'
+                  : 'The retained brief record limit is full. New generation requires retention cleanup.',
+              code: 'brief-record-limit' as const,
+              admission,
+            },
+          },
+        };
       if (prepared) {
         const quota = this.quota(reservationTime);
         if (quota.pendingUntil !== null)
@@ -333,13 +437,17 @@ export class IncidentBriefs {
       const dispatchToken = prepared ? crypto.randomUUID() : null;
       const deadline = prepared ? reservationTime + DEADLINE_MS : null;
       this.storage.sql.exec(
+        'INSERT INTO brief_admission VALUES(?,1) ON CONFLICT(day) DO UPDATE SET records_created=records_created+1',
+        dayOf(reservationTime),
+      );
+      this.storage.sql.exec(
         'INSERT INTO incident_briefs VALUES(?,?,?,?,?,?,?,?)',
         requestId,
         incidentId,
         incident.service,
-        now,
+        record.createdAt,
         record.state,
-        JSON.stringify(record),
+        serialized,
         dispatchToken,
         deadline,
       );
@@ -411,10 +519,22 @@ export class IncidentBriefs {
       record.completedAt = completedAt;
       record.generated = failure ? null : generated;
       record.failure = failure;
+      let serialized = JSON.stringify(record);
+      // Preserve legacy records, even if they predate this size cap. New records
+      // reserve enough space for the bounded provider envelope and terminal state.
+      if (bytes(serialized) > RECORD_BYTES && bytes(current.record) <= RECORD_BYTES) {
+        failure = briefFailure('invalid-output');
+        record.state = 'failed';
+        record.generated = null;
+        record.failure = failure;
+        serialized = JSON.stringify(record);
+        if (bytes(serialized) > RECORD_BYTES)
+          throw new Error('Brief finalization exceeds reserved storage capacity');
+      }
       this.storage.sql.exec(
         'UPDATE incident_briefs SET state=?,record=?,dispatch_token=NULL WHERE request_id=? AND state=? AND dispatch_token=?',
         record.state,
-        JSON.stringify(record),
+        serialized,
         requestId,
         'pending',
         reservation.dispatchToken,
@@ -445,6 +565,7 @@ export class IncidentBriefs {
           );
       }
       this.storage.sql.exec('DELETE FROM brief_quota WHERE day<?', dayOf(cutoff));
+      this.storage.sql.exec('DELETE FROM brief_admission WHERE day<?', dayOf(cutoff));
     });
   }
 }

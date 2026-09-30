@@ -14,7 +14,7 @@ const request = async (path, { method = 'GET', headers = {}, body } = {}) => {
 };
 const get = (path, headers = {}) => request(path, { headers });
 const health = await get('/api/health');
-assert.equal(health.data.version, '3.3.1');
+assert.equal(health.data.version, '3.3.2');
 assert.equal((await get('/api/ops/audit')).response.status, 401);
 assert.equal(
   (await get('/api/ops/audit', { Authorization: `Bearer ${token}` })).response.status,

@@ -648,7 +648,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       };
     });
     return {
-      version: '3.3.1',
+      version: '3.3.2',
       now,
       window: minutes === 1440 ? '24h' : '7d',
       retentionDays: 30,

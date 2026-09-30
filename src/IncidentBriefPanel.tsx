@@ -23,9 +23,11 @@ const nextCheckLabels: Record<BriefNextCheck, string> = {
 type BriefResponse = { brief: BriefRecord; alreadyRecorded?: true };
 type ErrorPayload = {
   error?: string;
+  code?: string;
   brief?: BriefRecord;
   capability?: BriefListResponse['capability'];
   quota?: BriefListResponse['quota'];
+  admission?: BriefListResponse['admission'];
 };
 class BriefRequestError extends Error {
   constructor(
@@ -87,6 +89,12 @@ export function IncidentBriefPanel({
   const selected = visible?.selected ? visible.records[visible.selected] : null;
   const requested = requestId ? visible?.records[requestId] : null;
   const quota = visible?.list?.quota;
+  const admission = visible?.list?.admission;
+  const upgradeDayClosed = admission?.upgradeDayClosed === true;
+  const dailyRecordLimit = Boolean(admission && admission.remaining <= 0 && !upgradeDayClosed);
+  const retainedRecordLimit = Boolean(
+    admission && admission.retainedRecords >= admission.maxRetainedRecords,
+  );
 
   function update(generation: number, fn: (previous: PanelState) => PanelState) {
     if (generation !== epoch.current) return;
@@ -252,14 +260,18 @@ export function IncidentBriefPanel({
           ...previous,
           records: payload?.brief ? mergeRecord(previous.records, payload.brief) : previous.records,
           list:
-            payload?.quota && previous.list
+            payload && previous.list
               ? {
                   ...previous.list,
-                  quota: payload.quota,
+                  quota: payload.quota ?? previous.list.quota,
                   capability: payload.capability ?? previous.list.capability,
+                  admission: payload.admission ?? previous.list.admission,
                 }
               : previous.list,
-          error: `${(e as Error).message} The same request ID is retained; retrieve its stored state before requesting another brief.`,
+          error:
+            payload?.code === 'brief-record-limit' || payload?.code === 'brief-record-size'
+              ? `${(e as Error).message} No new brief record was stored and no AI attempt was used. Stored briefs remain readable. The request ID is retained; this request will not retry automatically.`
+              : `${(e as Error).message} The same request ID is retained; retrieve its stored state before requesting another brief.`,
         };
       });
     } finally {
@@ -275,6 +287,12 @@ export function IncidentBriefPanel({
     visible?.list?.capability === 'enabled' &&
     !visible.creating &&
     !unknownRequest &&
+    !upgradeDayClosed &&
+    Boolean(
+      admission &&
+      admission.remaining > 0 &&
+      admission.retainedRecords < admission.maxRetainedRecords,
+    ) &&
     (quota?.remaining ?? 0) > 0 &&
     quota?.nextAllowedAt === null &&
     quota.pendingUntil === null;
@@ -346,6 +364,35 @@ export function IncidentBriefPanel({
               ` A request may remain pending until ${when(quota.pendingUntil)}.`}{' '}
             Retrieve latest to recheck availability; retrieval does not run AI.
           </p>
+          <p className="brief-quota">
+            {admission ? (
+              <>
+                Brief storage across the deployment:{' '}
+                {upgradeDayClosed
+                  ? `At least ${admission.recordsCreated} known record creations on ${admission.day}; earlier deleted records cannot be counted.`
+                  : `${admission.recordsCreated} / ${admission.maxRecordsPerDay} new records on ${admission.day}; ${admission.remaining} remaining today.`}{' '}
+                {admission.retainedRecords} / {admission.maxRetainedRecords} retained records.
+                Maximum {Math.round(admission.maxRecordBytes / 1024)} KiB per new record. Storage
+                limits apply even when a brief runs no AI; they are separate from the AI attempt
+                quota.
+              </>
+            ) : (
+              'Brief storage availability is unknown. Retrieve latest before creating a new record.'
+            )}
+          </p>
+          {(upgradeDayClosed || dailyRecordLimit || retainedRecordLimit) && (
+            <p className="brief-caution" role="status">
+              {upgradeDayClosed
+                ? 'New brief admission is closed for this UTC day after a storage-limit upgrade; retained briefs remain available. Recheck after the next UTC day starts.'
+                : 'New brief records cannot be stored.'}
+              {dailyRecordLimit &&
+                ' The daily record allowance is exhausted; recheck after the next UTC day starts.'}
+              {retainedRecordLimit &&
+                ' Retained record capacity is full; recheck after retention cleanup.'}{' '}
+              Stored briefs remain retrievable, and retrying the same request ID can retrieve an
+              existing record without creating another one.
+            </p>
+          )}
           {quota?.remaining === 0 && (
             <p className="brief-caution" role="status">
               The deployment’s AI attempt quota is exhausted for this UTC day. Stored briefs remain

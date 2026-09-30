@@ -1,17 +1,21 @@
 import assert from 'node:assert/strict';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
+const expectedVersion = JSON.parse(
+  await readFile(new URL('../package.json', import.meta.url), 'utf8'),
+).version;
 const base = process.env.BASE_URL;
 if (!base?.startsWith('https://')) throw new Error('Set BASE_URL to your deployed HTTPS gateway');
 const checks = [];
-const read = async (path) => {
-  const response = await fetch(base + path, { signal: AbortSignal.timeout(15000) });
+const read = async (path, headers) => {
+  const response = await fetch(base + path, { headers, signal: AbortSignal.timeout(15000) });
   assert(response.headers.get('Content-Type')?.includes('application/json'), path);
   return { response, data: await response.json() };
 };
 const health = await read('/api/health');
 assert.equal(health.response.status, 200);
-assert.equal(health.data.version, '3.3.1');
+assert.equal(health.data.version, expectedVersion);
 for (const path of ['/api/ready', '/api/ops/status', '/api/ops/export']) {
   const { response, data } = await read(path);
   assert.equal(response.status, 503, path);
@@ -31,6 +35,16 @@ for (const path of ['/api/ready', '/api/ops/status', '/api/ops/export']) {
   assert(!('services' in data) && !('monitoring' in data), path);
   checks.push({ path, status: response.status, response: data });
 }
+const lab = await read('/api/state', { 'X-Lab-ID': randomUUID() });
+assert.equal(lab.response.status, 503);
+assert.equal(lab.data.code, 'lab-storage-unavailable');
+assert.equal(lab.data.reason, 'daily-read-limit');
+assert(!('state' in lab.data) && !('outcome' in lab.data));
+assert.equal(lab.response.headers.get('Cache-Control'), 'no-store');
+checks.push({ path: '/api/state', status: lab.response.status, response: lab.data });
+const missingCapability = await read('/api/state');
+assert.equal(missingCapability.response.status, 400);
+checks.push({ path: '/api/state', capability: 'omitted', status: 400 });
 for (const path of [
   '/api/ops/audit',
   '/api/ops/incident-briefs/00000000-0000-4000-8000-000000000000',
@@ -42,17 +56,19 @@ for (const path of [
 }
 await mkdir('docs/evidence/releases', { recursive: true });
 await writeFile(
-  'docs/evidence/releases/3.3.1-storage-boundary.json',
+  `docs/evidence/releases/${expectedVersion}-storage-boundary.json`,
   JSON.stringify(
     {
       verifiedAt: new Date().toISOString(),
       baseUrl: base,
       health: health.data,
       verification:
-        'Deployed sanitized storage-unavailable responses and auth precedence verified. This is a quota-failure boundary check, not successful autonomous monitoring recovery.',
+        'Deployed sanitized monitoring and experiment storage-unavailable responses, capability validation and auth precedence verified. This is a quota-failure boundary check, not successful autonomous monitoring recovery.',
       autonomousRecovery: 'pending daily quota reset and new observed minutes',
       productionInferenceCalls: 0,
       historySeeded: false,
+      laboratoryVerification:
+        'One disposable session state GET; no experiment, config or reset POST. Lab reads renew idle storage as documented. The generated capability is omitted from this artifact.',
       checks,
     },
     null,

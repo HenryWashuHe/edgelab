@@ -1,0 +1,76 @@
+{
+  "projectVersion": "3.3.2",
+  "recordedAt": "2026-09-30T07:35:57Z",
+  "verification": "Passed actual local Miniflare/workerd SQLite admission, persistence and rollback assertions.",
+  "commands": [
+    "npm run test:brief",
+    "npm run test:budget",
+    "npm run test:monitor-cost",
+    "npx tsc --noEmit",
+    "npx prettier --check worker/incident-briefs.ts scripts/brief-integration.mjs tests/fixtures/monitor-clock.ts"
+  ],
+  "fixture": {
+    "controlledLocalSQLite": true,
+    "syntheticIncidentsAndChecks": true,
+    "injectedClockPersistedAcrossEviction": true,
+    "inference": "Controlled fake provider through a test-only native AI.run adapter; no real Workers AI inference.",
+    "preparationFailure": "Separate test bundle forces preparation to fail; production domain source remains unchanged.",
+    "productionRequests": 0,
+    "nativeWorkersAIInferenceCalls": 0,
+    "billingChanges": 0
+  },
+  "limits": {
+    "newRecordsPerUTCDay": 16,
+    "retainedRecords": 256,
+    "serializedRecordBytes": 131072,
+    "reservedFinalizationBytes": 9216,
+    "initialRecordMaximumBytes": 121856,
+    "independentAIAttemptsPerUTCDay": 4
+  },
+  "measuredCases": {
+    "concurrentDeterministicCreation": {
+      "requests": 32,
+      "accepted": 16,
+      "refused": 16,
+      "providerDispatches": 0
+    },
+    "concurrentPreparationFailures": {
+      "requests": 32,
+      "persistedFailedRecords": 16,
+      "refused": 16,
+      "providerDispatches": 0
+    },
+    "retainedCapacity": {
+      "creationDays": 16,
+      "recordsPerDay": 16,
+      "retainedRecords": 256,
+      "nextDayNewRequestStatus": 429,
+      "nextDayCreationCounterUnchanged": true,
+      "oneFreedSlotConcurrentRequests": 2,
+      "oneFreedSlotAccepted": 1
+    },
+    "recordBytes": {
+      "rejectedInitialBytes": 122325,
+      "rejectedStatus": 422,
+      "rejectedCode": "brief-record-size",
+      "rejectionCreatedNoRowOrAttempt": true,
+      "acceptedInitialBytes": 120725,
+      "frozenChecksPreserved": 50,
+      "frozenPolicyVersionsPreserved": 50,
+      "finalSerializedBytesAtMost": 131072,
+      "boundedUnicodeOutputVerified": true
+    }
+  },
+  "verifiedInvariants": [
+    "Existing UUID replay and incident conflict precede admission gates and do not change counters.",
+    "Counters and records persist across actual Durable Object eviction.",
+    "UTC rollover renews the daily allowance independently of retained capacity.",
+    "Deletion, orphan pruning, retention and GET lease expiration do not refund a current-day creation reservation.",
+    "Legacy migration with zero or two known retained current-day rows reports that lower bound and closes only the upgrade UTC day; eviction never repeats the bootstrap.",
+    "Oversized legacy JSON remains readable and replayable without rewriting its stored bytes.",
+    "An actual SQLite trigger abort during AI-quota reservation rolls back the record and both counters before any provider dispatch.",
+    "Size rejection stores no UUID row, uses no AI attempt and permits an explicit same-ID retry once evidence fits.",
+    "Record creation timestamps use the reservation clock; frozen evidence retains its separate capture timestamp."
+  ],
+  "scope": "Local release evidence only. It does not assert production monitoring recovery, live AI availability, billing capacity or real-model quality."
+}

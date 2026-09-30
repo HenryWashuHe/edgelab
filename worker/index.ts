@@ -1,7 +1,8 @@
 import { MonitorStore, operatorAuthorized, type MonitorEnv } from './monitor';
-import { createMonitorForwarder } from './monitor-forwarder';
+import { createLabForwarder, createMonitorForwarder } from './monitor-forwarder';
 export { MonitorStore };
 const forwardMonitor = createMonitorForwarder();
+const forwardLab = createLabForwarder();
 import { callOrigin } from './origin-client';
 import { DurableObject } from 'cloudflare:workers';
 import {
@@ -137,18 +138,18 @@ export class ReliabilityLab extends DurableObject<Env> {
       } catch {
         return json({ error: 'Invalid JSON' }, 400);
       }
-      try {
-        this.ctx.storage.transactionSync(() => {
-          const s = this.read();
-          refill(s, Date.now());
+      return this.ctx.storage.transactionSync(() => {
+        const s = this.read();
+        refill(s, Date.now());
+        try {
           s.config = validateConfig(patch, s.config);
-          s.tokens = Math.min(s.tokens, s.config.capacity);
-          this.save(s);
-        });
+        } catch (e) {
+          return json({ error: (e as Error).message }, 400);
+        }
+        s.tokens = Math.min(s.tokens, s.config.capacity);
+        this.save(s);
         return json({ ok: true });
-      } catch (e) {
-        return json({ error: (e as Error).message }, 400);
-      }
+      });
     }
     if (action !== 'request') return json({ error: 'Not found' }, 404);
     const started = Date.now();
@@ -235,7 +236,7 @@ export default {
         ok: true,
         colo: colo(request),
         platform: 'Cloudflare Workers + Durable Objects',
-        version: '3.3.1',
+        version: '3.3.2',
         origin: 'service-binding',
       });
     if (url.pathname === '/api/ready') {
@@ -366,7 +367,8 @@ export default {
       }
     }
     const stub = env.LABS.get(env.LABS.idFromName(id));
-    const response = await stub.fetch(
+    const response = await forwardLab(
+      stub,
       new Request(request.url, { method: request.method, headers: request.headers, body }),
     );
     const headers = new Headers(response.headers);

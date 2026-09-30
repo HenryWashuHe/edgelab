@@ -1,5 +1,19 @@
 # Verification record
 
+## EdgeLab 3.3.2
+
+Gateway deployment: `a1bafe0a-f569-47d7-aa2e-217c42578bcf`. The private origin is unchanged. Production autonomous recovery remains pending the daily quota reset. AI generation remains disabled; no native inference has been performed. The last successful full live monitoring verification remains 3.2.1. The preceding 3.3.1 GitHub run failed at local server startup because the declared AI binding attempted to open a remote proxy without Cloudflare credentials; the offline unit and SQLite suites had passed. The development command now uses documented `wrangler dev --local` and forces inference off; it starts both local Workers without a remote AI session.
+
+Formatting, 96 unit tests, strict TypeScript, production assets and both deployment dry-run bundles pass. The [brief admission evidence](releases/3.3.2-brief-admission.json) adds real SQLite concurrency, atomic rollback, independent daily/retained/UTF-8 limits, truthful one-time migration closure, completion headroom, no-refund rules and preserved retained UUID replay. The [offline evaluation report](releases/3.3.2-brief-evaluation.json) uses actual capture/preparation/validation exports with three controlled scenarios, two canned responses, one insufficient-evidence skip and six rejected adversarial outputs. It measures neither native provider compatibility nor model quality.
+
+The actual Worker failure suite now covers laboratory storage exceptions after an initial successful touch. A mid-config read failure is sanitized; a save that executes before throwing rolls back the real transaction. Invalid configuration remains400. No private exception, invented decision or origin dispatch leaks through this boundary, and object eviction preserves the prior configuration.
+
+The [local browser record](releases/3.3.2-browser-qa.json) verifies a committed configuration with a lost response, writes paused while unconfirmed, one reconnect state GET without replay, preserved cached history and unknown initial-load values. Brief storage and inference counts remain separate; daily record exhaustion disables new creation while existing requests remain inspectable. A virtual UTC rollover reopens admission without deleting retained evidence. This is desktop controlled QA, with no new mobile or production inference claim.
+
+The [live boundary record](releases/3.3.2-storage-boundary.json) confirms deployed3.3.2 liveness, sanitized monitoring and lab quota503s, missing-capability400 and operator401 precedence. It records unavailable service rather than successful new cron minutes.
+
+The [whole-monitor measurements](releases/3.3.2-monitor-cost.json) include the additional admission-pruning read: two targets use79reads/40writes per warm minute (113,760reads/57,600writes across1,440identical minutes), while five targets use168reads/82writes and exceed the Free daily write allowance. Complete status views remain160reads for two targets or364for five, with zero writes. These are controlled cursor measurements and workload projections, excluding other account activity and migrations. The [case study](../CASE_STUDY.md) connects the confirmed outage to the measured repair and its limits.
+
 ## EdgeLab 3.3.1
 
 Gateway deployment: `39e332e2-226f-40df-94f5-e85a6d0b5887`. The private origin is unchanged; AI generation stays disabled. Production autonomous recovery remains pending the Free-plan daily quota reset. The last successful full live monitoring verification remains 3.2.1.

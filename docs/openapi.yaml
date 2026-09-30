@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.3.1
+  version: 3.3.2
   description: |
     Public monitoring read model and single-owner operator control plane.
     Laboratory endpoints are documented in LAB.md. No public probe or target-enrollment endpoint exists.
@@ -229,12 +229,12 @@ paths:
         '409': { $ref: '#/components/responses/Error' }
         '413': { $ref: '#/components/responses/Error' }
         '422':
-          description: Frozen evidence could not fit the bounded model input; failed request retained without dispatch
+          description: Model-input preparation failure retained without dispatch, or new frozen record exceeds the storage byte limit with no row or attempt created
           content:
             application/json:
               schema: { $ref: '#/components/schemas/BriefError' }
         '429':
-          description: Application quota or pending-call gate; no new dispatch reserved
+          description: Inference quota, pending-call gate or record admission limit; no new record or dispatch reserved
           content:
             application/json:
               schema: { $ref: '#/components/schemas/BriefError' }
@@ -279,7 +279,7 @@ paths:
         '503': { $ref: '#/components/responses/MonitoringUnavailable' }
   /api/ops/incidents/{incidentId}/briefs:
     get:
-      summary: Latest five private requests, capability and application quota
+      summary: Latest five private requests, capability, inference quota and record admission
       security: [{ operatorToken: [] }]
       parameters:
         - in: path
@@ -293,7 +293,7 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [capability, records, quota]
+                required: [capability, records, quota, admission]
                 properties:
                   capability: { type: string, enum: [enabled, disabled] }
                   records:
@@ -301,6 +301,7 @@ paths:
                     maxItems: 5
                     items: { $ref: '#/components/schemas/BriefRecord' }
                   quota: { $ref: '#/components/schemas/BriefQuota' }
+                  admission: { $ref: '#/components/schemas/BriefAdmission' }
         '400': { $ref: '#/components/responses/Error' }
         '401': { $ref: '#/components/responses/Error' }
         '403': { $ref: '#/components/responses/Error' }
@@ -659,6 +660,39 @@ components:
         remaining: { type: integer, minimum: 0, maximum: 4 }
         nextAllowedAt: { type: [integer, 'null'], description: Earliest next UTC minute start }
         pendingUntil: { type: [integer, 'null'], description: Current persisted dispatch deadline }
+    BriefAdmission:
+      type: object
+      required:
+        [
+          day,
+          recordsCreated,
+          remaining,
+          maxRecordsPerDay,
+          retainedRecords,
+          maxRetainedRecords,
+          maxRecordBytes,
+          upgradeDayClosed,
+        ]
+      properties:
+        day: { type: string, format: date }
+        recordsCreated:
+          type: integer
+          minimum: 0
+          description: Reserved creations for the UTC day, without refunds. On a closed legacy upgrade day this is only a known lower bound.
+        remaining: { type: integer, minimum: 0, maximum: 16 }
+        maxRecordsPerDay: { type: integer, const: 16 }
+        retainedRecords:
+          type: integer
+          minimum: 0
+          description: Physical retained rows, including expired rows awaiting cron cleanup and grandfathered legacy records.
+        maxRetainedRecords: { type: integer, const: 256 }
+        maxRecordBytes:
+          type: integer
+          const: 131072
+          description: UTF-8 serialized byte cap for new records, with completion headroom reserved before insertion. Older larger records are preserved.
+        upgradeDayClosed:
+          type: boolean
+          description: New records are closed for the one-time migration UTC day because deleted legacy creation history cannot be reconstructed.
     BriefResponse:
       type: object
       required: [brief]
@@ -672,6 +706,8 @@ components:
         error: { type: string }
         brief: { $ref: '#/components/schemas/BriefRecord' }
         quota: { $ref: '#/components/schemas/BriefQuota' }
+        admission: { $ref: '#/components/schemas/BriefAdmission' }
+        code: { type: string, enum: [brief-record-limit, brief-record-size] }
         capability: { type: string, const: disabled }
     BriefRecord:
       type: object

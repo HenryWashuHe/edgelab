@@ -10,6 +10,8 @@ The gateway calls a **separate private origin Worker through a service binding**
 
 Version 2 adds actual cached payloads, configurable timeouts, automatic idle cleanup, a keyboard-accessible request inspector, CSV exports, cancellable guided experiments, and controls that stay available during steady traffic.
 
+Storage failures return JSON503 with code `lab-storage-unavailable`, a sanitized reason and a known UTC reset time when available. The browser marks current state unconfirmed, pauses experiments, and retains cached logs as historical evidence. Reconnect performs one state read and never repeats an uncertain request, reset or configuration write. With no loaded snapshot, metrics and history remain unknown.
+
 ## Run locally
 
 Requires Node.js 22.12+ and npm.

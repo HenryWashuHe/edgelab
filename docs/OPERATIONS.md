@@ -13,7 +13,7 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 ## Verify an actual release
 
 1. Confirm the published commit passes GitHub CI.
-2. For a v3.3 release, `GET /api/health` must report version 3.3.1. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
+2. For a v3.3 release, `GET /api/health` must report version 3.3.2. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
 3. `GET /api/ops/status` must list the expected target names. Public output must not contain the operator token, target URLs, or investigation notes.
 4. Allow cron propagation ([Cloudflare documents up to 15 minutes](https://developers.cloudflare.com/workers/configuration/cron-triggers/)). Verify each service receives observations in two distinct scheduled minutes without clicking a “run” button. Check `latest.slot`, the actual probe start `latest.observedAt`, and completion `latest.at`, not just the page's snapshot timestamp. Trigger propagation is not permission to backfill: an invocation whose scheduled minute has passed is recorded as `skipped-late` and makes no observation.
 5. The private catalog probe must validate actual JSON through its service binding; the gateway probe must reach the configured public HTTPS health endpoint.
@@ -48,6 +48,10 @@ Generate sends `{incident, requestId}` to `POST /api/ops/incident-brief`. Keep t
 Each request freezes the newest bounded public-safe evidence slice with deterministic counts, historical policy context, lifecycle, limitations and SHA-256. It excludes operator notes, target URLs, credentials and raw response bodies. The model sees a representative bounded subset, with omissions reported separately. Inspect frozen citations beside each unverified hypothesis; they establish a relevant symptom, not a proven cause. Suggestions are allowlisted investigation labels and are never executed. No AI result changes policy, incident state or private notes.
 
 Four attempted starts per UTC day, one start per UTC minute, one pending inference and a 20-second deadline apply. Provider/validation failures consume their reservation. Crashes or expired dispatch ownership become terminal interrupted records. These guarantees bound application dispatch and cannot establish exactly-once provider billing. Provider access, allocation, capacity, timeout and invalid output have sanitized failure states. If retained evidence has no verified bad checks, the request records insufficient evidence without calling AI.
+
+Record admission is separate: 16 new records per UTC day, 256 physical retained rows and 128 KiB per new serialized record. Completion headroom is reserved before insertion. Deterministic insufficient-evidence and preparation-failure records consume admission; neither calls AI. Record counters, rows and any inference reservation commit atomically. Capacity rejection creates no row or attempt. GET, eviction and retention deletion do not refund daily counters. Expired rows awaiting cron still occupy capacity. Retained-ID replay/conflict checks precede all admission limits and the feature gate. Counterless-store upgrades preserve legacy records and close new creations for that UTC day once; the displayed known creation count is a lower bound, not reconstructed deleted history. Next UTC day opens normally.
+
+Run `npm run test:brief-evaluate` to generate and replay the controlled offline report. It never uses account credentials or native inference. [Evaluation procedure and limitations](BRIEF_EVALUATION.md)
 
 Opening/reopening the panel and bounded polling perform only reads. The authenticated browser session retains its requested UUID across modal close/reopen; Lock, new credentials, leaving Operations and reload clear that session reference. History remains available through the authenticated server lookup while retained. Delayed callbacks cannot restore private results after Lock. Briefs expire 30 days after creation; public status, exports and incident evidence never include them. Automated checks use fake providers and cannot alone prove the native model was run. Record any real controlled-replay verification separately from production incident history.
 
@@ -96,6 +100,8 @@ The dashboard exports the selected 24-hour or 7-day summary, hourly aggregates, 
 
 `npm run operator:setup -- --local` provisions `.dev.vars`. Restart Wrangler to load it. Local cron must be invoked explicitly through `/cdn-cgi/local/scheduled`; do not expect the passage of time to schedule checks. A local HTTPS target can still point at the live gateway; use private test bindings for isolated tests.
 
+The default development command passes `--local` and forces `AI_BRIEFS_ENABLED:false`. This disables remote bindings and avoids a Cloudflare login requirement in CI. AI inference has no local simulation; test it through the offline evaluator or isolated fake binding. Native account execution requires its own deliberate verification. [Cloudflare local development](https://developers.cloudflare.com/workers/local-development/)
+
 `npm run test:monitor` creates an ephemeral workerd runtime. It injects HTTP failure, concurrency, policy races, a crashed persisted lease, object eviction, old retention rows, and controlled timing boundaries. Incident evidence tests verify pagination, policy context, private-note authorization, and idempotent retries. Storage inspection is enabled only in that test harness. There is no public fault-injection endpoint on the monitor.
 
 `npm run test:budget` exercises actual SQLite persistence, eviction, retained warnings, gaps, policy changes, stale reads, and pruning with controlled historical fixtures. Those fixture timelines are test evidence, not operating history for the deployed service. Unit signal tests evaluate synthetic patterns and threshold boundaries. Production observations still accumulate only through the real current-minute scheduler.
@@ -111,6 +117,8 @@ References: [Cron triggers](https://developers.cloudflare.com/workers/configurat
 ## Storage-limit recovery
 
 A 503 with code `monitor-storage-unavailable` means current monitoring cannot be confirmed. `daily-read-limit` and `daily-write-limit` identify Free-plan database quota exceptions; `retryAtUTC` gives the next midnight UTC. A generic storage failure has a null reset time. Gateway `/api/health` can still respond while `/api/ready` is unavailable. An export failure returns JSON without an attachment or invented healthy report.
+
+The laboratory uses the same sanitized boundary with code `lab-storage-unavailable` and a separate short isolate cooldown. A failed request cannot confirm a stored experiment decision. Keep prior logs as historical evidence and reconnect with a read; do not automatically repeat an uncertain config, reset or experiment POST.
 
 Keep source checks and incidents. A rollback does not restore an exhausted shared allowance, and deleting history is not a quota refund. Browser automatic status reads back off using server response time; explicit refresh remains available. After the reset, require new autonomous observations and healthy readiness before declaring recovery. The release verifier does not invoke a manual tick. Do not upgrade billing as an automatic recovery action.
 
