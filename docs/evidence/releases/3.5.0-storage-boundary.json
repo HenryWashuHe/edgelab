@@ -1,0 +1,81 @@
+{
+  "verifiedAt": "2026-09-30T10:23:31.545Z",
+  "baseUrl": "https://edgelab-reliability.edgelab-henrywashuhe.workers.dev",
+  "health": {
+    "ok": true,
+    "colo": "EWR",
+    "platform": "Cloudflare Workers + Durable Objects",
+    "version": "3.5.0",
+    "origin": "service-binding"
+  },
+  "verification": "Deployed sanitized quota-failure boundaries and rejected observer upgrade, not successful live observation or autonomous monitoring recovery.",
+  "autonomousRecovery": "pending daily quota reset and new observed minutes",
+  "successfulProductionObservation": "pending storage recovery",
+  "productionInferenceCalls": 0,
+  "historySeeded": false,
+  "laboratoryVerification": "One disposable session state GET plus a genuine same-origin WebSocket upgrade. No experiment/config/reset POST. The generated capability is omitted.",
+  "checks": [
+    {
+      "path": "/api/ready",
+      "status": 503,
+      "response": {
+        "error": "Monitoring storage is temporarily unavailable. Current monitoring cannot be confirmed.",
+        "code": "monitor-storage-unavailable",
+        "reason": "daily-read-limit",
+        "retryAtUTC": "2026-10-01T00:00:00.000Z"
+      }
+    },
+    {
+      "path": "/api/ops/status",
+      "status": 503,
+      "response": {
+        "error": "Monitoring storage is temporarily unavailable. Current monitoring cannot be confirmed.",
+        "code": "monitor-storage-unavailable",
+        "reason": "daily-read-limit",
+        "retryAtUTC": "2026-10-01T00:00:00.000Z"
+      }
+    },
+    {
+      "path": "/api/ops/export",
+      "status": 503,
+      "response": {
+        "error": "Monitoring storage is temporarily unavailable. Current monitoring cannot be confirmed.",
+        "code": "monitor-storage-unavailable",
+        "reason": "daily-read-limit",
+        "retryAtUTC": "2026-10-01T00:00:00.000Z"
+      }
+    },
+    {
+      "path": "/api/state",
+      "status": 503,
+      "response": {
+        "error": "Experiment storage is temporarily unavailable. This request could not confirm a stored result.",
+        "code": "lab-storage-unavailable",
+        "reason": "daily-read-limit",
+        "retryAtUTC": "2026-10-01T00:00:00.000Z"
+      }
+    },
+    {
+      "path": "/api/state",
+      "status": 400
+    },
+    {
+      "path": "/api/ops/audit",
+      "status": 401
+    },
+    {
+      "path": "/api/observe",
+      "status": 503,
+      "response": {
+        "error": "Experiment storage is temporarily unavailable. This request could not confirm a stored result.",
+        "code": "lab-storage-unavailable",
+        "reason": "daily-read-limit",
+        "retryAtUTC": "2026-10-01T00:00:00.000Z"
+      }
+    }
+  ],
+  "gatewayDeployment": "f94d587a-1fcc-4cdc-9ea4-53530287a094",
+  "originDeployment": "9af6230a-595d-4412-913f-5b0b74bf115f",
+  "implementationCommit": "c8685f2524313c07824af40ee9361d381e7d6118",
+  "ciUrl": "https://github.com/HenryWashuHe/edgelab/actions/runs/36701719382"
+}

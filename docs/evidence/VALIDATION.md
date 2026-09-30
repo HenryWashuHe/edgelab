@@ -1,8 +1,8 @@
 # Verification record
 
-## EdgeLab 3.5.0 candidate
+## EdgeLab 3.5.0
 
-The live lab observer is locally verified; gateway publication is pending. Native inference remains disabled with zero native calls. Successful production observation, fresh autonomous monitoring and the production retention migration/receipts remain pending storage recovery. The last successful full live monitoring verification is still 3.2.1.
+Gateway deployment: `f94d587a-1fcc-4cdc-9ea4-53530287a094`. The private origin is unchanged. The deployed gateway and assets report 3.5.0. Its implementation commit `c8685f2524313c07824af40ee9361d381e7d6118` passes the [complete GitHub CI run](https://github.com/HenryWashuHe/edgelab/actions/runs/36701719382), including actual observer networking on Linux. Native inference remains disabled with zero native calls. Successful production observation, fresh autonomous monitoring and the production retention migration/receipts remain pending storage recovery. The last successful full live monitoring verification is still 3.2.1.
 
 Formatting, 119 unit tests, strict TypeScript, production assets and both deployment dry-run bundles pass. The [actual workerd record](releases/3.5.0-lab-observer.json) passes 26 groups with real network WebSocket peers, original sockets through forced hibernation, executed/consumed transaction failures, strict privacy projection and protocol validation, ordering, reset, quotas and idle expiry. Known elapsed deadlines replace the run on owner activity even before a delayed alarm, fence older origin work and expire old viewers. Warm post-alarm observers cannot recreate schemas. Legacy absent metadata remains 0/null; malformed or partial fields cannot bypass validation.
 
@@ -11,6 +11,8 @@ The same configuration/two-request/reset workload uses 33 SQL statements, 28 row
 Three injected first-touch failures, including a throw after awaited native alarm setup, reset the actual object and restore prior source/deadline/alarm. The native peer can be interrupted with 1006 before a terminal message. Later action failures preserve earlier successful owner commits, roll back the failed write/event and emit no phantom update. The suite requires received close frames but uses a bounded 500ms peer timeout; it does not establish natural TCP teardown or idle billing timing.
 
 The [browser record](releases/3.5.0-browser-qa.json) includes final-source burst/pending/settled evidence, consecutive reset announcements, reconnect with one upgrade and no command replay, unchanged commit time and actual 390px/1280px document bounds. Earlier candidate cases cover original sockets after hibernation, idle expiry, malformed frames, missing session and abandoned owner follow-up suppression, with their provenance limits stated. Final captures have no browser warning/error logs. Source epoch guards prevent abandoned owner pages/connections from overwriting a new view; reconnect snapshots replace cached evidence. No production history was seeded. [ADR 008](../adr/008-live-lab-observer.md), OpenAPI, the runbook and case study describe the protocol and limits.
+
+The [live boundary record](releases/3.5.0-storage-boundary.json) verifies deployed liveness, structured no-store/nosniff quota503s with retry metadata, capability400, operator401 and one genuine same-origin observer upgrade rejected with sanitized503. The deployed browser loads matching final assets and shows generic unavailable with no committed metrics, actual648px document bounds and no warning/error logs. This is an unavailable-boundary check; it does not establish successful production observation or autonomous recovery. The account reports the next daily reset at October 1, 00:00 UTC (September 30, 8 p.m. Eastern). No production experiment/config/reset POST, billing change or native inference was performed.
 
 ## EdgeLab 3.4.2
 

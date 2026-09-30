@@ -220,6 +220,10 @@
     "edgelab-observer-no-session-v3.5.0.png": {
       "localPath": "output/edgelab-observer-no-session-v3.5.0.png",
       "sha256": "63c23059a9e7bd5a82fc95b28a8f8ae139d60ceaae591921001505d0c5110170"
+    },
+    "edgelab-production-observer-v3.5.0.png": {
+      "localPath": "output/edgelab-production-observer-v3.5.0.png",
+      "sha256": "ebb0511fc1e78b7ecc7e771ccf4522fcd0c3da8a7043aae59d43198c2c27ae30"
     }
   },
   "limitations": [
@@ -228,5 +232,17 @@
     "Forced hibernation and controlled local clocks/faults do not establish natural production timing, CPU, billing, throughput or healthy production storage.",
     "Production successful observer upgrade remains pending the account storage reset; native inference remains disabled."
   ],
-  "result": "passed within stated scope"
+  "result": "passed within stated scope",
+  "productionBoundary": {
+    "verifiedAt": "2026-09-30T10:24:19.213Z",
+    "url": "https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#observer",
+    "bounds": {
+      "client": 648,
+      "scroll": 648
+    },
+    "assets": ["/assets/index-D4eEcigu.js"],
+    "logs": [],
+    "evidence": true,
+    "interpretation": "Deployed matching asset reports generic unavailable and no committed metrics after a rejected upgrade. This does not establish successful observation."
+  }
 }
