@@ -16,6 +16,7 @@ The [storage incident case study](docs/CASE_STUDY.md) explains a real quota fail
 - **Durable incident response:** consecutive-failure opening, consecutive-success recovery, acknowledgement, private investigation notes, and audit events. Incident detail pages expose paginated check evidence, lifecycle timestamps, and the policy versions applicable to each page. Maintenance suspends probes while preserving incidents.
 - **Reliable scheduling:** atomic persisted leases, per-service/minute uniqueness, retry deduplication, crash recovery, and policy revision fencing. Observations retain their actual probe start time; a completion may cross a minute boundary without becoming a new sample.
 - **Monitoring readiness:** a separate readiness endpoint checks persisted scheduler completion and active-service freshness against a three-minute limit. Dashboard reads cannot renew that evidence. Recent scheduler diagnostics explain starts, completions, and skipped late events.
+- **Committed cleanup receipts:** completed scheduler events record bounded policy-version cleanup counts atomically with source deletion and queue progress. Authenticated audit reads additionally expose orphan-note counts; opening the disclosure makes no request.
 - **Honest SLO reporting:** verified good-check ratio, p95, error-budget consumption, maintenance exclusion, missing-sample coverage, and legacy unverified counts. Missing data is unknown. Current incomplete minutes and legacy checks without an observation start timestamp receive no verified SLO credit.
 - **Paired-window budget signals:** scheduled evaluation of rapid, sustained, and gradual sampled-check burn. Each rule exposes both windows, verified coverage, policy maturity, and its reason. Persisted firing evidence and captured policy context survive missing observations, stale scheduling, maintenance, policy changes, and source-history pruning; older missing context remains explicit.
 - **Operator access:** a deployment secret gates writes and audit access. The browser stores the token only in memory. Same-origin checks, bounded payloads, optimistic writes, and deploy-time target enrollment define the boundary.
@@ -141,6 +142,10 @@ Storage failures return a sanitized JSON 503, with readiness unavailable and gat
 
 Policy-version and orphan-note cleanup use persisted FIFO work queues, examining at most 32 candidates each per completed cron cleanup. Indexed rechecks preserve every current or check-referenced policy and every note whose parent has returned. Note age expiry and deletion of all notes from expired resolved parents remain eager and atomic; other unused metadata can wait for its queue position. Triggers track source changes and replacement behavior, and an atomic one-time migration queues legacy candidates without deleting their bodies. Reads never drain these queues. See the [retention decision](docs/adr/006-metadata-retention-work.md) for fairness, rollback and workload limits.
 
+Version 3.4.2 reuses the existing completed scheduler write as a cleanup receipt. Each FIFO batch reports examined, directly deleted, protected and already-missing source rows; a full batch of 32 conservatively says more work may remain. Counts exclude eager expiry and cold migration, and legacy or malformed receipts remain unavailable. Public status and exports expose only version counts; private note counts require the audit endpoint. Cached receipts keep their recorded timestamp, and this feature adds no browser polling. The [receipt decision](docs/adr/007-committed-cleanup-diagnostics.md) explains the contract.
+
+The [3.4.2 controlled cost comparison](docs/evidence/releases/3.4.2-retention-cost.json) preserves the [3.4.1 measurements](docs/evidence/releases/3.4.1-retention-cost.json): steady cron remains 94 reads/40 writes for two targets and 189/82 for five, with either small or grown retained metadata. A full 32-version plus 32-note catch-up adds 128 reads, zero writes and zero SQL statements for the counters. These are fixture costs, not total account quota or proof of production recovery.
+
 ## Workers AI incident briefs
 
 Open an incident investigation after unlocking Operations to inspect private brief history and, when enabled, generate a new brief. `POST /api/ops/incident-brief` accepts only `{incident, requestId}`. `GET /api/ops/incident-briefs/<requestId>` retrieves that frozen request without inference. The authenticated `GET /api/ops/incidents/<id>/briefs` lists the latest five records, capability and application quota. Briefs never enter public status, exports or incident detail.
@@ -167,20 +172,21 @@ These are coarse probe signals. At a 99.9% target, one bad check among 60 produc
 
 ## Project map
 
-| Area                                           | Files                                             |
-| ---------------------------------------------- | ------------------------------------------------- |
-| Monitoring state machine and validation        | `worker/monitor-domain.ts`                        |
-| Timing and monitoring freshness                | `worker/monitor-readiness.ts`                     |
-| Incident evidence and private notes            | `worker/incident-evidence.ts`                     |
-| Paired-window evaluation and persisted signals | `worker/burn-rate.ts`, `worker/budget-signals.ts` |
-| Bounded probes                                 | `worker/monitor-probe.ts`                         |
-| SQLite coordinator and operator authentication | `worker/monitor.ts`                               |
-| Gateway, cron handler, laboratory coordinator  | `worker/index.ts`                                 |
-| Resilience algorithms and origin service       | `worker/engine.ts`, `worker/origin*.ts`           |
-| Operations UI                                  | `src/Operations.tsx`, `src/operations.css`        |
-| Interactive lab and guides                     | `src/main.tsx`, `src/Guide.tsx`, `src/reports.ts` |
-| Runtime tests and benchmarks                   | `scripts/`, `tests/`                              |
-| Deployment and CI                              | `wrangler*.jsonc`, `.github/workflows/ci.yml`     |
+| Area                                           | Files                                                               |
+| ---------------------------------------------- | ------------------------------------------------------------------- |
+| Monitoring state machine and validation        | `worker/monitor-domain.ts`                                          |
+| Timing and monitoring freshness                | `worker/monitor-readiness.ts`                                       |
+| Incident evidence and private notes            | `worker/incident-evidence.ts`                                       |
+| Retention queues and committed receipt types   | `worker/monitor-version-retention.ts`, `worker/metadata-cleanup.ts` |
+| Paired-window evaluation and persisted signals | `worker/burn-rate.ts`, `worker/budget-signals.ts`                   |
+| Bounded probes                                 | `worker/monitor-probe.ts`                                           |
+| SQLite coordinator and operator authentication | `worker/monitor.ts`                                                 |
+| Gateway, cron handler, laboratory coordinator  | `worker/index.ts`                                                   |
+| Resilience algorithms and origin service       | `worker/engine.ts`, `worker/origin*.ts`                             |
+| Operations UI                                  | `src/Operations.tsx`, `src/operations.css`                          |
+| Interactive lab and guides                     | `src/main.tsx`, `src/Guide.tsx`, `src/reports.ts`                   |
+| Runtime tests and benchmarks                   | `scripts/`, `tests/`                                                |
+| Deployment and CI                              | `wrangler*.jsonc`, `.github/workflows/ci.yml`                       |
 
 ## Scope and limits
 

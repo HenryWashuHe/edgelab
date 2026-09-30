@@ -236,7 +236,7 @@ export default {
         ok: true,
         colo: colo(request),
         platform: 'Cloudflare Workers + Durable Objects',
-        version: '3.4.1',
+        version: '3.4.2',
         origin: 'service-binding',
       });
     if (url.pathname === '/api/ready') {

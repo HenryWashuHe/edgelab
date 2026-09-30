@@ -54,6 +54,21 @@ The [whole-cron comparison](evidence/releases/3.4.1-retention-cost.json) measure
 
 A backlog of 96 unused versions and 96 orphan notes was processed in three cleanups. Each two-target pass used 348 reads and 168 writes; five-target passes used 443 reads and 210 writes. Queue, trigger, index and AUTOINCREMENT work is included. Migration scans, true expiry, backlog churn and other account activity still consume resources; these fixtures do not establish unlimited capacity or explain every row charged in the production outage.
 
+## Observe committed cleanup without a new scheduler write
+
+Version 3.4.2 adds a receipt to the existing completed scheduler event, in the same transaction as source cleanup and queue progress. A cleanup or final event-write failure cannot leave a successful receipt. Its version and orphan-note batches report examined, deleted, protected and already-missing source rows. Direct source deletions are counted from consumed `DELETE RETURNING 1` output; using rowsWritten would wrongly include queue/index/trigger effects. Bounded primary-key lookups distinguish protection from an absent source without counting whole tables.
+
+Each batch still examines at most 32. `mayRemain` is true for a full batch even when that batch emptied the queue, avoiding another query. Eager age expiry, all notes removed with an expired resolved parent and cold migration are outside the receipt. Public status and exports expose only version counts; authenticated audit adds private note counts through one indexed latest-completed lookup. Legacy/malformed/null receipts remain unavailable, cached timestamps never renew, and expanding a disclosure adds no polling. The [receipt decision](adr/007-committed-cleanup-diagnostics.md) extends [ADR 006](adr/006-metadata-retention-work.md) without changing its retention rules.
+
+The [3.4.2 comparison](evidence/releases/3.4.2-retention-cost.json) repeats the same three-minute profiles and preserves the pinned 3.4.0 source/public-summary hashes. The historical 3.4.1 values above remain unchanged.
+
+| Targets | Steady or grown metadata: reads/writes | Full 32-version + 32-note catch-up: reads/writes |
+| ------- | -------------------------------------: | -----------------------------------------------: |
+| 2       |                                  94/40 |                                          476/168 |
+| 5       |                                 189/82 |                                          571/210 |
+
+The counters add 128 reads to each full combined catch-up batch, with zero extra SQL statements or writes; empty queues and retained metadata growth have unchanged measured steady costs. The [3.4.2 seven-day fixture](evidence/releases/3.4.2-monitor-cost.json) measures 162 reads per complete dashboard view for two targets and 369 for five, with zero view writes and the same steady cron costs. These measurements describe controlled local SQLite work, not total account usage or evidence of production recovery. Native inference calls remain zero.
+
 ## A separate write limit remains
 
 The historical [3.3.2 whole-monitor fixture](evidence/releases/3.3.2-monitor-cost.json) rechecked three consecutive warm cron minutes against synthetic seven-day history. It includes trigger/index work, one check/job per target, and two scheduler events expiring each minute. Its read counts predate the retention queues; the 3.4.1 comparison above records their additional work.

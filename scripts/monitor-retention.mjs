@@ -21,6 +21,7 @@ const target = {
   transport: 'origin',
   assertion: 'ok-json',
 };
+const fixtureOperatorToken = 'retention-fixture-operator-token-not-a-production-credential';
 const mf = new Miniflare(
   convertV4MiniflareOptions({
     unsafeInspectDurableObjects: true,
@@ -35,7 +36,11 @@ const mf = new Miniflare(
           MONITORS: { className: 'MonitorStore', useSQLite: true },
           LABS: { className: 'ReliabilityLab', useSQLite: true },
         },
-        bindings: { MONITOR_TARGETS: JSON.stringify([target]), AI_BRIEFS_ENABLED: 'false' },
+        bindings: {
+          MONITOR_TARGETS: JSON.stringify([target]),
+          AI_BRIEFS_ENABLED: 'false',
+          OPERATOR_TOKEN: fixtureOperatorToken,
+        },
         serviceBindings: { ORIGIN: async () => Response.json({ ok: true }) },
       },
     ],
@@ -671,6 +676,99 @@ try {
     'PASS note expiry/body/queue rollback and one-time constructor orphan migration preserve valid private notes, retry cleanly and survive eviction',
   );
 
+  // Counts describe only the bounded candidate batch. mayRemain conservatively
+  // means the full limit was examined; an exact32 batch may already be empty.
+  // This hint adds no post-batch query and is never an exact backlog count.
+  const emptyBatch = {
+    limit: 32,
+    examined: 0,
+    deleted: 0,
+    protected: 0,
+    missing: 0,
+    mayRemain: false,
+  };
+  for (const kind of ['versions', 'notes']) {
+    for (const count of [0, 1, 31, 32, 33]) {
+      const diagnostics = fixture(`diagnostic-${kind}-${count}`);
+      await diagnostics.call('schema');
+      await diagnostics.statements(
+        Array.from({ length: count }, (_, index) =>
+          kind === 'versions'
+            ? versionStatement('diagnostic', index + 1)
+            : noteStatement(`diagnostic-${index}`, 'missing'),
+        ),
+      );
+      const pruneDiagnostic = () =>
+        diagnostics.call(kind === 'versions' ? 'prune' : 'notes-prune', { cutoff: at - 1 });
+      const result = await pruneDiagnostic();
+      assert.deepEqual(result.summary, {
+        ...emptyBatch,
+        examined: Math.min(count, 32),
+        deleted: Math.min(count, 32),
+        mayRemain: count >= 32,
+      });
+      if (count === 32)
+        assert.deepEqual(await diagnostics.exec(kind === 'versions' ? queueSQL : noteQueueSQL), []);
+      if (count === 33) {
+        assert.deepEqual((await pruneDiagnostic()).summary, {
+          ...emptyBatch,
+          examined: 1,
+          deleted: 1,
+        });
+      }
+      assert.deepEqual((await pruneDiagnostic()).summary, emptyBatch);
+    }
+  }
+  const classifiedVersions = fixture('diagnostic-classified-versions');
+  await classifiedVersions.call('schema');
+  await classifiedVersions.statements([
+    versionStatement('classified', 1),
+    versionStatement('classified', 2),
+    versionStatement('classified', 3),
+    versionStatement('classified', 4),
+    serviceStatement('classified', 2),
+    checkStatement('classified', 1, 3, null, 'maintenance'),
+  ]);
+  await classifiedVersions.exec(
+    'DELETE FROM service_versions WHERE service=? AND revision=?',
+    'classified',
+    4,
+  );
+  assert.deepEqual((await classifiedVersions.call('prune')).summary, {
+    ...emptyBatch,
+    examined: 4,
+    deleted: 1,
+    protected: 2,
+    missing: 1,
+  });
+  const classifiedNotes = fixture('diagnostic-classified-notes');
+  await classifiedNotes.call('schema');
+  await classifiedNotes.statements([
+    noteStatement('classified-delete', 'missing'),
+    noteStatement('classified-protected', 'restored-parent'),
+    incidentStatement('restored-parent'),
+  ]);
+  await classifiedNotes.exec('INSERT INTO incident_note_gc(note) VALUES(?)', 'classified-missing');
+  const classifiedNoteResult = await classifiedNotes.call('notes-prune', { cutoff: at - 1 });
+  assert.deepEqual(classifiedNoteResult.summary, {
+    ...emptyBatch,
+    examined: 3,
+    deleted: 1,
+    protected: 1,
+    missing: 1,
+  });
+  assert(
+    classifiedNoteResult.rowsWritten > classifiedNoteResult.summary.deleted,
+    'Source deletion count must exclude trigger/queue writes',
+  );
+  assert.deepEqual(
+    (await classifiedNotes.exec(noteSQL)).map((row) => row.id),
+    ['classified-protected'],
+  );
+  console.log(
+    'PASS cleanup diagnostics classify direct source deletions/missing/protected candidates; empty, short, exact32 and33+ batches use a conservative full-batch hint without a backlog count',
+  );
+
   for (const [name, marker, message] of [
     ['version-marker-rejection', 'monitor_version_gc_meta', 'version-retention'],
     ['note-marker-rejection', 'incident_note_gc_meta', 'note-retention'],
@@ -704,7 +802,9 @@ try {
   });
   assert.equal(clockResponse.status, 200);
   await clockResponse.text();
-  await monitorCall('status');
+  const coldStatus = await monitorCall('status');
+  assert(!coldStatus.scheduler.some((event) => event.status === 'completed'));
+  assert.equal((await monitorCall('audit')).lastCleanup, null);
   const persisted = await mf.unsafeGetDurableObjectStorage('gateway', 'MonitorStore', {
     name: 'operations',
   });
@@ -815,6 +915,7 @@ try {
     [await persisted.exec(queueSQL), await persisted.exec(noteQueueSQL)],
     afterUpgradeQueues,
   );
+  assert.equal((await monitorCall('audit')).lastCleanup, null);
   const restoredClock = await monitor.fetch('https://monitor.internal/test-clock', {
     method: 'POST',
     body: JSON.stringify({ now: at }),
@@ -1145,6 +1246,214 @@ try {
   }
   console.log(
     'PASS occupied-slot/service-ID UPDATE OR REPLACE collects displaced last references with recursive triggers off/on, preserves moved-source and other retained revisions, and failed conflicts roll back source/queue writes',
+  );
+
+  const gatewayRead = async (action, authorized = false, expected = 200) => {
+    const response = await mf.dispatchFetch(`https://edgelab.example/api/ops/${action}`, {
+      headers: authorized ? { Authorization: `Bearer ${fixtureOperatorToken}` } : {},
+    });
+    assert.equal(response.status, expected, await response.clone().text());
+    return response.json();
+  };
+  const latestCompleted = () =>
+    persisted.exec(
+      "SELECT id,at,slot,status,detail FROM scheduler_events WHERE status='completed' ORDER BY id DESC LIMIT 1",
+    );
+  const assertPublicCleanup = async (expectedCleanup, expectedSlot) => {
+    for (const action of ['status', 'export']) {
+      for (const authorized of [false, true]) {
+        const publicData = await gatewayRead(action, authorized);
+        const event = publicData.scheduler.find(
+          (entry) => entry.status === 'completed' && entry.slot === expectedSlot,
+        );
+        assert(event, `Completed cleanup unavailable in ${action}`);
+        assert.deepEqual(event.detail.cleanup, {
+          schemaVersion: 1,
+          cutoff: expectedCleanup.cutoff,
+          versions: expectedCleanup.versions,
+        });
+        assert(!JSON.stringify(publicData).includes('orphanNotes'));
+        assert(!JSON.stringify(publicData).includes('PRIVATE_CLEANUP_MUST_NOT_LEAK'));
+        assert(!JSON.stringify(publicData).includes('private-queue-key'));
+        assert(!('lastCleanup' in publicData));
+      }
+    }
+  };
+  await gatewayRead('audit', false, 401);
+  const initialCompleted = (await latestCompleted())[0];
+  const initialCleanup = JSON.parse(initialCompleted.detail).cleanup;
+  assert.equal(initialCleanup.schemaVersion, 1);
+  assert.deepEqual((await gatewayRead('audit', true)).lastCleanup, {
+    at: initialCompleted.at,
+    slot: initialCompleted.slot,
+    cleanup: initialCleanup,
+  });
+  await assertPublicCleanup(initialCleanup, initialCompleted.slot);
+
+  // Stored event data is treated as input, even for a bearer-authenticated export.
+  // Reconstruct known counts; never echo arbitrary private keys or note bodies.
+  const contaminated = {
+    ...JSON.parse(initialCompleted.detail),
+    privateField: 'PRIVATE_CLEANUP_MUST_NOT_LEAK',
+    cleanup: {
+      ...initialCleanup,
+      privateBody: 'PRIVATE_CLEANUP_MUST_NOT_LEAK',
+      noteIds: ['private-queue-key'],
+      versions: { ...initialCleanup.versions, sourceKeys: ['private-queue-key'] },
+      orphanNotes: { ...initialCleanup.orphanNotes, noteBodies: ['PRIVATE_CLEANUP_MUST_NOT_LEAK'] },
+    },
+  };
+  await persisted.exec(
+    'UPDATE scheduler_events SET detail=? WHERE id=?',
+    JSON.stringify(contaminated),
+    initialCompleted.id,
+  );
+  await assertPublicCleanup(initialCleanup, initialCompleted.slot);
+  assert.deepEqual((await gatewayRead('audit', true)).lastCleanup, {
+    at: initialCompleted.at,
+    slot: initialCompleted.slot,
+    cleanup: initialCleanup,
+  });
+  await persisted.exec(
+    'UPDATE scheduler_events SET detail=? WHERE id=?',
+    initialCompleted.detail,
+    initialCompleted.id,
+  );
+
+  // A genuine legacy completed row cannot establish cleanup counts. A record
+  // with malformed cleanup also yields explicit null instead of invented zeros.
+  await persisted.exec(
+    'INSERT INTO scheduler_events(at,slot,status,detail) VALUES(?,?,?,?)',
+    at,
+    Math.floor(at / 60000),
+    'completed',
+    JSON.stringify({ results: [] }),
+  );
+  assert.deepEqual((await gatewayRead('audit', true)).lastCleanup, {
+    at,
+    slot: Math.floor(at / 60000),
+    cleanup: null,
+  });
+  const legacyCompleted = (await latestCompleted())[0];
+  await persisted.exec(
+    'UPDATE scheduler_events SET detail=? WHERE id=?',
+    JSON.stringify({ cleanup: { ...initialCleanup, versions: { ...emptyBatch, examined: 1 } } }),
+    legacyCompleted.id,
+  );
+  assert.deepEqual((await gatewayRead('audit', true)).lastCleanup, {
+    at,
+    slot: Math.floor(at / 60000),
+    cleanup: null,
+  });
+  const publicMalformed = await gatewayRead('status');
+  assert.equal(
+    publicMalformed.scheduler.find((entry) => entry.status === 'completed').detail.cleanup,
+    null,
+  );
+  await persisted.exec('DELETE FROM scheduler_events WHERE id=?', legacyCompleted.id);
+
+  for (const [index, fault] of [
+    { contains: 'DELETE FROM service_versions WHERE' },
+    { contains: 'DELETE FROM monitor_version_gc WHERE id=' },
+    { contains: 'INSERT INTO scheduler_events(at,slot,status,detail)', completedOnly: true },
+  ].entries()) {
+    const runAt = at + (index + 1) * 60000;
+    const runSlot = Math.floor(runAt / 60000);
+    const versionService = `fault-diagnostic-${index}`;
+    await persisted.exec(
+      'INSERT INTO service_versions VALUES(?,?,?,?,?,?,?,?)',
+      versionService,
+      10,
+      at,
+      'Controlled unused policy',
+      'origin',
+      'ok-json',
+      policy,
+      'recorded',
+    );
+    await persisted.exec(
+      'INSERT INTO incident_notes VALUES(?,?,?,?)',
+      `diagnostic-private-orphan-${index}`,
+      'absent-private-parent',
+      at,
+      'PRIVATE_CLEANUP_MUST_NOT_LEAK',
+    );
+    const beforeCleanup = {
+      versions: await persisted.exec(versionsSQL),
+      notes: await persisted.exec(noteSQL),
+      queues: [await persisted.exec(queueSQL), await persisted.exec(noteQueueSQL)],
+      latest: await latestCompleted(),
+      audit: (await gatewayRead('audit', true)).lastCleanup,
+    };
+    const clock = await monitor.fetch('https://monitor.internal/test-clock', {
+      method: 'POST',
+      body: JSON.stringify({ now: runAt }),
+    });
+    assert.equal(clock.status, 200);
+    await clock.text();
+    await monitorCall('__fixture/arm', fault);
+    const failure = await monitorCall('tick', { slot: runSlot }, false, 500);
+    assert.match(failure.error, /Injected local MonitorStore cleanup failure/);
+    assert.deepEqual(await persisted.exec(versionsSQL), beforeCleanup.versions);
+    assert.deepEqual(await persisted.exec(noteSQL), beforeCleanup.notes);
+    assert.deepEqual(
+      [await persisted.exec(queueSQL), await persisted.exec(noteQueueSQL)],
+      beforeCleanup.queues,
+    );
+    assert.deepEqual(await latestCompleted(), beforeCleanup.latest);
+    assert.deepEqual((await gatewayRead('audit', true)).lastCleanup, beforeCleanup.audit);
+    // Started/probe and budget commits occur before this cleanup transaction.
+    assert.equal(
+      (
+        await persisted.exec(
+          'SELECT slot FROM checks WHERE service=? AND slot=?',
+          'catalog',
+          runSlot,
+        )
+      ).length,
+      1,
+    );
+    assert.equal(
+      (
+        await persisted.exec(
+          "SELECT slot FROM scheduler_events WHERE status='started' AND slot=?",
+          runSlot,
+        )
+      ).length,
+      1,
+    );
+    assert.equal(
+      (
+        await persisted.exec(
+          "SELECT slot FROM scheduler_events WHERE status='completed' AND slot=?",
+          runSlot,
+        )
+      ).length,
+      0,
+    );
+    await monitorCall('tick', { slot: runSlot });
+    const complete = (await latestCompleted())[0];
+    const cleanup = JSON.parse(complete.detail).cleanup;
+    assert.equal(cleanup.cutoff, runAt - 30 * 86400000);
+    assert.deepEqual(cleanup.versions, { ...emptyBatch, examined: 1, deleted: 1 });
+    assert.deepEqual(cleanup.orphanNotes, { ...emptyBatch, examined: 1, deleted: 1 });
+    assert.deepEqual((await gatewayRead('audit', true)).lastCleanup, {
+      at: runAt,
+      slot: runSlot,
+      cleanup,
+    });
+    await assertPublicCleanup(cleanup, runSlot);
+    const persistedCompleted = await latestCompleted();
+    await mf.unsafeEvictDurableObject('gateway', 'MonitorStore', { name: 'operations' });
+    for (const action of ['status', 'export', 'audit'])
+      await gatewayRead(action, action === 'audit');
+    assert.deepEqual(await latestCompleted(), persistedCompleted);
+  }
+  console.log(
+    'PASS cleanup diagnostics publish only with completed cleanup; late source-delete/dequeue/completed-event failures roll back source, queues and prior success while earlier probe/start commits remain; reads/eviction never renew cleanup evidence',
+  );
+  console.log(
+    'PASS gateway status/export always omit private cleanup counts/keys even with valid bearer; only authenticated audit adds whitelisted lastCleanup, with absent/legacy/malformed records explicit null',
   );
 
   console.log(

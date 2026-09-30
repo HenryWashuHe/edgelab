@@ -6,3 +6,4 @@ dist/
 !.env.example
 output/
 .DS_Store
+*.tsbuildinfo

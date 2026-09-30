@@ -17,12 +17,20 @@ type CursorCost = { query: string; rowsRead: number; rowsWritten: number };
 /** Fault inside the real MonitorStore cleanup transaction, after SQL executes. */
 export class MonitorStore extends ClockMonitorStore {
   private fault: string | null = null;
+  private completedOnly = false;
   constructor(ctx: DurableObjectState, env: MonitorEnv) {
     super(ctx, env);
     const execute = ctx.storage.sql.exec.bind(ctx.storage.sql);
     ctx.storage.sql.exec = ((query: string, ...args: SqlStorageValue[]) => {
       const cursor = execute(query, ...args);
-      if (this.fault !== null && query.includes(this.fault)) {
+      if (
+        this.fault !== null &&
+        query.includes(this.fault) &&
+        (!this.completedOnly || args[2] === 'completed')
+      ) {
+        // RETURNING must finish synchronously before this injected late fault;
+        // otherwise the test would interrupt an active cursor before deletion.
+        cursor.toArray();
         this.fault = null;
         throw new Error('Injected local MonitorStore cleanup failure after SQL execution');
       }
@@ -31,8 +39,12 @@ export class MonitorStore extends ClockMonitorStore {
   }
   override async fetch(request: Request): Promise<Response> {
     if (new URL(request.url).pathname === '/__fixture/arm') {
-      const { contains } = (await request.json()) as { contains: string };
+      const { contains, completedOnly } = (await request.json()) as {
+        contains: string;
+        completedOnly?: boolean;
+      };
       this.fault = contains;
+      this.completedOnly = completedOnly ?? false;
       return Response.json({ ok: true });
     }
     try {
@@ -165,12 +177,22 @@ export class RetentionFixture extends DurableObject {
         return Response.json({ ok: true, ...this.cost() });
       }
       if (path === '/prune') {
-        this.versions.prune();
-        return Response.json({ ok: true, bound: MAX_VERSION_RETENTION_CANDIDATES, ...this.cost() });
+        const summary = this.versions.prune();
+        return Response.json({
+          ok: true,
+          bound: MAX_VERSION_RETENTION_CANDIDATES,
+          summary,
+          ...this.cost(),
+        });
       }
       if (path === '/notes-prune') {
-        this.ctx.storage.transactionSync(() => this.notes.prune(body.cutoff!));
-        return Response.json({ ok: true, bound: MAX_ORPHAN_NOTE_CANDIDATES, ...this.cost() });
+        const summary = this.ctx.storage.transactionSync(() => this.notes.prune(body.cutoff!));
+        return Response.json({
+          ok: true,
+          bound: MAX_ORPHAN_NOTE_CANDIDATES,
+          summary,
+          ...this.cost(),
+        });
       }
       if (path === '/read') {
         const incidents = this.notes.list(body.activeIds ?? []);

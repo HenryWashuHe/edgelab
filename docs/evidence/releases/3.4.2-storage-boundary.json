@@ -1,0 +1,71 @@
+{
+  "verifiedAt": "2026-09-30T09:20:55.384Z",
+  "baseUrl": "https://edgelab-reliability.edgelab-henrywashuhe.workers.dev",
+  "health": {
+    "ok": true,
+    "colo": "EWR",
+    "platform": "Cloudflare Workers + Durable Objects",
+    "version": "3.4.2",
+    "origin": "service-binding"
+  },
+  "verification": "Deployed sanitized monitoring and experiment storage-unavailable responses, capability validation and auth precedence verified. This is a quota-failure boundary check, not successful autonomous monitoring recovery.",
+  "autonomousRecovery": "pending daily quota reset and new observed minutes",
+  "productionInferenceCalls": 0,
+  "historySeeded": false,
+  "laboratoryVerification": "One disposable session state GET; no experiment, config or reset POST. Lab reads renew idle storage as documented. The generated capability is omitted from this artifact.",
+  "checks": [
+    {
+      "path": "/api/ready",
+      "status": 503,
+      "response": {
+        "error": "Monitoring storage is temporarily unavailable. Current monitoring cannot be confirmed.",
+        "code": "monitor-storage-unavailable",
+        "reason": "daily-read-limit",
+        "retryAtUTC": "2026-10-01T00:00:00.000Z"
+      }
+    },
+    {
+      "path": "/api/ops/status",
+      "status": 503,
+      "response": {
+        "error": "Monitoring storage is temporarily unavailable. Current monitoring cannot be confirmed.",
+        "code": "monitor-storage-unavailable",
+        "reason": "daily-read-limit",
+        "retryAtUTC": "2026-10-01T00:00:00.000Z"
+      }
+    },
+    {
+      "path": "/api/ops/export",
+      "status": 503,
+      "response": {
+        "error": "Monitoring storage is temporarily unavailable. Current monitoring cannot be confirmed.",
+        "code": "monitor-storage-unavailable",
+        "reason": "daily-read-limit",
+        "retryAtUTC": "2026-10-01T00:00:00.000Z"
+      }
+    },
+    {
+      "path": "/api/state",
+      "status": 503,
+      "response": {
+        "error": "Experiment storage is temporarily unavailable. This request could not confirm a stored result.",
+        "code": "lab-storage-unavailable",
+        "reason": "daily-read-limit",
+        "retryAtUTC": "2026-10-01T00:00:00.000Z"
+      }
+    },
+    {
+      "path": "/api/state",
+      "capability": "omitted",
+      "status": 400
+    },
+    {
+      "path": "/api/ops/audit",
+      "status": 401
+    },
+    {
+      "path": "/api/ops/incident-briefs/00000000-0000-4000-8000-000000000000",
+      "status": 401
+    }
+  ]
+}

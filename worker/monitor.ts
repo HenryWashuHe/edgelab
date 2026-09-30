@@ -20,6 +20,12 @@ import { BudgetSignals } from './budget-signals';
 import { IncidentBriefs } from './incident-briefs';
 import { MonitorCheckCache } from './monitor-check-cache';
 import { MonitorVersionRetention } from './monitor-version-retention';
+import {
+  parseSchedulerDetail,
+  publicSchedulerDetail,
+  readCleanupRecord,
+  type MetadataCleanup,
+} from './metadata-cleanup';
 export interface MonitorEnv {
   MONITORS: DurableObjectNamespace<MonitorStore>;
   ORIGIN: Fetcher;
@@ -55,6 +61,7 @@ type IncidentRow = {
   acknowledged: number | null;
   note: string;
 };
+type SchedulerEventRow = { at: number; slot: number; status: string; detail: string };
 const reply = (data: unknown, status = 200) =>
   Response.json(data, {
     status,
@@ -277,14 +284,28 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       );
       return detail ? reply(detail) : reply({ error: 'Incident not found' }, 404);
     }
-    if (request.method === 'GET' && url.pathname === '/audit')
+    if (request.method === 'GET' && url.pathname === '/audit') {
+      // An explicit authenticated audit read can inspect private cleanup counts.
+      // Status/export use only their existing latest-20 public event query.
+      const completed = this.rows<Omit<SchedulerEventRow, 'status'>>(
+        "SELECT at,slot,detail FROM scheduler_events WHERE status='completed' ORDER BY id DESC LIMIT 1",
+      )[0];
       return reply({
         events: this.rows('SELECT * FROM audit ORDER BY id DESC LIMIT 100').map((r) => ({
           ...r,
           detail: JSON.parse(String(r.detail)),
         })),
         incidents: this.rows<IncidentRow>('SELECT * FROM incidents ORDER BY opened DESC LIMIT 100'),
+        lastCleanup: completed
+          ? readCleanupRecord({
+              at: completed.at,
+              slot: completed.slot,
+              cleanup: (parseSchedulerDetail(completed.detail) as { cleanup?: unknown } | null)
+                ?.cleanup,
+            })
+          : null,
       });
+    }
     if (request.method !== 'POST') return reply({ error: 'Not found' }, 404);
     const body = (await request.json()) as Record<string, unknown>;
     if (url.pathname === '/tick') {
@@ -330,7 +351,6 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         });
       }
       this.ctx.storage.transactionSync(() => {
-        this.scheduleEvent(slot, 'completed', { results });
         const cutoff = this.now() - RETENTION;
         this.ctx.storage.sql.exec('DELETE FROM checks WHERE at < ?', cutoff);
         this.ctx.storage.sql.exec('DELETE FROM jobs WHERE slot < ?', Math.floor(cutoff / MINUTE));
@@ -341,11 +361,17 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         );
         this.ctx.storage.sql.exec('DELETE FROM audit WHERE at < ?', cutoff);
         this.ctx.storage.sql.exec('DELETE FROM scheduler_events WHERE at < ?', cutoff);
-        this.evidence.prune(cutoff);
+        const orphanNotes = this.evidence.prune(cutoff);
         this.budgets.prune(cutoff, activeIds);
         this.briefs.prune(cutoff, activeIds);
         this.checkCache.prune(activeIds);
-        this.versionRetention.prune();
+        const versions = this.versionRetention.prune();
+        // Publication shares the cleanup transaction. Failed deletions, queue
+        // progress or this final event write cannot leave a success receipt.
+        this.scheduleEvent(slot, 'completed', {
+          results,
+          cleanup: { schemaVersion: 1, cutoff, versions, orphanNotes } satisfies MetadataCleanup,
+        });
       });
       return reply({ slot, results });
     }
@@ -649,16 +675,21 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       };
     });
     return {
-      version: '3.4.1',
+      version: '3.4.2',
       now,
       window: minutes === 1440 ? '24h' : '7d',
       retentionDays: 30,
       cadenceSeconds: 60,
       services,
       monitoring: this.readiness(targets),
-      scheduler: this.rows(
+      scheduler: this.rows<SchedulerEventRow>(
         'SELECT at,slot,status,detail FROM scheduler_events ORDER BY id DESC LIMIT 20',
-      ).map((event) => ({ ...event, detail: JSON.parse(String(event.detail)) })),
+      ).map(({ at, slot, status, detail }) => ({
+        at,
+        slot,
+        status,
+        detail: publicSchedulerDetail(status, parseSchedulerDetail(detail), { at, slot }),
+      })),
       incidents: this.evidence.list(targets.map((target) => target.id)),
     };
   }

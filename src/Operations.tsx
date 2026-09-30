@@ -15,6 +15,8 @@ import type { OperationsSnapshot } from '../worker/monitor';
 import type { MonitorPolicy } from '../worker/monitor-domain';
 import { IncidentWorkspace, type PendingIncidentNote } from './IncidentWorkspace';
 import { BudgetSignalsPanel } from './BudgetSignalsPanel';
+import { MetadataCleanup } from './MetadataCleanup';
+import type { CleanupRecord } from '../worker/metadata-cleanup';
 import { monitoringReadiness, MONITOR_FRESHNESS_MS } from '../worker/monitor-readiness';
 import './operations.css';
 type Service = OperationsSnapshot['services'][number];
@@ -22,6 +24,7 @@ type Incident = OperationsSnapshot['incidents'][number];
 type Audit = {
   events: { id: number; at: number; action: string; service: string; detail: unknown }[];
   incidents: (Incident & { note: string })[];
+  lastCleanup?: CleanupRecord | null;
 };
 const when = (time: number | null) => (time === null ? '—' : new Date(time).toLocaleString());
 const percent = (value: number | null) => (value === null ? '—' : `${value.toFixed(2)}%`);
@@ -306,10 +309,16 @@ export function Operations() {
   async function loadAudit() {
     const session = operatorSession.current;
     if (!session.token) return;
-    const next = await readAudit(session.token);
-    if (!mounted.current || operatorSession.current !== session) return;
-    setAudit(next);
-    setAuditWarning('');
+    try {
+      const next = await readAudit(session.token);
+      if (!mounted.current || operatorSession.current !== session) return;
+      setAudit(next);
+      setAuditWarning('');
+    } catch (error) {
+      if (mounted.current && operatorSession.current === session)
+        setAuditWarning('Audit refresh unavailable. Showing the prior authenticated audit result.');
+      throw error;
+    }
   }
   function lockOperator() {
     abortPrivateReads();
@@ -396,6 +405,10 @@ export function Operations() {
     : undefined;
   const missing = data?.services.reduce((sum, s) => sum + s.metrics.missing, 0) ?? 0;
   const checks = data?.services.reduce((sum, s) => sum + s.metrics.observed, 0) ?? 0;
+  const completedEvent = data?.scheduler.find((event) => event.status === 'completed');
+  const publicCleanupRecord = completedEvent
+    ? { at: completedEvent.at, slot: completedEvent.slot, cleanup: completedEvent.detail?.cleanup }
+    : null;
   return (
     <div className="ops">
       <div className="ops-command">
@@ -496,13 +509,23 @@ export function Operations() {
               Dashboard refreshes do not renew monitoring evidence.
             </p>
           </div>
-          {monitoring.lastCompletedAt !== null && (
-            <time dateTime={new Date(monitoring.lastCompletedAt).toISOString()}>
-              Last completed run {when(monitoring.lastCompletedAt)}
-            </time>
-          )}
+          {monitoring.lastCompletedAt !== null &&
+            Number.isFinite(new Date(monitoring.lastCompletedAt).getTime()) && (
+              <time dateTime={new Date(monitoring.lastCompletedAt).toISOString()}>
+                Last completed run {when(monitoring.lastCompletedAt)}
+              </time>
+            )}
         </div>
       )}
+      <MetadataCleanup
+        record={publicCleanupRecord}
+        unconfirmed={data !== null && !currentSnapshotConfirmed}
+        unavailable={
+          data
+            ? 'No valid completed-cleanup record is available in the latest 20 scheduler events.'
+            : 'Cleanup diagnostics unavailable: no successful monitoring snapshot has loaded.'
+        }
+      />
       <div className="ops-overview">
         <div>
           <span>MONITORED SERVICES</span>
@@ -998,6 +1021,16 @@ export function Operations() {
                     </div>
                   ))}
                 </div>
+                <MetadataCleanup
+                  record={audit?.lastCleanup}
+                  privateView
+                  unconfirmed={!!auditWarning}
+                  unavailable={
+                    audit
+                      ? 'No valid completed-cleanup record is available in this audit result.'
+                      : 'Cleanup diagnostics unavailable until an authenticated audit read succeeds.'
+                  }
+                />
                 <div className="ops-chart-heading">
                   <h3>Audit trail</h3>
                   <button

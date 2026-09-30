@@ -1,0 +1,189 @@
+{
+  "verifiedAt": "2026-09-30T09:23:17.533768+00:00",
+  "projectVersion": "3.4.2",
+  "gatewayDeployment": "0e5d946a-6830-4026-b98a-1527e22ad3ae",
+  "method": "In-app browser, real local gateway/MonitorStore with ephemeral workerd SQLite and a separate controlled GET failure/delay proxy. Built production assets; DOM, keyboard, dimensions, console logs and screenshots. Deployed page reloaded after release.",
+  "localFixture": {
+    "script": "output/preview-cleanup.mjs",
+    "sha256": "b01cf48edcf7b7bb99ae74aa6344aca4fbe259c17c854371c08b4bd7b047aa7d",
+    "fixedClock": 1790759794801,
+    "receiptSource": "Actual completed local cron; controlled source candidates, never production history",
+    "controlledVersionBatch": {
+      "limit": 32,
+      "examined": 32,
+      "deleted": 30,
+      "protected": 1,
+      "missing": 1,
+      "mayRemain": true
+    },
+    "controlledPrivateOrphanBatch": {
+      "limit": 32,
+      "examined": 3,
+      "deleted": 3,
+      "protected": 0,
+      "missing": 0,
+      "mayRemain": false
+    },
+    "nativeInferenceCalls": 0,
+    "productionRequests": 0
+  },
+  "localChecks": {
+    "publicVersionCountsOnly": true,
+    "privateCountsRequireAuthenticatedAudit": true,
+    "utcTimesRemainOriginalAfterFailedReads": true,
+    "legacyCompletedRecordHasTimesButNoCounts": true,
+    "absentCompletedRecordHasNoTimesOrCounts": true,
+    "invalidCompletedTimestampDoesNotCrashBanner": true,
+    "futureCutoffUnavailableInBothProjections": true,
+    "cachedPublicAndPrivateReceiptsExplicitlyUnconfirmed": true,
+    "initialQuotaFailureHasNoSnapshotOrCandidateZeros": true,
+    "delayedAuditAfterLockCannotRestorePrivateState": true,
+    "reloadClearsPrivateSession": true,
+    "keyboardSpaceAndEnterDisclosure": true,
+    "disclosureAPIRequests": {
+      "before": 6,
+      "after": 6,
+      "delta": 0
+    },
+    "mobile": {
+      "viewportWidth": 390,
+      "viewportHeight": 844,
+      "documentClientWidth": 390,
+      "documentScrollWidth": 390,
+      "publicPanelBounds": [17, 373],
+      "privatePanelBounds": [37, 353],
+      "summaryHeight": 43.796875,
+      "utcTimesWithinPanel": true,
+      "overrideReset": true
+    },
+    "consoleWarningsAndErrors": []
+  },
+  "deployedChecks": {
+    "url": "https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#operations",
+    "versionObserved": "3.4.2",
+    "documentClientWidth": 1280,
+    "documentScrollWidth": 1280,
+    "cleanupUnavailable": "Cleanup diagnostics unavailable: no successful monitoring snapshot has loaded.",
+    "candidateBatches": 0,
+    "consoleWarningsAndErrors": []
+  },
+  "localAPITrace": [
+    {
+      "number": 1,
+      "method": "GET",
+      "path": "/api/ops/status",
+      "status": 200
+    },
+    {
+      "number": 2,
+      "method": "GET",
+      "path": "/api/ops/audit",
+      "status": 200
+    },
+    {
+      "number": 3,
+      "method": "GET",
+      "path": "/api/ops/status",
+      "status": 200
+    },
+    {
+      "number": 4,
+      "method": "GET",
+      "path": "/api/ops/audit",
+      "status": 200
+    },
+    {
+      "number": 5,
+      "method": "GET",
+      "path": "/api/ops/status",
+      "status": 200
+    },
+    {
+      "number": 6,
+      "method": "GET",
+      "path": "/api/ops/audit",
+      "status": 200
+    },
+    {
+      "number": 7,
+      "method": "GET",
+      "path": "/api/ops/status",
+      "status": 200
+    },
+    {
+      "number": 8,
+      "method": "GET",
+      "path": "/api/ops/audit",
+      "status": 200
+    },
+    {
+      "number": 9,
+      "method": "GET",
+      "path": "/api/ops/status",
+      "status": 200
+    },
+    {
+      "number": 10,
+      "method": "GET",
+      "path": "/api/ops/audit",
+      "status": 200
+    },
+    {
+      "number": 11,
+      "method": "GET",
+      "path": "/api/ops/status",
+      "status": 503
+    },
+    {
+      "number": 12,
+      "method": "GET",
+      "path": "/api/ops/status",
+      "status": 200
+    },
+    {
+      "number": 13,
+      "method": "GET",
+      "path": "/api/ops/audit",
+      "status": 200
+    },
+    {
+      "number": 14,
+      "method": "GET",
+      "path": "/api/ops/audit",
+      "status": 503
+    },
+    {
+      "number": 15,
+      "method": "GET",
+      "path": "/api/ops/status",
+      "status": 503
+    },
+    {
+      "number": 16,
+      "method": "GET",
+      "path": "/api/ops/audit",
+      "status": 200
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "output/edgelab-cleanup-mobile-v3.4.2.png",
+      "sha256": "befb1fe6f92ae158ae88110d6f8042a2e21c40655fb41f89158978d817f30169"
+    },
+    {
+      "path": "output/edgelab-cleanup-cached-v3.4.2.png",
+      "sha256": "a9e921e480d9a35e56bc67f4a86dc37fcbae798feb9ac1d59c17780365509370"
+    },
+    {
+      "path": "output/edgelab-cleanup-initial-unavailable-v3.4.2.png",
+      "sha256": "ebed25cfaa2397fd4de07f889117b1d9d38483928bc43b0f226ffa885141472d"
+    },
+    {
+      "path": "output/edgelab-production-cleanup-v3.4.2.png",
+      "sha256": "067ae558b95a2394e174640327b0931baa5f75de409056907d5466bd006efceb"
+    }
+  ],
+  "limitations": "Controlled local diagnostic and failure-flow verification. Deployed storage remains quota-unavailable; no successful production cleanup receipt, new autonomous samples, native provider quality or account capacity is claimed. Observer WebSocket work is not part of this release.",
+  "historySeeded": false,
+  "nativeInferenceCalls": 0
+}

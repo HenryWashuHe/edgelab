@@ -26,7 +26,12 @@ const variant = baseline ? 'baseline-3.4.0' : 'tracked';
 const bundle = `output/monitor-retention-cost-worker/${variant}.js`;
 const sourceFiles = baseline
   ? ['worker/monitor.ts', 'worker/incident-evidence.ts']
-  : ['worker/monitor.ts', 'worker/incident-evidence.ts', 'worker/monitor-version-retention.ts'];
+  : [
+      'worker/monitor.ts',
+      'worker/incident-evidence.ts',
+      'worker/monitor-version-retention.ts',
+      'worker/metadata-cleanup.ts',
+    ];
 const fileHash = (value) => createHash('sha256').update(value).digest('hex');
 const sourceSHA256 = {};
 for (const path of sourceFiles)

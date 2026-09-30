@@ -1,4 +1,5 @@
 import { MINUTE, RETENTION, type MonitorPolicy, type ProbeResult } from './monitor-domain';
+import type { CleanupBatch } from './metadata-cleanup';
 
 export type PublicIncident = {
   id: string;
@@ -344,18 +345,39 @@ export class IncidentEvidence {
   }
 
   /** Caller keeps expiry, orphan revalidation and queue progress in one transaction. */
-  prune(cutoff: number) {
+  prune(cutoff: number): CleanupBatch {
     this.storage.sql.exec('DELETE FROM incident_notes WHERE at<?', cutoff);
-    const pending = this.rows<{ id: number; note: string }>(
-      'SELECT id,note FROM incident_note_gc ORDER BY id LIMIT ?',
+    const pending = this.rows<{ id: number; note: string; source_exists: number }>(
+      `SELECT candidates.id,candidates.note,(source.id IS NOT NULL) AS source_exists
+      FROM (SELECT id,note FROM incident_note_gc ORDER BY id LIMIT ?) AS candidates
+      LEFT JOIN incident_notes AS source ON source.id=candidates.note
+      ORDER BY candidates.id`,
       MAX_ORPHAN_NOTE_CANDIDATES,
     );
+    let deleted = 0;
+    let protectedCount = 0;
+    let missing = 0;
     for (const candidate of pending) {
-      this.storage.sql.exec(
-        'DELETE FROM incident_notes WHERE id=? AND NOT EXISTS(SELECT 1 FROM incidents WHERE incidents.id=incident_notes.incident)',
+      const removed = this.rows<{ removed: number }>(
+        `DELETE FROM incident_notes WHERE id=?
+        AND NOT EXISTS(SELECT 1 FROM incidents WHERE incidents.id=incident_notes.incident)
+        RETURNING 1 AS removed`,
         candidate.note,
       );
+      deleted += removed.length;
+      if (!removed.length) {
+        if (candidate.source_exists) protectedCount++;
+        else missing++;
+      }
       this.storage.sql.exec('DELETE FROM incident_note_gc WHERE id=?', candidate.id);
     }
+    return {
+      limit: MAX_ORPHAN_NOTE_CANDIDATES,
+      examined: pending.length,
+      deleted,
+      protected: protectedCount,
+      missing,
+      mayRemain: pending.length === MAX_ORPHAN_NOTE_CANDIDATES,
+    };
   }
 }

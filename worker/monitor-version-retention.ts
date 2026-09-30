@@ -1,6 +1,8 @@
+import type { CleanupBatch } from './metadata-cleanup';
+
 export const MAX_VERSION_RETENTION_CANDIDATES = 32;
 
-type Candidate = { id: number; service: string; revision: number };
+type Candidate = { id: number; service: string; revision: number; source_exists: number };
 
 // These fragments receive only fixed SQL column references, never request data.
 const noChecks = (service: string, revision: string, extra = '') =>
@@ -137,26 +139,51 @@ export class MonitorVersionRetention {
   }
 
   /** Call within completed cron cleanup; nested transactions retain atomicity. */
-  prune() {
-    this.storage.transactionSync(() => {
+  prune(): CleanupBatch {
+    return this.storage.transactionSync(() => {
       const sql = this.storage.sql;
       const candidates = sql
         .exec<Candidate>(
-          'SELECT id,service,revision FROM monitor_version_gc ORDER BY id LIMIT ?',
+          `SELECT candidates.id,candidates.service,candidates.revision,
+          (source.service IS NOT NULL) AS source_exists
+          FROM (SELECT id,service,revision FROM monitor_version_gc ORDER BY id LIMIT ?) AS candidates
+          LEFT JOIN service_versions AS source ON source.service=candidates.service AND source.revision=candidates.revision
+          ORDER BY candidates.id`,
           MAX_VERSION_RETENTION_CANDIDATES,
         )
         .toArray();
+      let deleted = 0;
+      let protectedCount = 0;
+      let missing = 0;
       for (const candidate of candidates) {
         // A later observation/import may have restored a reference. Dequeue it
         // either way; a subsequent last-reference loss queues a fresh FIFO entry.
-        sql.exec(
-          `DELETE FROM service_versions WHERE service=? AND revision=?
-          AND ${unused('service_versions.service', 'service_versions.revision')}`,
-          candidate.service,
-          candidate.revision,
-        );
+        const removed = sql
+          .exec<{ removed: number }>(
+            `DELETE FROM service_versions WHERE service=? AND revision=?
+            AND ${unused('service_versions.service', 'service_versions.revision')}
+            RETURNING 1 AS removed`,
+            candidate.service,
+            candidate.revision,
+          )
+          .toArray();
+        deleted += removed.length;
+        if (!removed.length) {
+          if (candidate.source_exists) protectedCount++;
+          else missing++;
+        }
         sql.exec('DELETE FROM monitor_version_gc WHERE id=?', candidate.id);
       }
+      return {
+        limit: MAX_VERSION_RETENTION_CANDIDATES,
+        examined: candidates.length,
+        deleted,
+        protected: protectedCount,
+        missing,
+        // A full batch may have emptied the queue. Avoid a second read merely
+        // to distinguish that case; this is a conservative backlog signal.
+        mayRemain: candidates.length === MAX_VERSION_RETENTION_CANDIDATES,
+      };
     });
   }
 }

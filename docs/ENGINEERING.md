@@ -28,6 +28,14 @@ Cloudflare's [2026 internship announcement](https://blog.cloudflare.com/cloudfla
 
 The bucket is evaluated before the breaker. Circuit bypasses consume tokens too. That makes the budget apply to requests handled by the protected service, including fallback, rather than solely to origin calls.
 
+## Explain a committed monitoring cleanup
+
+The monitoring coordinator illustrates another transaction boundary: 3.4.2 writes its cleanup receipt through the existing completed scheduler event, inside the transaction that expires source rows, revalidates FIFO candidates and advances queues. A later deletion or event-write failure rolls back the cleanup and its receipt together. Read `worker/monitor.ts`, `worker/monitor-version-retention.ts`, `worker/incident-evidence.ts` and `worker/metadata-cleanup.ts`, then run `npm run test:retention`.
+
+Each queue examines at most 32 candidates. Consumed `DELETE RETURNING 1` rows count direct source deletions; SQLite rowsWritten also includes index and trigger work. A bounded source-exists lookup distinguishes protected from already-missing rows, and their counts sum to examined. `mayRemain` is conservatively true for any full batch, even if it just emptied the queue. Eager age/expired-parent expiry and cold migration are excluded. Public results expose only version counts; one explicit authenticated audit request additionally reads private note counts. Legacy/malformed/null receipts stay unavailable, cached timestamps never renew, and opening a disclosure makes no request.
+
+The [3.4.2 fixture](evidence/releases/3.4.2-retention-cost.json) measured unchanged steady costs of 94 reads/40 writes for two targets and 189/82 for five, with small or grown metadata. Full 32-version plus 32-note catch-up adds 128 reads, zero writes and zero statements over the [3.4.1 archive](evidence/releases/3.4.1-retention-cost.json). Explain the [retention design](adr/006-metadata-retention-work.md) and [receipt decision](adr/007-committed-cleanup-diagnostics.md) together: observable cleanup does not establish total account quota, production recovery or native inference.
+
 ## Questions and candid answers
 
 **Why Durable Objects instead of KV?**

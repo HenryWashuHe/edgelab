@@ -1,0 +1,175 @@
+{
+  "projectVersion": "3.4.2",
+  "recipe": "npm run test:monitor-cost",
+  "verifiedAt": "2026-09-30T09:16:59.030Z",
+  "measurement": "Actual Miniflare SQLite cursor rowsRead/rowsWritten, including trigger work.",
+  "fixture": "Ephemeral synthetic seven-day history with10080 checks per target, three warm consecutive cron minutes, one synthetic check/job per target and two scheduler events expiring each minute. All source expiry occurs only in this local fixture; no production requests, native AI or billing changes.",
+  "caveat": "Daily projections cover this measured cron shape only; fixture clock operations conservatively add overhead. Dashboard traffic and owner writes consume additional account quota. Free capacity for five targets is not claimed.",
+  "samples": [
+    {
+      "targetCount": 2,
+      "step": 1,
+      "operation": "status-24h",
+      "rowsRead": 162,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 2,
+      "step": 1,
+      "operation": "status-7d",
+      "rowsRead": 162,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 2,
+      "step": 1,
+      "operation": "cron-with-retention",
+      "rowsRead": 94,
+      "rowsWritten": 40,
+      "projectedDailyReads": 135360,
+      "projectedDailyWrites": 57600,
+      "fitsFreeDailyWrites": true
+    },
+    {
+      "targetCount": 2,
+      "step": 2,
+      "operation": "status-24h",
+      "rowsRead": 162,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 2,
+      "step": 2,
+      "operation": "status-7d",
+      "rowsRead": 162,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 2,
+      "step": 2,
+      "operation": "cron-with-retention",
+      "rowsRead": 94,
+      "rowsWritten": 40,
+      "projectedDailyReads": 135360,
+      "projectedDailyWrites": 57600,
+      "fitsFreeDailyWrites": true
+    },
+    {
+      "targetCount": 2,
+      "step": 3,
+      "operation": "status-24h",
+      "rowsRead": 162,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 2,
+      "step": 3,
+      "operation": "status-7d",
+      "rowsRead": 162,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 2,
+      "step": 3,
+      "operation": "cron-with-retention",
+      "rowsRead": 94,
+      "rowsWritten": 40,
+      "projectedDailyReads": 135360,
+      "projectedDailyWrites": 57600,
+      "fitsFreeDailyWrites": true
+    },
+    {
+      "targetCount": 5,
+      "step": 1,
+      "operation": "status-24h",
+      "rowsRead": 369,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 5,
+      "step": 1,
+      "operation": "status-7d",
+      "rowsRead": 369,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 5,
+      "step": 1,
+      "operation": "cron-with-retention",
+      "rowsRead": 189,
+      "rowsWritten": 82,
+      "projectedDailyReads": 272160,
+      "projectedDailyWrites": 118080,
+      "fitsFreeDailyWrites": false
+    },
+    {
+      "targetCount": 5,
+      "step": 2,
+      "operation": "status-24h",
+      "rowsRead": 369,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 5,
+      "step": 2,
+      "operation": "status-7d",
+      "rowsRead": 369,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 5,
+      "step": 2,
+      "operation": "cron-with-retention",
+      "rowsRead": 189,
+      "rowsWritten": 82,
+      "projectedDailyReads": 272160,
+      "projectedDailyWrites": 118080,
+      "fitsFreeDailyWrites": false
+    },
+    {
+      "targetCount": 5,
+      "step": 3,
+      "operation": "status-24h",
+      "rowsRead": 369,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 5,
+      "step": 3,
+      "operation": "status-7d",
+      "rowsRead": 369,
+      "rowsWritten": 0
+    },
+    {
+      "targetCount": 5,
+      "step": 3,
+      "operation": "cron-with-retention",
+      "rowsRead": 189,
+      "rowsWritten": 82,
+      "projectedDailyReads": 272160,
+      "projectedDailyWrites": 118080,
+      "fitsFreeDailyWrites": false
+    }
+  ],
+  "environment": {
+    "node": "v25.4.0",
+    "runtime": "Actual local workerd SQLite via Miniflare",
+    "miniflare": "5.20260926.0-alpha",
+    "workerd": "1.20260926.1",
+    "productionRequests": 0,
+    "nativeInferenceCalls": 0,
+    "accountCalls": 0
+  },
+  "sourceSHA256": {
+    "worker/monitor.ts": "efa6a435703c05304e5b1f1b2feb0756be0d9069c4d9c86d3c85aab571a1c84d",
+    "worker/incident-evidence.ts": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2",
+    "worker/monitor-version-retention.ts": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455",
+    "worker/metadata-cleanup.ts": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee"
+  },
+  "bundleSHA256": "4f52bbd145cdc24049a070dc5050a26d73bed6d7fd5861d5997fda4ab51e91de",
+  "scriptSHA256": "7c0c001f1f1993391e63c40588ae3ff21b3c79255c852aea0b940e3518a24113",
+  "meterFixtureSHA256": "4f6d615256634264fb559ecbb545355febaf23f877d4e7cc1dbbdaff01c2f7ca",
+  "clockFixtureSHA256": "cbd261c81e692668dd6cc15690e5b677b7f8814367c7a9c038f5d4c3a61afbb5",
+  "clockWriteOverheadPerCron": 2,
+  "projectionScope": "projectedDailyReads/projectedDailyWrites and fitsFreeDailyWrites apply only to1440 repetitions of the measured cron shape, including two test-clock writes each time. They exclude status traffic, owner actions, queue backlog and other account workloads; no account-level capacity or five-target Free write guarantee is claimed."
+}

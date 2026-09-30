@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.4.1
+  version: 3.4.2
   description: |
     Public monitoring read model and single-owner operator control plane.
     Laboratory endpoints are documented in LAB.md. No public probe or target-enrollment endpoint exists.
@@ -310,7 +310,7 @@ paths:
         '503': { $ref: '#/components/responses/MonitoringUnavailable' }
   /api/ops/audit:
     get:
-      summary: Latest 100 audit records and private incident notes
+      summary: Latest 100 audit records, private incident notes and latest completed cleanup
       security: [{ operatorToken: [] }]
       responses:
         '200':
@@ -319,8 +319,13 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [events, incidents]
+                required: [events, incidents, lastCleanup]
                 properties:
+                  lastCleanup:
+                    oneOf:
+                      - $ref: '#/components/schemas/CleanupRecord'
+                      - type: 'null'
+                    description: Latest retained completed run, read with one indexed query. Null when absent; a legacy or malformed receipt has cleanup null. Reads never renew this timestamp.
                   events:
                     type: array
                     maxItems: 100
@@ -520,7 +525,103 @@ components:
               at: { type: integer, description: Unix milliseconds }
               slot: { type: integer }
               status: { type: string, enum: [started, completed, skipped-late] }
-              detail: { type: object }
+              detail: { $ref: '#/components/schemas/PublicSchedulerDetail' }
+    CleanupBatch:
+      type: object
+      additionalProperties: false
+      required: [limit, examined, deleted, protected, missing, mayRemain]
+      description: FIFO candidates only. Deleted, protected and missing sum to examined; direct source deletions exclude trigger/index writes. Age expiry, expired-parent deletion, cold migration and account quota are excluded.
+      properties:
+        limit: { type: integer, const: 32 }
+        examined: { type: integer, minimum: 0, maximum: 32 }
+        deleted: { type: integer, minimum: 0, maximum: 32 }
+        protected: { type: integer, minimum: 0, maximum: 32 }
+        missing: { type: integer, minimum: 0, maximum: 32 }
+        mayRemain:
+          type: boolean
+          description: True exactly when examined is 32. Conservative full-batch signal; neither a remaining-row count nor a claim that the queue is currently empty when false.
+    PublicMetadataCleanup:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, cutoff, versions]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        cutoff:
+          { type: integer, minimum: 0, maximum: 8640000000000000, description: Unix milliseconds }
+        versions: { $ref: '#/components/schemas/CleanupBatch' }
+    MetadataCleanup:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, cutoff, versions, orphanNotes]
+      description: Authenticated audit projection only. Public status and exports omit orphan-note activity even when a valid operator token is supplied.
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        cutoff:
+          { type: integer, minimum: 0, maximum: 8640000000000000, description: Unix milliseconds }
+        versions: { $ref: '#/components/schemas/CleanupBatch' }
+        orphanNotes: { $ref: '#/components/schemas/CleanupBatch' }
+    CleanupRecord:
+      type: object
+      additionalProperties: false
+      required: [at, slot, cleanup]
+      properties:
+        at:
+          {
+            type: integer,
+            minimum: 0,
+            maximum: 8640000000000000,
+            description: Completed run timestamp in Unix milliseconds,
+          }
+        slot:
+          {
+            type: integer,
+            minimum: 0,
+            maximum: 144000000000,
+            description: Scheduled UTC minute since Unix epoch,
+          }
+        cleanup:
+          oneOf:
+            - $ref: '#/components/schemas/MetadataCleanup'
+            - type: 'null'
+          description: Null for legacy or invalid diagnostics; never fabricated zero counts. Cutoff cannot exceed at.
+    PublicSchedulerDetail:
+      type: object
+      additionalProperties: false
+      description: Allowlisted fields only. Started events have empty detail. Skipped-late may retain the known reason. Completed events may retain results and public cleanup; raw private note activity, IDs and bodies are excluded.
+      properties:
+        reason:
+          type: string
+          const: The scheduled minute has passed; a current probe cannot fill its historical gap.
+        results:
+          type: array
+          maxItems: 5
+          items:
+            type: object
+            additionalProperties: false
+            required: [service, result]
+            properties:
+              service: { type: string, pattern: '^[a-z0-9-]{1,40}$' }
+              result:
+                type: string
+                enum:
+                  [
+                    good,
+                    http-error,
+                    timeout,
+                    network-error,
+                    invalid-body,
+                    slow,
+                    maintenance,
+                    window-closed,
+                    duplicate-or-busy,
+                    superseded,
+                    policy-changed,
+                  ]
+        cleanup:
+          oneOf:
+            - $ref: '#/components/schemas/PublicMetadataCleanup'
+            - type: 'null'
+          description: Optional on legacy completed events; null when present but malformed. This recorded result does not establish current cleanup or monitoring health.
     PolicyPatch:
       type: object
       additionalProperties: false

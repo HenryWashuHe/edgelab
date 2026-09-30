@@ -13,7 +13,7 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 ## Verify an actual release
 
 1. Confirm the published commit passes GitHub CI.
-2. For a v3.4 release, `GET /api/health` must report version 3.4.1. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
+2. For a v3.4.2 release, `GET /api/health` must report version 3.4.2. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
 3. `GET /api/ops/status` must list the expected target names. Public output must not contain the operator token, target URLs, or investigation notes.
 4. Allow cron propagation ([Cloudflare documents up to 15 minutes](https://developers.cloudflare.com/workers/configuration/cron-triggers/)). Verify each service receives observations in two distinct scheduled minutes without clicking a “run” button. Check `latest.slot`, the actual probe start `latest.observedAt`, and completion `latest.at`, not just the page's snapshot timestamp. Trigger propagation is not permission to backfill: an invocation whose scheduled minute has passed is recorded as `skipped-late` and makes no observation.
 5. The private catalog probe must validate actual JSON through its service binding; the gateway probe must reach the configured public HTTPS health endpoint.
@@ -41,9 +41,15 @@ Investigate cron configuration, deployment errors, quotas, `monitor.tick` logs, 
 
 ## Metadata retention work
 
-Completed cron cleanup examines at most32 policy-version candidates and32 orphan-note candidates from persisted FIFO queues. References are rechecked before deletion, so every retained check (including legacy and maintenance), current policy and restored note parent protects its evidence. Source mutations and queue progress are transactional and survive eviction. Reads never drain queues; initial constructor migration can initialize derived metadata with a one-time source scan.
+Completed cron cleanup examines at most 32 policy-version candidates and 32 orphan-note candidates from persisted FIFO queues. References are rechecked before deletion, so every retained check (including legacy and maintenance), current policy and restored note parent protects its evidence. Source mutations and queue progress are transactional and survive eviction. Reads never drain queues; initial constructor migration can initialize derived metadata with a one-time source scan.
 
 Check/note age expiry and removal of every note attached to an expired resolved parent stay eager. Other unused versions or orphan notes may wait for their queue position; orphan notes cannot be retrieved through incident APIs. A cleanup limit does not guarantee account capacity or a fixed daily bill, because migrations, true expiry, retries, public reads and owner activity add work. See the [retention decision](adr/006-metadata-retention-work.md) and release measurements.
+
+In 3.4.2, expand “Last policy-version cleanup” in public Operations for the latest completed event available within the existing 20 scheduler events. Its completion time, scheduled minute and expiry cutoff describe one historical run. Each batch reports `examined`, `deleted`, `protected` and `missing`, summing to examined with a limit of 32. Deleted counts come from guarded source `DELETE RETURNING 1`, not SQLite trigger/index writes. Missing means a candidate's source row was already absent, not a missing monitoring sample. `mayRemain` is true exactly for a full batch; even an emptied queue can report true because no extra backlog query is made.
+
+An authenticated `GET /api/ops/audit` adds `lastCleanup`, including the private orphan-note batch, using one indexed latest-completed-event lookup. Public status and schemaVersion 4 exports omit note counts even with a bearer token. Legacy completed events, malformed counters and null diagnostics show unavailable rather than zero. If no completed event is in the public 20-event window, use audit for the latest retained completion. A failed refresh leaves a cached historical receipt with its original timestamp; neither reading nor expanding it renews evidence, drains queues or adds polling. The receipt and its source/queue changes commit together in the existing cleanup transaction, so a failure cannot publish a successful cleanup record.
+
+These counts exclude eager age expiry, all-note removal from expired resolved parents and cold migration; they cannot measure total cleanup cost or account usage. The [3.4.2 local fixture](evidence/releases/3.4.2-retention-cost.json) measured unchanged steady cron at 94 reads/40 writes for two targets and 189/82 for five. Counting a full 32-version plus 32-note batch adds 128 reads and no SQL statements or writes compared with the [3.4.1 archive](evidence/releases/3.4.1-retention-cost.json). See [ADR 007](adr/007-committed-cleanup-diagnostics.md). Native inference was not called, and live deployment/recovery must still pass the release checks above.
 
 ## Workers AI investigation briefs
 
