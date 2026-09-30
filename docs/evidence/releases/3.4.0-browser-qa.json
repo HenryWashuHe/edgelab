@@ -1,0 +1,66 @@
+{
+  "projectVersion": "3.4.0",
+  "verifiedAt": "2026-09-30T08:12:59.174505+00:00",
+  "environment": "Controlled loopback static frontend server; all application API paths counted and return503; no Worker, database, provider, account credential or production proxy",
+  "sourceProjectVersion": "3.3.2",
+  "sourceCommit": "67b27d01aacefdae1d6b5918240d54b9ddeb4769",
+  "nativeInferenceCalls": 0,
+  "productionWrites": 0,
+  "operatorDataUsed": false,
+  "directExplorerApiRequests": 0,
+  "afterOperationsNavigation": {
+    "initialStatusRequests": 1,
+    "additionalRequestsFromExamplesLink": 0
+  },
+  "verified": [
+    "Three native-select scenarios with persistent controlled/canned/zero-native labels and historical UTC capture time",
+    "Frozen citation disclosure exposes relevant supplied reference; suggestions remain manual text",
+    "All three evidence hashes match their pinned expected SHA256 in browser",
+    "Altered HTTP fixture clone changes first latency by1ms: original9f57cccb5605aa6f95c0e0349ba10827455a2628f6077b6678da1be892f2ba7b; altered2d16051014bdf482212ea0eff2b79242e8b5d60b600f93ff00ab1cb0119fca79",
+    "Case changes discard prior verification output",
+    "Insufficient verified bad evidence reports prompt/input/response skipped with0inference",
+    "Unloaded quota-failed Operations still exposes the public examples link",
+    "No browser error or warning logs during this run"
+  ],
+  "layout": {
+    "desktop": {
+      "viewportWidth": 1280,
+      "documentWidth": 1280,
+      "height": 720
+    },
+    "mobile": {
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "height": 844,
+      "factsColumns": 2,
+      "evidenceTableClientWidth": 320,
+      "evidenceTableScrollWidth": 648,
+      "keyboardArrowRightScrollLeft": 40,
+      "focusableEvidenceRegion": true,
+      "nativeSelectHeight": 42
+    },
+    "temporaryViewportReset": true
+  },
+  "limitations": [
+    "Controlled frontend interaction evidence, not successful production cron recovery",
+    "Canned acceptance does not prove model quality, root cause or native compatibility",
+    "Unsigned content hashes do not prove authenticity",
+    "Request counter excludes static asset requests; the zero-call claim refers to application API/AI interactions"
+  ],
+  "finalAssets": {
+    "script": "index-JW24dk3s.js",
+    "stylesheet": "index-DCtxYz6J.css"
+  },
+  "liveStaticVerification": {
+    "baseUrl": "https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#notes",
+    "gatewayDeployment": "3282aab8-dcb1-4fad-9cc3-2a0935ced406",
+    "uiVersion": "3.4.0",
+    "script": "index-JW24dk3s.js",
+    "originalHashMatches": true,
+    "alteredCopyHashDiffers": true,
+    "pinnedArtifactLinksMatch": true,
+    "browserErrorOrWarningLogs": 0,
+    "monitorStorage": "still unavailable, recorded separately",
+    "nativeInferenceCalls": 0
+  }
+}

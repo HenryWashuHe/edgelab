@@ -32,6 +32,8 @@ As of 3.3.2, independent record admission reserves at most 16 new creations per 
 
 ## Consequences
 
+EdgeLab 3.4 adds an anonymous static explorer using a whitelisted projection of the pinned 3.3.2 controlled evaluation artifact. It exposes frozen public facts, relevant citations, omissions and local hash verification without operator secrets, live API reads or inference. Explanations remain labeled human-authored canned responses; a content fingerprint is not source authentication or a cause proof. Actual private generation and its gates are unchanged.
+
 The operator sees frozen deterministic facts separately from AI-generated possible explanations. Native citation inspectors expose the exact stored entries. The browser keeps pending request identity only in authenticated component memory, clears it on credential or page-lifetime changes, and never automatically posts a new generation request.
 
 This feature makes investigation reproducible and gives an AI demonstration grounded in the monitor's actual evidence. It cannot identify a proven root cause, inspect application logs it was not given, fill missing history, resolve incidents, or send notifications. Unit tests cover immutable capture, canonical hashing, timing and slice coverage, malicious metadata, byte limits, strict schemas, and citation relevance. Isolated runtime tests use a controlled fake AI binding to exercise dispatch ownership, replay, quota, provider errors, expiration, and eviction without consuming account inference quota.

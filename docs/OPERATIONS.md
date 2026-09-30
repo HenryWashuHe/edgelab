@@ -13,7 +13,7 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 ## Verify an actual release
 
 1. Confirm the published commit passes GitHub CI.
-2. For a v3.3 release, `GET /api/health` must report version 3.3.2. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
+2. For a v3.4 release, `GET /api/health` must report version 3.4.0. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
 3. `GET /api/ops/status` must list the expected target names. Public output must not contain the operator token, target URLs, or investigation notes.
 4. Allow cron propagation ([Cloudflare documents up to 15 minutes](https://developers.cloudflare.com/workers/configuration/cron-triggers/)). Verify each service receives observations in two distinct scheduled minutes without clicking a “run” button. Check `latest.slot`, the actual probe start `latest.observedAt`, and completion `latest.at`, not just the page's snapshot timestamp. Trigger propagation is not permission to backfill: an invocation whose scheduled minute has passed is recorded as `skipped-late` and makes no observation.
 5. The private catalog probe must validate actual JSON through its service binding; the gateway probe must reach the configured public HTTPS health endpoint.
@@ -40,6 +40,8 @@ If monitoring itself stops, service status becomes unknown and missing coverage 
 Investigate cron configuration, deployment errors, quotas, `monitor.tick` logs, and the status snapshot's latest 20 persisted scheduler events. A skipped late event cannot fill a historical gap. Check `/api/ready` from outside Cloudflare for correlated provider outages. The system does not convert missing probes into good samples or close incidents automatically.
 
 ## Workers AI investigation briefs
+
+For an anonymous demonstration, open [the controlled Fieldnotes explorer](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#notes). It uses pinned test observations and human-authored canned explanations, never operator records or native AI. Inspection and local hashing make no application API calls, so this static demonstration is available separately from monitor storage. Do not describe it as production incident history or successful native inference.
 
 Unlock Operations and open an incident to inspect its private brief panel. Normal evidence and private notes work independently of inference. The AI binding is declared by deployment configuration, while `AI_BRIEFS_ENABLED` defaults to `false`; disabled capability is reported honestly. Confirm the account's Workers plan and shared [AI allocation](https://developers.cloudflare.com/workers-ai/platform/pricing/) before setting this deployment variable to `true` and deploying. The application does not upgrade billing. On Free, exhausted allocation fails; on Paid, other account activity can cause overage even when this application's cap is respected.
 

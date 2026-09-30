@@ -429,6 +429,13 @@ export function Operations() {
           </a>
         </div>
       </div>
+      <p className="ops-intro examples-entry">
+        Incident briefs are private to operators.{' '}
+        <a className="ops-doc-link" href="#notes">
+          Explore brief examples <ArrowUpRight size={14} />
+        </a>{' '}
+        using controlled test data and canned explanations, with zero native AI calls.
+      </p>
       {formError && (
         <div className="error-banner" role="alert">
           {formError}

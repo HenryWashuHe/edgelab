@@ -1,0 +1,913 @@
+{
+  "source": {
+    "sourceProjectVersion": "3.3.2",
+    "sourceArtifactURL": "https://github.com/HenryWashuHe/edgelab/blob/67b27d01aacefdae1d6b5918240d54b9ddeb4769/docs/evidence/releases/3.3.2-brief-evaluation.json",
+    "evaluationGuideURL": "https://github.com/HenryWashuHe/edgelab/blob/67b27d01aacefdae1d6b5918240d54b9ddeb4769/docs/BRIEF_EVALUATION.md",
+    "reportVersion": 1,
+    "suiteVersion": 1,
+    "promptVersion": 1,
+    "schemaVersion": 1,
+    "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    "mode": "offline",
+    "sourceKind": "controlled-fixtures-only",
+    "responseOrigin": "human-authored-canned-envelope",
+    "nativeInferenceCalls": 0,
+    "cloudflareAccountQueries": 0,
+    "productionWrites": 0,
+    "modelQualityMeasured": false,
+    "nativeProviderVerified": false,
+    "rootCauseProven": false,
+    "maxMessageBytes": 2048,
+    "maxInputBytes": 4096,
+    "maxOutputTokens": 512
+  },
+  "examples": [
+    {
+      "id": "http-recovery",
+      "label": "CONTROLLED: HTTP errors followed by sampled recovery",
+      "description": "Eight consecutive finished minutes: three good, three HTTP 503, then two good. No application logs or deployment cause are supplied.",
+      "sourceKind": "controlled-fixture",
+      "evidenceHash": "9f57cccb5605aa6f95c0e0349ba10827455a2628f6077b6678da1be892f2ba7b",
+      "nativeInferenceCalls": 0,
+      "rootCauseProven": false,
+      "capturedAt": 1788264012000,
+      "evidence": {
+        "schemaVersion": 1,
+        "capturedAt": 1788264012000,
+        "incident": {
+          "id": "66db6a01-ea65-48c8-93ed-87997dbe2a01",
+          "service": "controlled-service",
+          "opened": 1788263821020,
+          "resolved": 1788263941020,
+          "acknowledged": null
+        },
+        "range": {
+          "fromSlot": 29804380,
+          "toSlot": 29804399,
+          "retentionStart": 1785672012000,
+          "limitedByRetention": false
+        },
+        "checks": [
+          {
+            "id": "check:29804399",
+            "service": "controlled-service",
+            "slot": 29804399,
+            "at": 1788263941020,
+            "outcome": "good",
+            "status": 200,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": 1788263941000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804398",
+            "service": "controlled-service",
+            "slot": 29804398,
+            "at": 1788263881020,
+            "outcome": "good",
+            "status": 200,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": 1788263881000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804397",
+            "service": "controlled-service",
+            "slot": 29804397,
+            "at": 1788263821020,
+            "outcome": "http-error",
+            "status": 503,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": 1788263821000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804396",
+            "service": "controlled-service",
+            "slot": 29804396,
+            "at": 1788263761020,
+            "outcome": "http-error",
+            "status": 503,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": 1788263761000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804395",
+            "service": "controlled-service",
+            "slot": 29804395,
+            "at": 1788263701020,
+            "outcome": "http-error",
+            "status": 503,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": 1788263701000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804394",
+            "service": "controlled-service",
+            "slot": 29804394,
+            "at": 1788263641020,
+            "outcome": "good",
+            "status": 200,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": 1788263641000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804393",
+            "service": "controlled-service",
+            "slot": 29804393,
+            "at": 1788263581020,
+            "outcome": "good",
+            "status": 200,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": 1788263581000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804392",
+            "service": "controlled-service",
+            "slot": 29804392,
+            "at": 1788263521020,
+            "outcome": "good",
+            "status": 200,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": 1788263521000,
+            "timing": "verified"
+          }
+        ],
+        "versions": [
+          {
+            "id": "policy:1",
+            "service": "controlled-service",
+            "revision": 1,
+            "recordedAt": 1788260412000,
+            "name": "CONTROLLED FIXTURE — never a production incident",
+            "transport": "origin",
+            "assertion": "ok-json",
+            "provenance": "recorded",
+            "policy": {
+              "paused": false,
+              "timeoutMs": 3000,
+              "latencyObjectiveMs": 1500,
+              "availabilityTarget": 99.9,
+              "failureThreshold": 3,
+              "recoveryThreshold": 2
+            }
+          }
+        ],
+        "lifecycle": [
+          { "id": "lifecycle:incident.opened", "action": "incident.opened", "at": 1788263821020 },
+          {
+            "id": "lifecycle:incident.recovered",
+            "action": "incident.recovered",
+            "at": 1788263941020
+          }
+        ],
+        "facts": {
+          "recordedChecks": 8,
+          "verifiedChecks": 8,
+          "goodChecks": 5,
+          "badChecks": 3,
+          "maintenanceChecks": 0,
+          "legacyChecks": 0,
+          "invalidTimingChecks": 0,
+          "missingMinutesWithinSlice": 0,
+          "selectedFromSlot": 29804392,
+          "selectedToSlot": 29804399,
+          "finishedExpectedMinutesWithinSlice": 8,
+          "finishedEligibleMinutesWithinSlice": 8,
+          "verifiedCoveragePercentWithinFinishedSlice": 100,
+          "outcomes": {
+            "good": 5,
+            "http-error": 3,
+            "timeout": 0,
+            "network-error": 0,
+            "invalid-body": 0,
+            "slow": 0,
+            "maintenance": 0
+          }
+        },
+        "limits": {
+          "checkLimit": 50,
+          "checksOmitted": 0,
+          "olderPagesAvailable": false,
+          "limitedByRetention": false,
+          "missingPolicyRevisions": [],
+          "recoveredPolicyRevisions": [],
+          "includesCurrentMinute": false,
+          "measurement": "one-coordinator-sampled-checks",
+          "responseBodiesAvailable": false,
+          "privateNotesIncluded": false
+        },
+        "references": [
+          {
+            "id": "check:29804392",
+            "kind": "check",
+            "label": "Check in UTC minute 29804392",
+            "detail": "{\n  \"id\": \"check:29804392\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804392,\n  \"at\": 1788263521020,\n  \"outcome\": \"good\",\n  \"status\": 200,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": 1788263521000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "check:29804393",
+            "kind": "check",
+            "label": "Check in UTC minute 29804393",
+            "detail": "{\n  \"id\": \"check:29804393\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804393,\n  \"at\": 1788263581020,\n  \"outcome\": \"good\",\n  \"status\": 200,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": 1788263581000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "check:29804394",
+            "kind": "check",
+            "label": "Check in UTC minute 29804394",
+            "detail": "{\n  \"id\": \"check:29804394\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804394,\n  \"at\": 1788263641020,\n  \"outcome\": \"good\",\n  \"status\": 200,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": 1788263641000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "check:29804395",
+            "kind": "check",
+            "label": "Check in UTC minute 29804395",
+            "detail": "{\n  \"id\": \"check:29804395\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804395,\n  \"at\": 1788263701020,\n  \"outcome\": \"http-error\",\n  \"status\": 503,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": 1788263701000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": ["upstream-http-error"]
+          },
+          {
+            "id": "check:29804396",
+            "kind": "check",
+            "label": "Check in UTC minute 29804396",
+            "detail": "{\n  \"id\": \"check:29804396\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804396,\n  \"at\": 1788263761020,\n  \"outcome\": \"http-error\",\n  \"status\": 503,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": 1788263761000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": ["upstream-http-error"]
+          },
+          {
+            "id": "check:29804397",
+            "kind": "check",
+            "label": "Check in UTC minute 29804397",
+            "detail": "{\n  \"id\": \"check:29804397\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804397,\n  \"at\": 1788263821020,\n  \"outcome\": \"http-error\",\n  \"status\": 503,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": 1788263821000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": ["upstream-http-error"]
+          },
+          {
+            "id": "check:29804398",
+            "kind": "check",
+            "label": "Check in UTC minute 29804398",
+            "detail": "{\n  \"id\": \"check:29804398\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804398,\n  \"at\": 1788263881020,\n  \"outcome\": \"good\",\n  \"status\": 200,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": 1788263881000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "check:29804399",
+            "kind": "check",
+            "label": "Check in UTC minute 29804399",
+            "detail": "{\n  \"id\": \"check:29804399\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804399,\n  \"at\": 1788263941020,\n  \"outcome\": \"good\",\n  \"status\": 200,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": 1788263941000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "fact:coverage",
+            "kind": "fact",
+            "label": "Verified coverage within finished selected minutes",
+            "detail": "100% verified non-maintenance coverage across 8 finished selected minutes (8 eligible). This is selected-slice coverage, not the full incident or customer uptime.",
+            "allowedKinds": []
+          },
+          {
+            "id": "fact:good",
+            "kind": "fact",
+            "label": "Verified good checks",
+            "detail": "5 verified good checks within the selected slice.",
+            "allowedKinds": []
+          },
+          {
+            "id": "fact:http-error",
+            "kind": "fact",
+            "label": "Verified http-error checks",
+            "detail": "3 verified http-error checks within the selected slice.",
+            "allowedKinds": ["upstream-http-error"]
+          },
+          {
+            "id": "lifecycle:incident.opened",
+            "kind": "lifecycle",
+            "label": "incident.opened",
+            "detail": "{\n  \"id\": \"lifecycle:incident.opened\",\n  \"action\": \"incident.opened\",\n  \"at\": 1788263821020\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "lifecycle:incident.recovered",
+            "kind": "lifecycle",
+            "label": "incident.recovered",
+            "detail": "{\n  \"id\": \"lifecycle:incident.recovered\",\n  \"action\": \"incident.recovered\",\n  \"at\": 1788263941020\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "limit:scope",
+            "kind": "limit",
+            "label": "Measurement scope",
+            "detail": "One coordinator samples a network path. Root cause and customer-request uptime are not proven; response bodies are not retained.",
+            "allowedKinds": []
+          },
+          {
+            "id": "policy:1",
+            "kind": "policy",
+            "label": "Policy v1 (recorded)",
+            "detail": "{\n  \"id\": \"policy:1\",\n  \"service\": \"controlled-service\",\n  \"revision\": 1,\n  \"recordedAt\": 1788260412000,\n  \"name\": \"CONTROLLED FIXTURE — never a production incident\",\n  \"transport\": \"origin\",\n  \"assertion\": \"ok-json\",\n  \"policy\": {\n    \"paused\": false,\n    \"timeoutMs\": 3000,\n    \"latencyObjectiveMs\": 1500,\n    \"availabilityTarget\": 99.9,\n    \"failureThreshold\": 3,\n    \"recoveryThreshold\": 2\n  },\n  \"provenance\": \"recorded\"\n}",
+            "allowedKinds": []
+          }
+        ]
+      },
+      "responseOrigin": "human-authored-canned-envelope",
+      "disposition": "validated-canned-response",
+      "inputHash": "749a3d755d162d7f809496423c3dfade60ff691b4f074945e20cbdbd88bc9e3d",
+      "omittedEvidenceCount": 2,
+      "messageBytes": 2031,
+      "inputBytes": 3509,
+      "suppliedCitationIds": [
+        "fact:http-error",
+        "check:29804397",
+        "policy:1",
+        "lifecycle:incident.opened",
+        "lifecycle:incident.recovered",
+        "fact:coverage",
+        "fact:good",
+        "check:29804399",
+        "check:29804398",
+        "check:29804396",
+        "check:29804395",
+        "check:29804394",
+        "check:29804393"
+      ],
+      "generated": {
+        "hypotheses": [
+          {
+            "kind": "upstream-http-error",
+            "explanation": "Recorded HTTP errors merit inspecting upstream logs. Later good samples show sampled recovery; the cause remains unverified.",
+            "evidenceIds": ["fact:http-error"],
+            "nextChecks": ["inspect-service-logs", "compare-deployments"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "timeout-gaps",
+      "label": "CONTROLLED: timeouts, slow response, maintenance and unknown minutes",
+      "description": "Seven checks across eight finished minutes: two timeouts, one slow, two good, one maintenance, one legacy HTTP error and one missing minute.",
+      "sourceKind": "controlled-fixture",
+      "evidenceHash": "a33fce99f96a4338cd57ddb97ee32da8fad081afb310b1b8a462c0c863ef897a",
+      "nativeInferenceCalls": 0,
+      "rootCauseProven": false,
+      "capturedAt": 1788264012000,
+      "evidence": {
+        "schemaVersion": 1,
+        "capturedAt": 1788264012000,
+        "incident": {
+          "id": "66db6a01-ea65-48c8-93ed-87997dbe2a02",
+          "service": "controlled-service",
+          "opened": 1788263582000,
+          "resolved": null,
+          "acknowledged": null
+        },
+        "range": {
+          "fromSlot": 29804380,
+          "toSlot": 29804399,
+          "retentionStart": 1785672012000,
+          "limitedByRetention": false
+        },
+        "checks": [
+          {
+            "id": "check:29804399",
+            "service": "controlled-service",
+            "slot": 29804399,
+            "at": 1788263944000,
+            "outcome": "timeout",
+            "status": null,
+            "latency": 3000,
+            "revision": 1,
+            "observedAt": 1788263941000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804398",
+            "service": "controlled-service",
+            "slot": 29804398,
+            "at": 1788263882800,
+            "outcome": "slow",
+            "status": 200,
+            "latency": 1800,
+            "revision": 1,
+            "observedAt": 1788263881000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804396",
+            "service": "controlled-service",
+            "slot": 29804396,
+            "at": 1788263761020,
+            "outcome": "good",
+            "status": 200,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": 1788263761000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804395",
+            "service": "controlled-service",
+            "slot": 29804395,
+            "at": 1788263701020,
+            "outcome": "http-error",
+            "status": 503,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": null,
+            "timing": "legacy"
+          },
+          {
+            "id": "check:29804394",
+            "service": "controlled-service",
+            "slot": 29804394,
+            "at": 1788263641020,
+            "outcome": "maintenance",
+            "status": null,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": 1788263641000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804393",
+            "service": "controlled-service",
+            "slot": 29804393,
+            "at": 1788263584000,
+            "outcome": "timeout",
+            "status": null,
+            "latency": 3000,
+            "revision": 1,
+            "observedAt": 1788263581000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804392",
+            "service": "controlled-service",
+            "slot": 29804392,
+            "at": 1788263521020,
+            "outcome": "good",
+            "status": 200,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": 1788263521000,
+            "timing": "verified"
+          }
+        ],
+        "versions": [
+          {
+            "id": "policy:1",
+            "service": "controlled-service",
+            "revision": 1,
+            "recordedAt": 1788260412000,
+            "name": "CONTROLLED FIXTURE — never a production incident",
+            "transport": "origin",
+            "assertion": "ok-json",
+            "provenance": "recorded",
+            "policy": {
+              "paused": false,
+              "timeoutMs": 3000,
+              "latencyObjectiveMs": 1500,
+              "availabilityTarget": 99.9,
+              "failureThreshold": 3,
+              "recoveryThreshold": 2
+            }
+          }
+        ],
+        "lifecycle": [
+          { "id": "lifecycle:incident.opened", "action": "incident.opened", "at": 1788263582000 }
+        ],
+        "facts": {
+          "recordedChecks": 7,
+          "verifiedChecks": 6,
+          "goodChecks": 2,
+          "badChecks": 3,
+          "maintenanceChecks": 1,
+          "legacyChecks": 1,
+          "invalidTimingChecks": 0,
+          "missingMinutesWithinSlice": 1,
+          "selectedFromSlot": 29804392,
+          "selectedToSlot": 29804399,
+          "finishedExpectedMinutesWithinSlice": 8,
+          "finishedEligibleMinutesWithinSlice": 7,
+          "verifiedCoveragePercentWithinFinishedSlice": 71.42857142857143,
+          "outcomes": {
+            "good": 2,
+            "http-error": 0,
+            "timeout": 2,
+            "network-error": 0,
+            "invalid-body": 0,
+            "slow": 1,
+            "maintenance": 1
+          }
+        },
+        "limits": {
+          "checkLimit": 50,
+          "checksOmitted": 0,
+          "olderPagesAvailable": false,
+          "limitedByRetention": false,
+          "missingPolicyRevisions": [],
+          "recoveredPolicyRevisions": [],
+          "includesCurrentMinute": false,
+          "measurement": "one-coordinator-sampled-checks",
+          "responseBodiesAvailable": false,
+          "privateNotesIncluded": false
+        },
+        "references": [
+          {
+            "id": "check:29804392",
+            "kind": "check",
+            "label": "Check in UTC minute 29804392",
+            "detail": "{\n  \"id\": \"check:29804392\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804392,\n  \"at\": 1788263521020,\n  \"outcome\": \"good\",\n  \"status\": 200,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": 1788263521000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "check:29804393",
+            "kind": "check",
+            "label": "Check in UTC minute 29804393",
+            "detail": "{\n  \"id\": \"check:29804393\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804393,\n  \"at\": 1788263584000,\n  \"outcome\": \"timeout\",\n  \"status\": null,\n  \"latency\": 3000,\n  \"revision\": 1,\n  \"observedAt\": 1788263581000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": ["latency-or-timeout"]
+          },
+          {
+            "id": "check:29804394",
+            "kind": "check",
+            "label": "Check in UTC minute 29804394",
+            "detail": "{\n  \"id\": \"check:29804394\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804394,\n  \"at\": 1788263641020,\n  \"outcome\": \"maintenance\",\n  \"status\": null,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": 1788263641000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "check:29804395",
+            "kind": "check",
+            "label": "Check in UTC minute 29804395",
+            "detail": "{\n  \"id\": \"check:29804395\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804395,\n  \"at\": 1788263701020,\n  \"outcome\": \"http-error\",\n  \"status\": 503,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": null,\n  \"timing\": \"legacy\"\n}",
+            "allowedKinds": ["evidence-gap"]
+          },
+          {
+            "id": "check:29804396",
+            "kind": "check",
+            "label": "Check in UTC minute 29804396",
+            "detail": "{\n  \"id\": \"check:29804396\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804396,\n  \"at\": 1788263761020,\n  \"outcome\": \"good\",\n  \"status\": 200,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": 1788263761000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "check:29804398",
+            "kind": "check",
+            "label": "Check in UTC minute 29804398",
+            "detail": "{\n  \"id\": \"check:29804398\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804398,\n  \"at\": 1788263882800,\n  \"outcome\": \"slow\",\n  \"status\": 200,\n  \"latency\": 1800,\n  \"revision\": 1,\n  \"observedAt\": 1788263881000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": ["latency-or-timeout"]
+          },
+          {
+            "id": "check:29804399",
+            "kind": "check",
+            "label": "Check in UTC minute 29804399",
+            "detail": "{\n  \"id\": \"check:29804399\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804399,\n  \"at\": 1788263944000,\n  \"outcome\": \"timeout\",\n  \"status\": null,\n  \"latency\": 3000,\n  \"revision\": 1,\n  \"observedAt\": 1788263941000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": ["latency-or-timeout"]
+          },
+          {
+            "id": "fact:coverage",
+            "kind": "fact",
+            "label": "Verified coverage within finished selected minutes",
+            "detail": "71.42857142857143% verified non-maintenance coverage across 8 finished selected minutes (7 eligible). This is selected-slice coverage, not the full incident or customer uptime.",
+            "allowedKinds": ["evidence-gap"]
+          },
+          {
+            "id": "fact:good",
+            "kind": "fact",
+            "label": "Verified good checks",
+            "detail": "2 verified good checks within the selected slice.",
+            "allowedKinds": []
+          },
+          {
+            "id": "fact:maintenance",
+            "kind": "fact",
+            "label": "Verified maintenance checks",
+            "detail": "1 verified maintenance checks within the selected slice.",
+            "allowedKinds": []
+          },
+          {
+            "id": "fact:slow",
+            "kind": "fact",
+            "label": "Verified slow checks",
+            "detail": "1 verified slow checks within the selected slice.",
+            "allowedKinds": ["latency-or-timeout"]
+          },
+          {
+            "id": "fact:timeout",
+            "kind": "fact",
+            "label": "Verified timeout checks",
+            "detail": "2 verified timeout checks within the selected slice.",
+            "allowedKinds": ["latency-or-timeout"]
+          },
+          {
+            "id": "lifecycle:incident.opened",
+            "kind": "lifecycle",
+            "label": "incident.opened",
+            "detail": "{\n  \"id\": \"lifecycle:incident.opened\",\n  \"action\": \"incident.opened\",\n  \"at\": 1788263582000\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "limit:gaps",
+            "kind": "limit",
+            "label": "Missing minutes within selected slice",
+            "detail": "1 minutes have no retained check between selected slots 29804392 and 29804399.",
+            "allowedKinds": ["evidence-gap"]
+          },
+          {
+            "id": "limit:legacy",
+            "kind": "limit",
+            "label": "Unknown observation starts",
+            "detail": "1 checks lack an actual start time.",
+            "allowedKinds": ["evidence-gap"]
+          },
+          {
+            "id": "limit:scope",
+            "kind": "limit",
+            "label": "Measurement scope",
+            "detail": "One coordinator samples a network path. Root cause and customer-request uptime are not proven; response bodies are not retained.",
+            "allowedKinds": []
+          },
+          {
+            "id": "policy:1",
+            "kind": "policy",
+            "label": "Policy v1 (recorded)",
+            "detail": "{\n  \"id\": \"policy:1\",\n  \"service\": \"controlled-service\",\n  \"revision\": 1,\n  \"recordedAt\": 1788260412000,\n  \"name\": \"CONTROLLED FIXTURE — never a production incident\",\n  \"transport\": \"origin\",\n  \"assertion\": \"ok-json\",\n  \"policy\": {\n    \"paused\": false,\n    \"timeoutMs\": 3000,\n    \"latencyObjectiveMs\": 1500,\n    \"availabilityTarget\": 99.9,\n    \"failureThreshold\": 3,\n    \"recoveryThreshold\": 2\n  },\n  \"provenance\": \"recorded\"\n}",
+            "allowedKinds": []
+          }
+        ]
+      },
+      "responseOrigin": "human-authored-canned-envelope",
+      "disposition": "validated-canned-response",
+      "inputHash": "95e294001e8d270b0f2a534dcfc7f82d8ef4f6a1b5ea0d6e0bf5edc267a328aa",
+      "omittedEvidenceCount": 4,
+      "messageBytes": 2048,
+      "inputBytes": 3472,
+      "suppliedCitationIds": [
+        "fact:coverage",
+        "fact:slow",
+        "fact:timeout",
+        "limit:gaps",
+        "limit:legacy",
+        "check:29804399",
+        "check:29804398",
+        "policy:1",
+        "lifecycle:incident.opened",
+        "fact:good",
+        "fact:maintenance",
+        "check:29804396",
+        "check:29804394"
+      ],
+      "generated": {
+        "hypotheses": [
+          {
+            "kind": "latency-or-timeout",
+            "explanation": "Timeout and slow samples merit comparing service latency with the recorded timeout. This does not establish a cause.",
+            "evidenceIds": ["fact:timeout", "fact:slow"],
+            "nextChecks": ["review-latency-and-timeout"]
+          },
+          {
+            "kind": "evidence-gap",
+            "explanation": "A missing minute and a legacy start limit interpretation. Inspect scheduler evidence without assuming the missing outcome.",
+            "evidenceIds": ["limit:gaps", "limit:legacy"],
+            "nextChecks": ["inspect-monitor-scheduler"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "insufficient-history",
+      "label": "CONTROLLED: no verified bad observation",
+      "description": "One verified good and one maintenance check plus a legacy HTTP error and an invalid-start timeout. The bad-looking records cannot qualify inference.",
+      "sourceKind": "controlled-fixture",
+      "evidenceHash": "de425a5af0ca1c564e1d9f02ed243d96c80d2db0646f9b6add19e683ed16f314",
+      "nativeInferenceCalls": 0,
+      "rootCauseProven": false,
+      "capturedAt": 1788264012000,
+      "evidence": {
+        "schemaVersion": 1,
+        "capturedAt": 1788264012000,
+        "incident": {
+          "id": "66db6a01-ea65-48c8-93ed-87997dbe2a03",
+          "service": "controlled-service",
+          "opened": 1788263582000,
+          "resolved": null,
+          "acknowledged": null
+        },
+        "range": {
+          "fromSlot": 29804380,
+          "toSlot": 29804399,
+          "retentionStart": 1785672012000,
+          "limitedByRetention": false
+        },
+        "checks": [
+          {
+            "id": "check:29804399",
+            "service": "controlled-service",
+            "slot": 29804399,
+            "at": 1788263941020,
+            "outcome": "good",
+            "status": 200,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": 1788263941000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804398",
+            "service": "controlled-service",
+            "slot": 29804398,
+            "at": 1788263881020,
+            "outcome": "maintenance",
+            "status": null,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": 1788263881000,
+            "timing": "verified"
+          },
+          {
+            "id": "check:29804397",
+            "service": "controlled-service",
+            "slot": 29804397,
+            "at": 1788263821020,
+            "outcome": "http-error",
+            "status": 503,
+            "latency": 20,
+            "revision": 1,
+            "observedAt": null,
+            "timing": "legacy"
+          },
+          {
+            "id": "check:29804396",
+            "service": "controlled-service",
+            "slot": 29804396,
+            "at": 1788263764000,
+            "outcome": "timeout",
+            "status": null,
+            "latency": 3000,
+            "revision": 1,
+            "observedAt": 1788263701000,
+            "timing": "invalid"
+          }
+        ],
+        "versions": [
+          {
+            "id": "policy:1",
+            "service": "controlled-service",
+            "revision": 1,
+            "recordedAt": 1788260412000,
+            "name": "CONTROLLED FIXTURE — never a production incident",
+            "transport": "origin",
+            "assertion": "ok-json",
+            "provenance": "recorded",
+            "policy": {
+              "paused": false,
+              "timeoutMs": 3000,
+              "latencyObjectiveMs": 1500,
+              "availabilityTarget": 99.9,
+              "failureThreshold": 3,
+              "recoveryThreshold": 2
+            }
+          }
+        ],
+        "lifecycle": [
+          { "id": "lifecycle:incident.opened", "action": "incident.opened", "at": 1788263582000 }
+        ],
+        "facts": {
+          "recordedChecks": 4,
+          "verifiedChecks": 2,
+          "goodChecks": 1,
+          "badChecks": 0,
+          "maintenanceChecks": 1,
+          "legacyChecks": 1,
+          "invalidTimingChecks": 1,
+          "missingMinutesWithinSlice": 0,
+          "selectedFromSlot": 29804396,
+          "selectedToSlot": 29804399,
+          "finishedExpectedMinutesWithinSlice": 4,
+          "finishedEligibleMinutesWithinSlice": 3,
+          "verifiedCoveragePercentWithinFinishedSlice": 33.33333333333333,
+          "outcomes": {
+            "good": 1,
+            "http-error": 0,
+            "timeout": 0,
+            "network-error": 0,
+            "invalid-body": 0,
+            "slow": 0,
+            "maintenance": 1
+          }
+        },
+        "limits": {
+          "checkLimit": 50,
+          "checksOmitted": 0,
+          "olderPagesAvailable": false,
+          "limitedByRetention": false,
+          "missingPolicyRevisions": [],
+          "recoveredPolicyRevisions": [],
+          "includesCurrentMinute": false,
+          "measurement": "one-coordinator-sampled-checks",
+          "responseBodiesAvailable": false,
+          "privateNotesIncluded": false
+        },
+        "references": [
+          {
+            "id": "check:29804396",
+            "kind": "check",
+            "label": "Check in UTC minute 29804396",
+            "detail": "{\n  \"id\": \"check:29804396\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804396,\n  \"at\": 1788263764000,\n  \"outcome\": \"timeout\",\n  \"status\": null,\n  \"latency\": 3000,\n  \"revision\": 1,\n  \"observedAt\": 1788263701000,\n  \"timing\": \"invalid\"\n}",
+            "allowedKinds": ["evidence-gap"]
+          },
+          {
+            "id": "check:29804397",
+            "kind": "check",
+            "label": "Check in UTC minute 29804397",
+            "detail": "{\n  \"id\": \"check:29804397\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804397,\n  \"at\": 1788263821020,\n  \"outcome\": \"http-error\",\n  \"status\": 503,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": null,\n  \"timing\": \"legacy\"\n}",
+            "allowedKinds": ["evidence-gap"]
+          },
+          {
+            "id": "check:29804398",
+            "kind": "check",
+            "label": "Check in UTC minute 29804398",
+            "detail": "{\n  \"id\": \"check:29804398\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804398,\n  \"at\": 1788263881020,\n  \"outcome\": \"maintenance\",\n  \"status\": null,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": 1788263881000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "check:29804399",
+            "kind": "check",
+            "label": "Check in UTC minute 29804399",
+            "detail": "{\n  \"id\": \"check:29804399\",\n  \"service\": \"controlled-service\",\n  \"slot\": 29804399,\n  \"at\": 1788263941020,\n  \"outcome\": \"good\",\n  \"status\": 200,\n  \"latency\": 20,\n  \"revision\": 1,\n  \"observedAt\": 1788263941000,\n  \"timing\": \"verified\"\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "fact:coverage",
+            "kind": "fact",
+            "label": "Verified coverage within finished selected minutes",
+            "detail": "33.33333333333333% verified non-maintenance coverage across 4 finished selected minutes (3 eligible). This is selected-slice coverage, not the full incident or customer uptime.",
+            "allowedKinds": ["evidence-gap"]
+          },
+          {
+            "id": "fact:good",
+            "kind": "fact",
+            "label": "Verified good checks",
+            "detail": "1 verified good checks within the selected slice.",
+            "allowedKinds": []
+          },
+          {
+            "id": "fact:maintenance",
+            "kind": "fact",
+            "label": "Verified maintenance checks",
+            "detail": "1 verified maintenance checks within the selected slice.",
+            "allowedKinds": []
+          },
+          {
+            "id": "lifecycle:incident.opened",
+            "kind": "lifecycle",
+            "label": "incident.opened",
+            "detail": "{\n  \"id\": \"lifecycle:incident.opened\",\n  \"action\": \"incident.opened\",\n  \"at\": 1788263582000\n}",
+            "allowedKinds": []
+          },
+          {
+            "id": "limit:legacy",
+            "kind": "limit",
+            "label": "Unknown observation starts",
+            "detail": "1 checks lack an actual start time.",
+            "allowedKinds": ["evidence-gap"]
+          },
+          {
+            "id": "limit:scope",
+            "kind": "limit",
+            "label": "Measurement scope",
+            "detail": "One coordinator samples a network path. Root cause and customer-request uptime are not proven; response bodies are not retained.",
+            "allowedKinds": []
+          },
+          {
+            "id": "limit:timing",
+            "kind": "limit",
+            "label": "Invalid observation timing",
+            "detail": "1 checks have inconsistent or future timing.",
+            "allowedKinds": ["evidence-gap"]
+          },
+          {
+            "id": "policy:1",
+            "kind": "policy",
+            "label": "Policy v1 (recorded)",
+            "detail": "{\n  \"id\": \"policy:1\",\n  \"service\": \"controlled-service\",\n  \"revision\": 1,\n  \"recordedAt\": 1788260412000,\n  \"name\": \"CONTROLLED FIXTURE — never a production incident\",\n  \"transport\": \"origin\",\n  \"assertion\": \"ok-json\",\n  \"policy\": {\n    \"paused\": false,\n    \"timeoutMs\": 3000,\n    \"latencyObjectiveMs\": 1500,\n    \"availabilityTarget\": 99.9,\n    \"failureThreshold\": 3,\n    \"recoveryThreshold\": 2\n  },\n  \"provenance\": \"recorded\"\n}",
+            "allowedKinds": []
+          }
+        ]
+      },
+      "responseOrigin": "none",
+      "disposition": "insufficient-evidence",
+      "inputHash": null,
+      "suppliedCitationIds": [],
+      "omittedEvidenceCount": null,
+      "messageBytes": null,
+      "inputBytes": null,
+      "generated": null
+    }
+  ]
+}

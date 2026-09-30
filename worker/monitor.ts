@@ -263,19 +263,16 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
     }
     if (request.method === 'GET' && url.pathname.startsWith('/incidents/')) {
       const raw = url.searchParams.get('before');
-      if (raw !== null && !/^\d+$/.test(raw))
+      const before = raw === null ? undefined : Number(raw);
+      if (raw !== null && (!/^\d+$/.test(raw) || !Number.isSafeInteger(before)))
         return reply({ error: 'before must be a nonnegative integer slot' }, 400);
-      try {
-        const detail = this.evidence.detail(
-          url.pathname.slice('/incidents/'.length),
-          activeIds,
-          raw === null ? undefined : Number(raw),
-          request.headers.get('X-Operator-Authorized') === 'true',
-        );
-        return detail ? reply(detail) : reply({ error: 'Incident not found' }, 404);
-      } catch (error) {
-        return reply({ error: (error as Error).message }, 400);
-      }
+      const detail = this.evidence.detail(
+        url.pathname.slice('/incidents/'.length),
+        activeIds,
+        before,
+        request.headers.get('X-Operator-Authorized') === 'true',
+      );
+      return detail ? reply(detail) : reply({ error: 'Incident not found' }, 404);
     }
     if (request.method === 'GET' && url.pathname === '/audit')
       return reply({
@@ -361,39 +358,41 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         !Number.isInteger(body.revision)
       )
         return reply({ error: 'Known service and revision required' }, 400);
-      try {
-        return this.ctx.storage.transactionSync(() => {
-          const service = this.rows<ServiceRow>(
-            'SELECT * FROM services WHERE id=?',
-            String(body.service),
-          )[0];
-          if (service.revision !== body.revision)
-            return reply({ error: 'Policy changed. Refresh before saving.' }, 409);
-          const policy = validatePolicy(body.policy, JSON.parse(service.policy));
-          const state: MonitorState = JSON.parse(service.state);
-          state.failures = state.successes = 0;
-          this.ctx.storage.sql.exec(
-            'UPDATE services SET policy=?,revision=revision+1,state=? WHERE id=?',
-            JSON.stringify(policy),
-            JSON.stringify(state),
-            service.id,
-          );
-          this.recordVersion(
-            targets.find((target) => target.id === service.id)!,
-            service.revision + 1,
-            policy,
-            'recorded',
-          );
-          this.event('policy.updated', service.id, {
-            before: JSON.parse(service.policy),
-            after: policy,
-            revision: service.revision + 1,
-          });
-          return reply({ ok: true, revision: service.revision + 1 });
+      return this.ctx.storage.transactionSync(() => {
+        const service = this.rows<ServiceRow>(
+          'SELECT * FROM services WHERE id=?',
+          String(body.service),
+        )[0];
+        if (service.revision !== body.revision)
+          return reply({ error: 'Policy changed. Refresh before saving.' }, 409);
+        const previous: MonitorPolicy = JSON.parse(service.policy);
+        let policy: MonitorPolicy;
+        try {
+          policy = validatePolicy(body.policy, previous);
+        } catch (error) {
+          return reply({ error: (error as Error).message }, 400);
+        }
+        const state: MonitorState = JSON.parse(service.state);
+        state.failures = state.successes = 0;
+        this.ctx.storage.sql.exec(
+          'UPDATE services SET policy=?,revision=revision+1,state=? WHERE id=?',
+          JSON.stringify(policy),
+          JSON.stringify(state),
+          service.id,
+        );
+        this.recordVersion(
+          targets.find((target) => target.id === service.id)!,
+          service.revision + 1,
+          policy,
+          'recorded',
+        );
+        this.event('policy.updated', service.id, {
+          before: previous,
+          after: policy,
+          revision: service.revision + 1,
         });
-      } catch (error) {
-        return reply({ error: (error as Error).message }, 400);
-      }
+        return reply({ ok: true, revision: service.revision + 1 });
+      });
     }
     if (url.pathname === '/acknowledge') {
       if (
@@ -648,7 +647,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       };
     });
     return {
-      version: '3.3.2',
+      version: '3.4.0',
       now,
       window: minutes === 1440 ? '24h' : '7d',
       retentionDays: 30,

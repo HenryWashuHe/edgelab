@@ -6,6 +6,8 @@ EdgeLab v3 also includes persistent service monitoring and incident response. Se
 
 The role emphasizes identifying familiar Internet problems, shipping independently, and learning Cloudflare's platform. Retry amplification and uncontrolled recovery are concrete reliability problems. This project demonstrates stateful coordination, failure handling, frontend controls, testing, and clear communication of limits. No project guarantees hiring priority; the useful signal is whether you understand and can improve what you built.
 
+Cloudflare's [2026 internship announcement](https://blog.cloudflare.com/cloudflare-1111-intern-program/) described faster review for an AI-powered Cloudflare application submitted with the application. Its linked destination currently resolves to an [Agents platform overview](https://agents.cloudflare.com/), rather than a submission rubric. The supplied 2027 posting gives bonus points for personal projects and Cloudflare use but does not specify fast-track qualification. Verify instructions in the actual application portal. EdgeLab's controlled explorer and fake-provider tests demonstrate evidence handling; successful native inference remains a separate, unverified capability.
+
 ## Read the code in this order
 
 1. `worker/engine.ts`: follow `admit`, then `complete`. Read each associated test.

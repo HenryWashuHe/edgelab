@@ -1,6 +1,6 @@
 # EdgeLab
 
-[**Live operations dashboard**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev) · [CI](https://github.com/HenryWashuHe/edgelab/actions) · [Operator runbook](docs/OPERATIONS.md) · [API contract](docs/openapi.yaml)
+[**Live operations dashboard**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev) · [**Explore controlled incident briefs**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#notes) · [CI](https://github.com/HenryWashuHe/edgelab/actions) · [Operator runbook](docs/OPERATIONS.md) · [API contract](docs/openapi.yaml)
 
 **A self-hostable reliability workspace on Cloudflare.** Monitor services continuously, investigate durable incidents, measure good-check objectives and coverage, and reproduce resilience failures in an isolated engineering lab.
 
@@ -20,6 +20,7 @@ The [storage incident case study](docs/CASE_STUDY.md) explains a real quota fail
 - **Paired-window budget signals:** scheduled evaluation of rapid, sustained, and gradual sampled-check burn. Each rule exposes both windows, verified coverage, policy maturity, and its reason. Persisted firing evidence and captured policy context survive missing observations, stale scheduling, maintenance, policy changes, and source-history pruning; older missing context remains explicit.
 - **Operator access:** a deployment secret gates writes and audit access. The browser stores the token only in memory. Same-origin checks, bounded payloads, optimistic writes, and deploy-time target enrollment define the boundary.
 - **Evidence-grounded incident briefs:** an operator can request a bounded Workers AI investigation brief when inference is enabled. Frozen observations, policy history, limits and a SHA-256 hash supply deterministic facts; separately labeled AI hypotheses must cite relevant evidence. Durable request IDs prevent automatic redispatch after response loss or interruption.
+- **Public evidence explorer:** three pinned controlled scenarios expose frozen facts, citations, policy context and input limits without operator access. Verify a snapshot hash or compare an altered copy locally. Explanations are human-authored canned test responses; interactions make no application API or native AI calls.
 - **Engineering lab:** isolated per-session token buckets, circuit breakers, actual cached payloads, timeout experiments, traces, CSV/JSON export, and cancellable guided runs.
 - **Evidence:** deterministic unit tests, real workerd/SQLite fault tests, local and live HTTP verification, and repeatable concurrency benchmarks with raw results.
 
@@ -59,6 +60,8 @@ flowchart LR
   M --> H[Approved HTTPS health endpoint]
   M --> AI[Workers AI / deliberate operator request]
   M --- S[(Checks / jobs / incidents / policy versions / notes / scheduler / budget signals / audit)]
+  E[Public controlled explorer] --> F[Static assets / frozen examples]
+  E --> V[Local browser hash verification]
   G --> L[ReliabilityLab / per-session SQLite DO]
   L --> P
 ```
@@ -94,6 +97,7 @@ npm run test:upgrade      # migration and observation timing
 npm run test:budget       # persisted budget signals, eviction, gaps, revision changes
 npm run test:brief        # frozen evidence, AI fakes, quotas, retry and deadline fencing
 npm run test:brief-evaluate # controlled preparation/validation report and exact offline replay
+npm run test:examples     # pinned public projection matches its whitelisted source
 npm run test:check-cache  # source parity, mutation repair, eviction and measured SQL reads
 npm run test:monitor-unavailable # safe quota failures and authentication precedence
 npm run test:monitor-cost # whole-cron read/write measurements in isolated SQLite
@@ -142,6 +146,8 @@ Each request freezes up to 50 observations, referenced policies, lifecycle, dete
 The application permits four inference attempts per UTC day, one start per UTC minute and one pending request, with a 20-second deadline. Failed attempts consume their reservation. A separate admission limit permits 16 new records per UTC day, at most 256 physically retained rows, and 128 KiB per new serialized record with completion headroom reserved. Insufficient-evidence and preparation-failure records consume record admission without consuming an AI attempt. Cleanup never refunds daily counters. While its record is retained, reusing a UUID returns its original state before these admission gates; failures and interrupted requests are terminal. This bounds application dispatch and storage, without claiming exactly-once provider billing. Records expire 30 days after creation. Missing verified failures produce deterministic insufficient evidence, with no AI call. Older records are preserved; a counterless-store upgrade conservatively closes new record creation for its first UTC day because deleted legacy creation history is unknown.
 
 The [offline evaluation walkthrough](docs/BRIEF_EVALUATION.md) exercises actual capture, prompt preparation, decoding and citation validation against three labeled controlled scenarios. It writes a replayable report with snapshot/input hashes, byte counts, supplied references and omissions. Canned acceptance measures neither native model quality nor a proven cause.
+
+The [public explorer](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#notes) presents a whitelisted projection of the pinned 3.3.2 report. It includes HTTP errors/recovery, timeouts/coverage gaps, and insufficient verified evidence. Inspecting examples never reads live incidents or private brief APIs. Hash comparison identifies content changes; it cannot prove authenticity or causality. Directly opening Fieldnotes loads static assets independently of monitor storage. [Static asset routing](https://developers.cloudflare.com/workers/static-assets/)
 
 Inference uses the fixed [Llama 3.3 70B model](https://developers.cloudflare.com/workers-ai/models/llama-3.3-70b-instruct-fp8-fast/) through the native AI binding, with 2 KiB message content, 4 KiB serialized input and 512 output tokens. Ordinary tests use fakes. `AI_BRIEFS_ENABLED` defaults to `false`; verify the account's plan and shared [Workers AI allocation](https://developers.cloudflare.com/workers-ai/platform/pricing/) before deliberately enabling it. No billing upgrade is performed by this project. The binding alone does not prove a real model call succeeded. See the [operator runbook](docs/OPERATIONS.md) and release validation for the actual verified capability.
 

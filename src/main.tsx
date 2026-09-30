@@ -428,7 +428,7 @@ function App() {
             </a>
           </div>
           <div className="sidebar-footer">
-            <span className="tiny-dot" /> EdgeLab v3.3.2 <span>TS</span>
+            <span className="tiny-dot" /> EdgeLab v3.4.0 <span>TS</span>
           </div>
         </div>
       </aside>
@@ -449,17 +449,19 @@ function App() {
           <div className="topbar-right">
             <span className="runtime-pill">
               <span
-                className={`tiny-dot ${snapshot && (page !== 'playground' || stateConfirmed) ? '' : 'muted-dot'}`}
+                className={`tiny-dot ${page === 'playground' && snapshot && stateConfirmed ? '' : 'muted-dot'}`}
               />
               {page === 'operations'
                 ? 'Persistent monitoring'
-                : page === 'playground' && !stateConfirmed
-                  ? 'Lab state unconfirmed'
-                  : snapshot
-                    ? snapshot.colo === 'LOCAL'
-                      ? 'Local runtime'
-                      : `${snapshot.colo} · Edge connected`
-                    : 'Connecting'}
+                : page !== 'playground'
+                  ? 'Read-only field guide'
+                  : !stateConfirmed
+                    ? 'Lab state unconfirmed'
+                    : snapshot
+                      ? snapshot.colo === 'LOCAL'
+                        ? 'Local runtime'
+                        : `${snapshot.colo} · Edge connected`
+                      : 'Connecting'}
             </span>
             <a
               href="https://developers.cloudflare.com/workers/"

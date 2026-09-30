@@ -23,6 +23,7 @@ jobs:
       - run: npm run test:budget
       - run: npm run test:brief
       - run: npm run test:brief-evaluate
+      - run: npm run test:examples
       - run: npm run test:check-cache
       - run: npm run test:monitor-unavailable
       - run: npm run test:monitor-cost

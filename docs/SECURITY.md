@@ -2,6 +2,8 @@
 
 EdgeLab separates a public read model, a single-owner control plane, an approved-target probe plane, and a capability-scoped experimental lab.
 
+The public Fieldnotes explorer is a separate static presentation of pinned controlled fixtures. Its generated client data excludes private notes, credentials, target URLs, raw prompts and provider envelopes. It never invokes incident or inference APIs. Browser hash verification identifies content changes only; these unsigned canned examples do not establish source authenticity or a model result.
+
 ## Assets and trust
 
 The operator token grants policy and incident-management access. It is a Cloudflare Worker secret, generated with 256 bits of randomness, sent to Wrangler over stdin, and retained locally in an ignored mode-600 file. The UI retains it only in memory. Authorization compares SHA-256 digests without data-dependent early exit. This is a single-owner token model, not user identity, organization RBAC, MFA, or an attribution system: audit entries mean the deployment credential was used.

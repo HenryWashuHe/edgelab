@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.3.2
+  version: 3.4.0
   description: |
     Public monitoring read model and single-owner operator control plane.
     Laboratory endpoints are documented in LAB.md. No public probe or target-enrollment endpoint exists.

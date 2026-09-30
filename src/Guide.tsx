@@ -1,4 +1,5 @@
 import { Globe2, Cloud, Database, ArrowRight, Server, Code2, Check } from 'lucide-react';
+import { BriefExamples } from './BriefExamples';
 export function Architecture() {
   return (
     <div className="docs-layout">
@@ -128,94 +129,97 @@ export function Architecture() {
 }
 export function Notes() {
   return (
-    <div className="docs-layout">
-      <section className="panel doc-panel">
-        <div className="eyebrow">A TWO-MINUTE WALKTHROUGH</div>
-        <h2>Show the evidence. Explain the decisions.</h2>
-        <p>
-          Start with Operations: real scheduled observations, missing-data coverage, incident
-          history, and authenticated policy changes. Explain lease fencing and why acknowledgement
-          is separate from recovery. Then use the lab to reproduce a failure safely.
-        </p>
-        <ol className="walkthrough">
-          <li>
-            <b>Start with the problem.</b>
-            <p>
-              “Retries can turn a partial outage into an overload. I built a lab to make admission
-              control and recovery visible.”
-            </p>
-          </li>
-          <li>
-            <b>Run a burst.</b>
-            <p>
-              Send 24 concurrent requests and show the shared token budget. Explain HTTP 429 and why
-              rejected traffic gets Retry-After.
-            </p>
-          </li>
-          <li>
-            <b>Break the origin.</b>
-            <p>
-              Warm the cache, inject failures, and show the circuit opening after three failures.
-              Cached responses preserve availability for up to 60 seconds.
-            </p>
-          </li>
-          <li>
-            <b>Recover deliberately.</b>
-            <p>
-              Restore health, wait for cooldown, and send a probe. Explain why only one recovery
-              request may reach the origin.
-            </p>
-          </li>
-          <li>
-            <b>Make the tradeoff explicit.</b>
-            <p>
-              Strong consistency costs a coordinator hop. Cached data may be stale. This lab
-              measures a synthetic origin, not production capacity.
-            </p>
-          </li>
-        </ol>
-        <hr />
-        <div className="eyebrow">RESUME STARTER</div>
-        <blockquote>
-          Built an interactive API resilience lab using Cloudflare Workers, SQLite-backed Durable
-          Objects, and TypeScript; implemented coordinated token-bucket rate limiting, circuit
-          breaking with single-probe recovery, and bounded-age cached fallback.
-        </blockquote>
-        <p>
-          Use this once you can explain and reproduce the behavior. Add measured numbers only after
-          running and saving your own experiments.
-        </p>
-        <hr />
-        <h2>Make the next improvement yours.</h2>
-        <p>
-          Compare protected and unprotected traffic using the same workload; add a rolling-window
-          error-rate breaker; or implement signed session issuance to control public demo usage.
-          Document the result and one thing your original design got wrong.
-        </p>
-      </section>
-      <aside className="doc-side">
-        <div className="panel doc-panel">
-          <Code2 size={24} />
-          <h3>Be ready for these questions</h3>
-          <ul>
-            <li>Why not use KV for the bucket?</li>
-            <li>What happens when two recovery probes arrive at once?</li>
-            <li>Can an old response close a newly opened circuit?</li>
-            <li>What survives an object eviction?</li>
-            <li>When is a stale response unacceptable?</li>
-            <li>Where are the bottlenecks and trust boundaries?</li>
-          </ul>
-        </div>
-        <div className="insight-card">
-          <span className="insight-label">
-            <Check size={15} /> WHAT COUNTS
-          </span>
+    <>
+      <BriefExamples />
+      <div className="docs-layout">
+        <section className="panel doc-panel">
+          <div className="eyebrow">A TWO-MINUTE WALKTHROUGH</div>
+          <h2>Show the evidence. Explain the decisions.</h2>
           <p>
-            A working demo, reproducible tests, and a clear explanation of tradeoffs. No project
-            guarantees an interview—but these give an interviewer something concrete to evaluate.
+            Start with Operations: real scheduled observations, missing-data coverage, incident
+            history, and authenticated policy changes. Explain lease fencing and why acknowledgement
+            is separate from recovery. Then use the lab to reproduce a failure safely.
           </p>
-        </div>
-      </aside>
-    </div>
+          <ol className="walkthrough">
+            <li>
+              <b>Start with the problem.</b>
+              <p>
+                “Retries can turn a partial outage into an overload. I built a lab to make admission
+                control and recovery visible.”
+              </p>
+            </li>
+            <li>
+              <b>Run a burst.</b>
+              <p>
+                Send 24 concurrent requests and show the shared token budget. Explain HTTP 429 and
+                why rejected traffic gets Retry-After.
+              </p>
+            </li>
+            <li>
+              <b>Break the origin.</b>
+              <p>
+                Warm the cache, inject failures, and show the circuit opening after three failures.
+                Cached responses preserve availability for up to 60 seconds.
+              </p>
+            </li>
+            <li>
+              <b>Recover deliberately.</b>
+              <p>
+                Restore health, wait for cooldown, and send a probe. Explain why only one recovery
+                request may reach the origin.
+              </p>
+            </li>
+            <li>
+              <b>Make the tradeoff explicit.</b>
+              <p>
+                Strong consistency costs a coordinator hop. Cached data may be stale. This lab
+                measures a synthetic origin, not production capacity.
+              </p>
+            </li>
+          </ol>
+          <hr />
+          <div className="eyebrow">RESUME STARTER</div>
+          <blockquote>
+            Built an interactive API resilience lab using Cloudflare Workers, SQLite-backed Durable
+            Objects, and TypeScript; implemented coordinated token-bucket rate limiting, circuit
+            breaking with single-probe recovery, and bounded-age cached fallback.
+          </blockquote>
+          <p>
+            Use this once you can explain and reproduce the behavior. Add measured numbers only
+            after running and saving your own experiments.
+          </p>
+          <hr />
+          <h2>Make the next improvement yours.</h2>
+          <p>
+            Compare protected and unprotected traffic using the same workload; add a rolling-window
+            error-rate breaker; or implement signed session issuance to control public demo usage.
+            Document the result and one thing your original design got wrong.
+          </p>
+        </section>
+        <aside className="doc-side">
+          <div className="panel doc-panel">
+            <Code2 size={24} />
+            <h3>Be ready for these questions</h3>
+            <ul>
+              <li>Why not use KV for the bucket?</li>
+              <li>What happens when two recovery probes arrive at once?</li>
+              <li>Can an old response close a newly opened circuit?</li>
+              <li>What survives an object eviction?</li>
+              <li>When is a stale response unacceptable?</li>
+              <li>Where are the bottlenecks and trust boundaries?</li>
+            </ul>
+          </div>
+          <div className="insight-card">
+            <span className="insight-label">
+              <Check size={15} /> WHAT COUNTS
+            </span>
+            <p>
+              A working demo, reproducible tests, and a clear explanation of tradeoffs. No project
+              guarantees an interview—but these give an interviewer something concrete to evaluate.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </>
   );
 }
