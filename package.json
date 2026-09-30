@@ -1,6 +1,6 @@
 {
   "name": "edgelab",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -26,7 +26,9 @@
     "test:check-cache": "node scripts/check-cache-integration.mjs",
     "test:monitor-unavailable": "node scripts/monitor-unavailable.mjs",
     "test:monitor-cost": "node scripts/monitor-cost.mjs",
-    "test:examples": "node scripts/brief-examples.mjs --check"
+    "test:examples": "node scripts/brief-examples.mjs --check",
+    "test:retention": "node scripts/monitor-retention.mjs",
+    "test:retention-cost": "node scripts/monitor-retention-cost.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.48.0",

@@ -19,6 +19,7 @@ import { classifyTick, monitoringReadiness } from './monitor-readiness';
 import { BudgetSignals } from './budget-signals';
 import { IncidentBriefs } from './incident-briefs';
 import { MonitorCheckCache } from './monitor-check-cache';
+import { MonitorVersionRetention } from './monitor-version-retention';
 export interface MonitorEnv {
   MONITORS: DurableObjectNamespace<MonitorStore>;
   ORIGIN: Fetcher;
@@ -64,6 +65,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
   private budgets: BudgetSignals;
   private briefs: IncidentBriefs;
   private checkCache: MonitorCheckCache;
+  private versionRetention: MonitorVersionRetention;
   constructor(ctx: DurableObjectState, env: MonitorEnv) {
     super(ctx, env);
     const sql = ctx.storage.sql;
@@ -98,6 +100,8 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
     sql.exec(
       'CREATE TABLE IF NOT EXISTS service_versions (service TEXT NOT NULL, revision INTEGER NOT NULL, recorded_at INTEGER NOT NULL, name TEXT NOT NULL, transport TEXT NOT NULL, assertion TEXT NOT NULL, policy TEXT NOT NULL, provenance TEXT NOT NULL, PRIMARY KEY(service,revision))',
     );
+    this.versionRetention = new MonitorVersionRetention(ctx.storage);
+    this.versionRetention.ensureSchema();
     sql.exec(
       'CREATE TABLE IF NOT EXISTS scheduler_events (id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER NOT NULL, slot INTEGER NOT NULL, status TEXT NOT NULL, detail TEXT NOT NULL)',
     );
@@ -121,7 +125,6 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
     sql.exec('CREATE INDEX IF NOT EXISTS audit_retention ON audit(at)');
     this.evidence = new IncidentEvidence(ctx.storage);
     this.evidence.ensureSchema();
-    sql.exec('CREATE INDEX IF NOT EXISTS incident_notes_retention ON incident_notes(at)');
     this.budgets = new BudgetSignals(ctx.storage, this.checkCache);
     this.budgets.ensureSchema();
     this.briefs = new IncidentBriefs(ctx.storage, () => this.now());
@@ -331,6 +334,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         const cutoff = this.now() - RETENTION;
         this.ctx.storage.sql.exec('DELETE FROM checks WHERE at < ?', cutoff);
         this.ctx.storage.sql.exec('DELETE FROM jobs WHERE slot < ?', Math.floor(cutoff / MINUTE));
+        this.evidence.pruneResolvedNotes(cutoff);
         this.ctx.storage.sql.exec(
           'DELETE FROM incidents WHERE resolved IS NOT NULL AND resolved < ?',
           cutoff,
@@ -341,9 +345,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         this.budgets.prune(cutoff, activeIds);
         this.briefs.prune(cutoff, activeIds);
         this.checkCache.prune(activeIds);
-        this.ctx.storage.sql.exec(
-          'DELETE FROM service_versions WHERE NOT EXISTS(SELECT 1 FROM checks WHERE checks.service=service_versions.service AND checks.revision=service_versions.revision) AND NOT EXISTS(SELECT 1 FROM services WHERE services.id=service_versions.service AND services.revision=service_versions.revision)',
-        );
+        this.versionRetention.prune();
       });
       return reply({ slot, results });
     }
@@ -647,7 +649,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       };
     });
     return {
-      version: '3.4.0',
+      version: '3.4.1',
       now,
       window: minutes === 1440 ? '24h' : '7d',
       retentionDays: 30,

@@ -69,6 +69,28 @@ try {
   const acknowledgement = 'Private acknowledgement from the previous release';
   // Recreate the original v3 shape in the persisted database, then restart the
   // actual production class. No fixture override participates in this migration.
+  // New retention triggers refer to service_versions even from services/checks;
+  // a faithful legacy database cannot retain those triggers after dropping it.
+  const retentionTriggers = await storage.exec(
+    "SELECT name FROM sqlite_master WHERE type='trigger' AND (name LIKE 'monitor_version_gc_%' OR name LIKE 'incident_note_gc_%')",
+  );
+  for (const { name } of retentionTriggers) {
+    assert(/^(monitor_version_gc_|incident_note_gc_)[a-z_]+$/.test(name));
+    await storage.exec(`DROP TRIGGER ${name}`);
+  }
+  for (const table of [
+    'monitor_version_gc',
+    'monitor_version_gc_meta',
+    'incident_note_gc',
+    'incident_note_gc_meta',
+  ])
+    await storage.exec(`DROP TABLE IF EXISTS ${table}`);
+  assert.deepEqual(
+    await storage.exec(
+      "SELECT name FROM sqlite_master WHERE name LIKE 'monitor_version_gc%' OR name LIKE 'incident_note_gc%'",
+    ),
+    [],
+  );
   await storage.exec('ALTER TABLE checks DROP COLUMN observed_at');
   await storage.exec('DROP TABLE service_versions');
   await storage.exec(
@@ -125,6 +147,10 @@ try {
     25,
     1,
   );
+  const legacySource = await storage.exec(
+    'SELECT service,slot,at,outcome,status,latency,revision FROM checks ORDER BY service,slot',
+  );
+  const legacyIncident = await storage.exec('SELECT * FROM incidents WHERE id=?', incidentId);
   await mf.unsafeEvictDurableObject('gateway', 'MonitorStore', { name: 'operations' });
   const upgraded = await read();
   const failure = upgraded.services.find((service) => service.id === 'failure');
@@ -140,6 +166,20 @@ try {
   const legacy = await storage.exec('SELECT observed_at FROM checks');
   assert.equal(legacy.length, 4);
   assert(legacy.every((check) => check.observed_at === null));
+  assert.deepEqual(
+    await storage.exec(
+      'SELECT service,slot,at,outcome,status,latency,revision FROM checks ORDER BY service,slot',
+    ),
+    legacySource,
+  );
+  assert.deepEqual(
+    await storage.exec('SELECT * FROM incidents WHERE id=?', incidentId),
+    legacyIncident,
+  );
+  for (const marker of ['monitor_version_gc_meta', 'incident_note_gc_meta'])
+    assert.deepEqual(await storage.exec(`SELECT * FROM ${marker}`), [{ id: 1, version: 1 }]);
+  for (const queue of ['monitor_version_gc', 'incident_note_gc'])
+    assert.deepEqual(await storage.exec(`SELECT * FROM ${queue}`), []);
   for (const service of [failure, recovery]) {
     assert.equal(service.status, 'unknown');
     assert.equal(service.metrics.observed, 0);
@@ -149,7 +189,7 @@ try {
     assert(service.history.every((check) => check.observedAt === null));
   }
   console.log(
-    'PASS real v3 schema upgrade preserves checks, policies, and open incident while resetting both streaks',
+    'PASS real v3 schema upgrade preserves exact legacy checks/policies/open incident, resets both streaks and initializes retention migration once without invented candidates',
   );
 
   const versions = await storage.exec('SELECT * FROM service_versions ORDER BY service,revision');
@@ -174,6 +214,8 @@ try {
     provenance,
   }));
   await read();
+  for (const queue of ['monitor_version_gc', 'incident_note_gc'])
+    assert.deepEqual(await storage.exec(`SELECT * FROM ${queue}`), []);
   assert.deepEqual(
     (await storage.exec('SELECT * FROM service_versions ORDER BY service,revision')).map(
       ({ service, revision, recorded_at, policy, provenance }) => ({

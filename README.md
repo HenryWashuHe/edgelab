@@ -100,6 +100,8 @@ npm run test:brief-evaluate # controlled preparation/validation report and exact
 npm run test:examples     # pinned public projection matches its whitelisted source
 npm run test:check-cache  # source parity, mutation repair, eviction and measured SQL reads
 npm run test:monitor-unavailable # safe quota failures and authentication precedence
+npm run test:retention    # bounded metadata cleanup, reference repair, migration and rollback
+npm run test:retention-cost # whole-cron metadata growth, catch-up and source/output parity
 npm run test:monitor-cost # whole-cron read/write measurements in isolated SQLite
 # With the local server running:
 npm run test:integration  # lab HTTP behavior and isolation
@@ -136,6 +138,8 @@ Version 3.2.1 retains export `schemaVersion: 4`, including per-service `budget` 
 Cron and dashboard reads share a persisted projection of at most 10,080 finished minute slots per service. New finished observations append incrementally; SQLite triggers mark changed covered slots for source repair. Eviction retains the projection. Original observations remain authoritative, and a view never creates checks or renews their timestamps. The original SQL metrics and burn evaluator are preserved.
 
 Storage failures return a sanitized JSON 503, with readiness unavailable and gateway liveness separate. Browser refreshes run once per minute, coalesce duplicate reads, and back off on a known daily quota while cached evidence continues to age. The Free-plan allowance is shared with other account activity. Controlled whole-monitor measurements and their limits are in the verification record; configured maximum targets are not a Free-plan capacity guarantee.
+
+Policy-version and orphan-note cleanup use persisted FIFO work queues, examining at most 32 candidates each per completed cron cleanup. Indexed rechecks preserve every current or check-referenced policy and every note whose parent has returned. Note age expiry and deletion of all notes from expired resolved parents remain eager and atomic; other unused metadata can wait for its queue position. Triggers track source changes and replacement behavior, and an atomic one-time migration queues legacy candidates without deleting their bodies. Reads never drain these queues. See the [retention decision](docs/adr/006-metadata-retention-work.md) for fairness, rollback and workload limits.
 
 ## Workers AI incident briefs
 

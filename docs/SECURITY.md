@@ -36,6 +36,8 @@ A leaked token must be rotated and private audit data reviewed. Notes should not
 
 Appended private notes are retained for 30 days and removed when their resolved incident is pruned. Open incidents persist, while their older appended notes still expire. The original acknowledgement note follows the incident record's retention. Authenticated incident output therefore requires private handling even after upstream recovery; public schemaVersion 4 exports do not include it.
 
+Age expiry of appended notes remains eager. All notes of an expired resolved parent are removed in its cleanup transaction. Notes orphaned by other parent mutations enter a bounded FIFO and can remain physically stored until examined; incident APIs cannot retrieve them without a live eligible parent. Revalidation preserves notes after parent restoration or staged import. Derived retention queues contain source keys, never note bodies, and are not public API data. Source mutation and queue effects are transactional; a one-time legacy backfill changes only derived metadata before normal cleanup.
+
 ## Tests
 
 The actual runtime suite checks unauthenticated writes and audit reads, cross-origin requests, malformed/oversized data, non-public schedule routes, and private-note exclusion. Incident evidence checks cover authenticated detail, cursor bounds, idempotent note writes, conflicting request IDs, resolved follow-up, and retention. Unit tests exercise target validation, redirect rejection, bounded body consumption, public error categorization, current-minute acceptance, and freshness boundaries. These tests verify specific controls; they do not imply comprehensive security certification.

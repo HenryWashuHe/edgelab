@@ -29,7 +29,10 @@ export class CheckCacheFixture extends DurableObject {
         };
       },
     };
-    this.incidents = new IncidentEvidence({ sql: trackedSql } as unknown as DurableObjectStorage);
+    this.incidents = new IncidentEvidence({
+      sql: trackedSql,
+      transactionSync: ctx.storage.transactionSync.bind(ctx.storage),
+    } as unknown as DurableObjectStorage);
     this.incidents.ensureSchema();
     this.cache = new MonitorCheckCache(ctx.storage);
     this.cache.ensureSchema();

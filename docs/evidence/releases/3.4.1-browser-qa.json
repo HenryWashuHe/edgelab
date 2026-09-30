@@ -1,0 +1,25 @@
+{
+  "verifiedAt": "2026-09-30T08:51:16.196325+00:00",
+  "baseUrl": "https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#notes",
+  "gatewayDeployment": "51ad81eb-ccd9-4d2f-8572-cf863c7628fd",
+  "versionObserved": "3.4.1",
+  "method": "Existing in-app browser tab reloaded after gateway deployment; visible DOM, read-only document dimensions, captured console logs and screenshot.",
+  "viewport": {
+    "documentClientWidth": 1280,
+    "documentScrollWidth": 1280
+  },
+  "checks": {
+    "staticExplorerLoaded": true,
+    "controlledDataAndZeroNativeLabelsVisible": true,
+    "scenarioSelectorVisible": true,
+    "pinnedArtifactLinksVisible": true,
+    "consoleWarningsAndErrors": []
+  },
+  "screenshot": {
+    "path": "output/edgelab-production-examples-v3.4.1.png",
+    "sha256": "a88bcddf4637bf49eab50f37a166e96fc5e42e9fa327a761d2aeb0f9664f5713"
+  },
+  "limitations": "Version-label and desktop deployed-static verification only. Full interaction and 390px checks remain in 3.4.0 browser evidence; no new mobile, API-request-count, native inference or autonomous monitoring recovery claim.",
+  "historySeeded": false,
+  "nativeInferenceCalls": 0
+}

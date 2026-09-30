@@ -1,0 +1,707 @@
+{
+  "projectVersion": "3.4.1",
+  "measuredAt": "2026-09-30T08:49:02.387Z",
+  "recipe": "node scripts/monitor-retention-cost.mjs",
+  "optionalBaselineReplay": "node scripts/monitor-retention-cost.mjs --baseline",
+  "baselineReplayPrerequisite": "Optional replay requires Git object 8072155094ea76a6e7a9f74e7f3357c39270d6f6 locally (fetch repository history first). Default shallow CI uses checked-in baseline measurements and hashes and never fetches Git or calls Cloudflare.",
+  "baseline": {
+    "measuredAt": "2026-09-30T08:45:47.064Z",
+    "variant": "baseline-3.4.0",
+    "baselineCommit": "8072155094ea76a6e7a9f74e7f3357c39270d6f6",
+    "sourceSHA256": {
+      "worker/monitor.ts": "964294db768c41bda2c977de82885fe844f481de90e7b13a70ffa2c841c1bfbf",
+      "worker/incident-evidence.ts": "67ff6dddcb8fc01b4ebd27a7a0c54881c9ecda4f4acff98815c8b9ad777d2de7"
+    },
+    "bundleSHA256": "bbf93b3cf0169a706526501baebf04c6eee67585bc4c681ef8e29df30ea4aaf5",
+    "recipe": "node scripts/monitor-retention-cost.mjs --baseline",
+    "fixture": "Ephemeral actual Miniflare SQLite; 720 seeded checks per target; three consecutive measured cron minutes per profile; one check/job per target and two scheduler events expire each minute; growing profile has 720 referenced versions and 100 parented notes per target; catch-up has 96 global unused versions and 96 orphan notes.",
+    "clockWriteOverheadPerCron": 2,
+    "nativeInferenceCalls": 0,
+    "productionRequests": 0,
+    "limitations": "Controlled comparison of these workloads, not production account consumption, end-to-end CPU/billing or unlimited daily capacity. Catch-up includes real queue/AUTOINCREMENT/trigger writes. Five-target Free daily-write capacity is not claimed.",
+    "samples": [
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 2,
+        "profile": "small-retained-metadata",
+        "step": 1,
+        "statements": 74,
+        "rowsRead": 79,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 2,
+        "profile": "small-retained-metadata",
+        "step": 2,
+        "statements": 74,
+        "rowsRead": 79,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 2,
+        "profile": "small-retained-metadata",
+        "step": 3,
+        "statements": 74,
+        "rowsRead": 79,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 2,
+        "profile": "growing-retained-metadata",
+        "step": 1,
+        "statements": 74,
+        "rowsRead": 3354,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 2,
+        "profile": "growing-retained-metadata",
+        "step": 2,
+        "statements": 74,
+        "rowsRead": 3354,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 2,
+        "profile": "growing-retained-metadata",
+        "step": 3,
+        "statements": 74,
+        "rowsRead": 3354,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 2,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "step": 1,
+        "statements": 74,
+        "rowsRead": 3834,
+        "rowsWritten": 232,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 2,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "step": 2,
+        "statements": 74,
+        "rowsRead": 3354,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 2,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "step": 3,
+        "statements": 74,
+        "rowsRead": 3354,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 5,
+        "profile": "small-retained-metadata",
+        "step": 1,
+        "statements": 146,
+        "rowsRead": 168,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 5,
+        "profile": "small-retained-metadata",
+        "step": 2,
+        "statements": 146,
+        "rowsRead": 168,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 5,
+        "profile": "small-retained-metadata",
+        "step": 3,
+        "statements": 146,
+        "rowsRead": 168,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 5,
+        "profile": "growing-retained-metadata",
+        "step": 1,
+        "statements": 146,
+        "rowsRead": 8357,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 5,
+        "profile": "growing-retained-metadata",
+        "step": 2,
+        "statements": 146,
+        "rowsRead": 8357,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 5,
+        "profile": "growing-retained-metadata",
+        "step": 3,
+        "statements": 146,
+        "rowsRead": 8357,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 5,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "step": 1,
+        "statements": 146,
+        "rowsRead": 8837,
+        "rowsWritten": 274,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 5,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "step": 2,
+        "statements": 146,
+        "rowsRead": 8357,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "baseline-3.4.0",
+        "targetCount": 5,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "step": 3,
+        "statements": 146,
+        "rowsRead": 8357,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      }
+    ],
+    "invariants": [
+      {
+        "targetCount": 2,
+        "profile": "growing-retained-metadata",
+        "sourceChecksUnchanged": true,
+        "referencedVersionsUnchanged": true,
+        "parentedNotesUnchanged": true,
+        "openIncidentsUnchanged": true,
+        "sourceHash": "45643399b18fce7841b2bf77f75d4cc7043f7b868ca52f62fbdb5c8001b5fc07",
+        "summaryHash": "74b4966305109f102203217ddd9873cfffd93d9626a15f3e727f428cda99b176",
+        "sourceCheckCount": 1440,
+        "protectedVersionCount": 1440,
+        "retainedNotes": 200
+      },
+      {
+        "targetCount": 2,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "sourceChecksUnchanged": true,
+        "referencedVersionsUnchanged": true,
+        "parentedNotesUnchanged": true,
+        "openIncidentsUnchanged": true,
+        "unusedVersionsRemoved": 96,
+        "orphanNotesRemoved": 96,
+        "queueEmpty": null
+      },
+      {
+        "targetCount": 5,
+        "profile": "growing-retained-metadata",
+        "sourceChecksUnchanged": true,
+        "referencedVersionsUnchanged": true,
+        "parentedNotesUnchanged": true,
+        "openIncidentsUnchanged": true,
+        "sourceHash": "a3abb177a9365672fe7a7fb27ffa1f051894b5056ca3b7cde2157c782e4d28a2",
+        "summaryHash": "c136958259c4a78c5c3dbcc6fdb3ea216ac7f08247ed89b864d1216074400f9b",
+        "sourceCheckCount": 3600,
+        "protectedVersionCount": 3600,
+        "retainedNotes": 500
+      },
+      {
+        "targetCount": 5,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "sourceChecksUnchanged": true,
+        "referencedVersionsUnchanged": true,
+        "parentedNotesUnchanged": true,
+        "openIncidentsUnchanged": true,
+        "unusedVersionsRemoved": 96,
+        "orphanNotesRemoved": 96,
+        "queueEmpty": null
+      }
+    ]
+  },
+  "after": {
+    "measuredAt": "2026-09-30T08:49:02.387Z",
+    "variant": "tracked",
+    "baselineCommit": "8072155094ea76a6e7a9f74e7f3357c39270d6f6",
+    "sourceSHA256": {
+      "worker/monitor.ts": "33e98164166d43cca3497802c886a69d918132d416c1becefc8911d95814ed8c",
+      "worker/incident-evidence.ts": "8f05afa13483784da72539af5703a3da73f5cc532938d54792090c2a67383870",
+      "worker/monitor-version-retention.ts": "e6b6c1cc872cec7d1a0b3c15808912618e24cfb4f4fe37177d598d29e2d6405c"
+    },
+    "bundleSHA256": "f2323c29de4431cff3d4d08620dfeafb2580ac0fda53c58dae1a2233198e22e4",
+    "recipe": "node scripts/monitor-retention-cost.mjs",
+    "fixture": "Ephemeral actual Miniflare SQLite; 720 seeded checks per target; three consecutive measured cron minutes per profile; one check/job per target and two scheduler events expire each minute; growing profile has 720 referenced versions and 100 parented notes per target; catch-up has 96 global unused versions and 96 orphan notes.",
+    "clockWriteOverheadPerCron": 2,
+    "nativeInferenceCalls": 0,
+    "productionRequests": 0,
+    "limitations": "Controlled comparison of these workloads, not production account consumption, end-to-end CPU/billing or unlimited daily capacity. Catch-up includes real queue/AUTOINCREMENT/trigger writes. Five-target Free daily-write capacity is not claimed.",
+    "samples": [
+      {
+        "variant": "tracked",
+        "targetCount": 2,
+        "profile": "small-retained-metadata",
+        "step": 1,
+        "statements": 76,
+        "rowsRead": 94,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 2,
+        "profile": "small-retained-metadata",
+        "step": 2,
+        "statements": 76,
+        "rowsRead": 94,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 2,
+        "profile": "small-retained-metadata",
+        "step": 3,
+        "statements": 76,
+        "rowsRead": 94,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 2,
+        "profile": "growing-retained-metadata",
+        "step": 1,
+        "statements": 76,
+        "rowsRead": 94,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 2,
+        "profile": "growing-retained-metadata",
+        "step": 2,
+        "statements": 76,
+        "rowsRead": 94,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 2,
+        "profile": "growing-retained-metadata",
+        "step": 3,
+        "statements": 76,
+        "rowsRead": 94,
+        "rowsWritten": 40,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 2,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "step": 1,
+        "statements": 204,
+        "rowsRead": 348,
+        "rowsWritten": 168,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 2,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "step": 2,
+        "statements": 204,
+        "rowsRead": 348,
+        "rowsWritten": 168,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 2,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "step": 3,
+        "statements": 204,
+        "rowsRead": 348,
+        "rowsWritten": 168,
+        "controlledOriginCalls": 2
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 5,
+        "profile": "small-retained-metadata",
+        "step": 1,
+        "statements": 148,
+        "rowsRead": 189,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 5,
+        "profile": "small-retained-metadata",
+        "step": 2,
+        "statements": 148,
+        "rowsRead": 189,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 5,
+        "profile": "small-retained-metadata",
+        "step": 3,
+        "statements": 148,
+        "rowsRead": 189,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 5,
+        "profile": "growing-retained-metadata",
+        "step": 1,
+        "statements": 148,
+        "rowsRead": 189,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 5,
+        "profile": "growing-retained-metadata",
+        "step": 2,
+        "statements": 148,
+        "rowsRead": 189,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 5,
+        "profile": "growing-retained-metadata",
+        "step": 3,
+        "statements": 148,
+        "rowsRead": 189,
+        "rowsWritten": 82,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 5,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "step": 1,
+        "statements": 276,
+        "rowsRead": 443,
+        "rowsWritten": 210,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 5,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "step": 2,
+        "statements": 276,
+        "rowsRead": 443,
+        "rowsWritten": 210,
+        "controlledOriginCalls": 5
+      },
+      {
+        "variant": "tracked",
+        "targetCount": 5,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "step": 3,
+        "statements": 276,
+        "rowsRead": 443,
+        "rowsWritten": 210,
+        "controlledOriginCalls": 5
+      }
+    ],
+    "invariants": [
+      {
+        "targetCount": 2,
+        "profile": "growing-retained-metadata",
+        "sourceChecksUnchanged": true,
+        "referencedVersionsUnchanged": true,
+        "parentedNotesUnchanged": true,
+        "openIncidentsUnchanged": true,
+        "sourceHash": "45643399b18fce7841b2bf77f75d4cc7043f7b868ca52f62fbdb5c8001b5fc07",
+        "summaryHash": "74b4966305109f102203217ddd9873cfffd93d9626a15f3e727f428cda99b176",
+        "sourceCheckCount": 1440,
+        "protectedVersionCount": 1440,
+        "retainedNotes": 200
+      },
+      {
+        "targetCount": 2,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "sourceChecksUnchanged": true,
+        "referencedVersionsUnchanged": true,
+        "parentedNotesUnchanged": true,
+        "openIncidentsUnchanged": true,
+        "unusedVersionsRemoved": 96,
+        "orphanNotesRemoved": 96,
+        "queueEmpty": true
+      },
+      {
+        "targetCount": 5,
+        "profile": "growing-retained-metadata",
+        "sourceChecksUnchanged": true,
+        "referencedVersionsUnchanged": true,
+        "parentedNotesUnchanged": true,
+        "openIncidentsUnchanged": true,
+        "sourceHash": "a3abb177a9365672fe7a7fb27ffa1f051894b5056ca3b7cde2157c782e4d28a2",
+        "summaryHash": "c136958259c4a78c5c3dbcc6fdb3ea216ac7f08247ed89b864d1216074400f9b",
+        "sourceCheckCount": 3600,
+        "protectedVersionCount": 3600,
+        "retainedNotes": 500
+      },
+      {
+        "targetCount": 5,
+        "profile": "96-unused-versions-and-orphan-notes",
+        "sourceChecksUnchanged": true,
+        "referencedVersionsUnchanged": true,
+        "parentedNotesUnchanged": true,
+        "openIncidentsUnchanged": true,
+        "unusedVersionsRemoved": 96,
+        "orphanNotesRemoved": 96,
+        "queueEmpty": true
+      }
+    ]
+  },
+  "comparisons": [
+    {
+      "targetCount": 2,
+      "profile": "small-retained-metadata",
+      "before": [
+        {
+          "rowsRead": 79,
+          "rowsWritten": 40
+        },
+        {
+          "rowsRead": 79,
+          "rowsWritten": 40
+        },
+        {
+          "rowsRead": 79,
+          "rowsWritten": 40
+        }
+      ],
+      "after": [
+        {
+          "rowsRead": 94,
+          "rowsWritten": 40
+        },
+        {
+          "rowsRead": 94,
+          "rowsWritten": 40
+        },
+        {
+          "rowsRead": 94,
+          "rowsWritten": 40
+        }
+      ]
+    },
+    {
+      "targetCount": 2,
+      "profile": "growing-retained-metadata",
+      "before": [
+        {
+          "rowsRead": 3354,
+          "rowsWritten": 40
+        },
+        {
+          "rowsRead": 3354,
+          "rowsWritten": 40
+        },
+        {
+          "rowsRead": 3354,
+          "rowsWritten": 40
+        }
+      ],
+      "after": [
+        {
+          "rowsRead": 94,
+          "rowsWritten": 40
+        },
+        {
+          "rowsRead": 94,
+          "rowsWritten": 40
+        },
+        {
+          "rowsRead": 94,
+          "rowsWritten": 40
+        }
+      ]
+    },
+    {
+      "targetCount": 2,
+      "profile": "96-unused-versions-and-orphan-notes",
+      "before": [
+        {
+          "rowsRead": 3834,
+          "rowsWritten": 232
+        },
+        {
+          "rowsRead": 3354,
+          "rowsWritten": 40
+        },
+        {
+          "rowsRead": 3354,
+          "rowsWritten": 40
+        }
+      ],
+      "after": [
+        {
+          "rowsRead": 348,
+          "rowsWritten": 168
+        },
+        {
+          "rowsRead": 348,
+          "rowsWritten": 168
+        },
+        {
+          "rowsRead": 348,
+          "rowsWritten": 168
+        }
+      ]
+    },
+    {
+      "targetCount": 5,
+      "profile": "small-retained-metadata",
+      "before": [
+        {
+          "rowsRead": 168,
+          "rowsWritten": 82
+        },
+        {
+          "rowsRead": 168,
+          "rowsWritten": 82
+        },
+        {
+          "rowsRead": 168,
+          "rowsWritten": 82
+        }
+      ],
+      "after": [
+        {
+          "rowsRead": 189,
+          "rowsWritten": 82
+        },
+        {
+          "rowsRead": 189,
+          "rowsWritten": 82
+        },
+        {
+          "rowsRead": 189,
+          "rowsWritten": 82
+        }
+      ]
+    },
+    {
+      "targetCount": 5,
+      "profile": "growing-retained-metadata",
+      "before": [
+        {
+          "rowsRead": 8357,
+          "rowsWritten": 82
+        },
+        {
+          "rowsRead": 8357,
+          "rowsWritten": 82
+        },
+        {
+          "rowsRead": 8357,
+          "rowsWritten": 82
+        }
+      ],
+      "after": [
+        {
+          "rowsRead": 189,
+          "rowsWritten": 82
+        },
+        {
+          "rowsRead": 189,
+          "rowsWritten": 82
+        },
+        {
+          "rowsRead": 189,
+          "rowsWritten": 82
+        }
+      ]
+    },
+    {
+      "targetCount": 5,
+      "profile": "96-unused-versions-and-orphan-notes",
+      "before": [
+        {
+          "rowsRead": 8837,
+          "rowsWritten": 274
+        },
+        {
+          "rowsRead": 8357,
+          "rowsWritten": 82
+        },
+        {
+          "rowsRead": 8357,
+          "rowsWritten": 82
+        }
+      ],
+      "after": [
+        {
+          "rowsRead": 443,
+          "rowsWritten": 210
+        },
+        {
+          "rowsRead": 443,
+          "rowsWritten": 210
+        },
+        {
+          "rowsRead": 443,
+          "rowsWritten": 210
+        }
+      ]
+    }
+  ],
+  "guarantees": {
+    "sourceAndPublicSummaryHashParity": true,
+    "threeConsecutiveCronSamplesPerProfile": true,
+    "exactVersionCandidatesPerCatchupRun": 32,
+    "exactOrphanNotesPerCatchupRun": 32,
+    "nativeInferenceCalls": 0,
+    "productionRequests": 0
+  },
+  "limitations": "Controlled comparison of these workloads, not production account consumption, end-to-end CPU/billing or unlimited daily capacity. Catch-up includes real queue/AUTOINCREMENT/trigger writes. Five-target Free daily-write capacity is not claimed."
+}

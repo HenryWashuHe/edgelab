@@ -13,7 +13,7 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 ## Verify an actual release
 
 1. Confirm the published commit passes GitHub CI.
-2. For a v3.4 release, `GET /api/health` must report version 3.4.0. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
+2. For a v3.4 release, `GET /api/health` must report version 3.4.1. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
 3. `GET /api/ops/status` must list the expected target names. Public output must not contain the operator token, target URLs, or investigation notes.
 4. Allow cron propagation ([Cloudflare documents up to 15 minutes](https://developers.cloudflare.com/workers/configuration/cron-triggers/)). Verify each service receives observations in two distinct scheduled minutes without clicking a “run” button. Check `latest.slot`, the actual probe start `latest.observedAt`, and completion `latest.at`, not just the page's snapshot timestamp. Trigger propagation is not permission to backfill: an invocation whose scheduled minute has passed is recorded as `skipped-late` and makes no observation.
 5. The private catalog probe must validate actual JSON through its service binding; the gateway probe must reach the configured public HTTPS health endpoint.
@@ -38,6 +38,12 @@ The dashboard preserves an uncertain note's request ID and exact body in authent
 If monitoring itself stops, service status becomes unknown and missing coverage rises. `/api/ready` permits at most three minutes since the last completed scheduled run and the actual start of every active service's latest current-revision check. It returns `starting` before any run completes, `stalled` for stale or impossible scheduler evidence, and `partial` when the scheduler is fresh but an active service lacks fresh evidence. Paused services are ignored; a fresh scheduler with all services paused is healthy and states that no probes are expected. This endpoint measures monitoring freshness, not upstream success.
 
 Investigate cron configuration, deployment errors, quotas, `monitor.tick` logs, and the status snapshot's latest 20 persisted scheduler events. A skipped late event cannot fill a historical gap. Check `/api/ready` from outside Cloudflare for correlated provider outages. The system does not convert missing probes into good samples or close incidents automatically.
+
+## Metadata retention work
+
+Completed cron cleanup examines at most32 policy-version candidates and32 orphan-note candidates from persisted FIFO queues. References are rechecked before deletion, so every retained check (including legacy and maintenance), current policy and restored note parent protects its evidence. Source mutations and queue progress are transactional and survive eviction. Reads never drain queues; initial constructor migration can initialize derived metadata with a one-time source scan.
+
+Check/note age expiry and removal of every note attached to an expired resolved parent stay eager. Other unused versions or orphan notes may wait for their queue position; orphan notes cannot be retrieved through incident APIs. A cleanup limit does not guarantee account capacity or a fixed daily bill, because migrations, true expiry, retries, public reads and owner activity add work. See the [retention decision](adr/006-metadata-retention-work.md) and release measurements.
 
 ## Workers AI investigation briefs
 

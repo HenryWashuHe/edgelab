@@ -59,6 +59,7 @@ export type IncidentNoteResult = {
 };
 const PAGE_SIZE = 50;
 const MAX_NOTES = 100;
+export const MAX_ORPHAN_NOTE_CANDIDATES = 32;
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const publicIncident = ({ id, service, opened, resolved, acknowledged }: IncidentRow) => ({
   id,
@@ -80,11 +81,84 @@ export class IncidentEvidence {
       'CREATE INDEX IF NOT EXISTS incident_notes_by_incident ON incident_notes(incident, at, id)',
     );
     this.storage.sql.exec(
+      'CREATE INDEX IF NOT EXISTS incident_notes_retention ON incident_notes(at)',
+    );
+    this.storage.sql.exec(
       'CREATE INDEX IF NOT EXISTS incidents_open_by_service ON incidents(service,opened DESC,id DESC) WHERE resolved IS NULL',
     );
     this.storage.sql.exec(
       'CREATE INDEX IF NOT EXISTS incidents_resolved_by_service ON incidents(service,opened DESC,id DESC) WHERE resolved IS NOT NULL',
     );
+    this.storage.transactionSync(() => {
+      this.storage.sql.exec(
+        'CREATE TABLE IF NOT EXISTS incident_note_gc (id INTEGER PRIMARY KEY AUTOINCREMENT, note TEXT NOT NULL UNIQUE)',
+      );
+      this.storage.sql.exec(
+        'CREATE TABLE IF NOT EXISTS incident_note_gc_meta (id INTEGER PRIMARY KEY CHECK(id=1), version INTEGER NOT NULL)',
+      );
+      // Recheck at cleanup time: an import can restore a parent or replace a
+      // row in the same transaction. A trigger must never discard valid notes
+      // solely because a parent temporarily disappears during that statement.
+      this.storage.sql.exec(
+        `CREATE TRIGGER IF NOT EXISTS incident_note_gc_parent_delete AFTER DELETE ON incidents BEGIN
+          INSERT OR IGNORE INTO incident_note_gc(note)
+          SELECT id FROM incident_notes WHERE incident=OLD.id;
+        END`,
+      );
+      this.storage.sql.exec(
+        `CREATE TRIGGER IF NOT EXISTS incident_note_gc_parent_update AFTER UPDATE OF id ON incidents WHEN OLD.id IS NOT NEW.id BEGIN
+          INSERT OR IGNORE INTO incident_note_gc(note)
+          SELECT id FROM incident_notes WHERE incident=OLD.id;
+        END`,
+      );
+      // REPLACE can remove a different open incident through the unique
+      // service index without firing DELETE triggers. Queue its notes before
+      // the statement and revalidate afterward; ordinary conflicts roll back
+      // this work, and same-ID replacement keeps a valid parent.
+      for (const [name, event] of [
+        ['insert', 'BEFORE INSERT'],
+        ['replace_update', 'BEFORE UPDATE OF id,service,resolved'],
+      ]) {
+        this.storage.sql.exec(
+          `CREATE TRIGGER IF NOT EXISTS incident_note_gc_parent_${name} ${event} ON incidents WHEN NEW.resolved IS NULL BEGIN
+            INSERT OR IGNORE INTO incident_note_gc(note)
+            SELECT incident_notes.id FROM incidents JOIN incident_notes ON incident_notes.incident=incidents.id
+            WHERE incidents.service=NEW.service AND incidents.resolved IS NULL AND incidents.id IS NOT NEW.id;
+          END`,
+        );
+      }
+      this.storage.sql.exec(
+        `CREATE TRIGGER IF NOT EXISTS incident_note_gc_insert AFTER INSERT ON incident_notes
+        WHEN NOT EXISTS(SELECT 1 FROM incidents WHERE id=NEW.incident) BEGIN
+          INSERT OR IGNORE INTO incident_note_gc(note) VALUES(NEW.id);
+        END`,
+      );
+      this.storage.sql.exec(
+        `CREATE TRIGGER IF NOT EXISTS incident_note_gc_update AFTER UPDATE OF id,incident ON incident_notes BEGIN
+          DELETE FROM incident_note_gc WHERE note=OLD.id AND OLD.id IS NOT NEW.id;
+          INSERT OR IGNORE INTO incident_note_gc(note)
+          SELECT NEW.id WHERE NOT EXISTS(SELECT 1 FROM incidents WHERE id=NEW.incident);
+        END`,
+      );
+      this.storage.sql.exec(
+        `CREATE TRIGGER IF NOT EXISTS incident_note_gc_delete AFTER DELETE ON incident_notes BEGIN
+          DELETE FROM incident_note_gc WHERE note=OLD.id;
+        END`,
+      );
+      const version = this.rows<{ version: number }>(
+        'SELECT version FROM incident_note_gc_meta WHERE id=1',
+      )[0]?.version;
+      if (version !== undefined && version !== 1)
+        throw new Error('Unsupported note-retention schema');
+      if (version === undefined) {
+        // Once per upgrade, inspect legacy notes. Only derived queue entries
+        // and the migration marker change; note bodies stay untouched.
+        this.storage.sql.exec(
+          'INSERT OR IGNORE INTO incident_note_gc(note) SELECT id FROM incident_notes WHERE NOT EXISTS(SELECT 1 FROM incidents WHERE incidents.id=incident_notes.incident) ORDER BY id',
+        );
+        this.storage.sql.exec('INSERT INTO incident_note_gc_meta VALUES(1,1)');
+      }
+    });
   }
 
   private rows<T extends Record<string, SqlStorageValue>>(
@@ -261,11 +335,27 @@ export class IncidentEvidence {
     });
   }
 
-  /** Call after pruning resolved incidents so private notes cannot become orphaned. */
-  prune(cutoff: number) {
+  /** Expired parents lose all notes in the same transaction, independent of FIFO bounds. */
+  pruneResolvedNotes(cutoff: number) {
     this.storage.sql.exec(
-      'DELETE FROM incident_notes WHERE at<? OR NOT EXISTS(SELECT 1 FROM incidents WHERE incidents.id=incident_notes.incident)',
+      'DELETE FROM incident_notes WHERE incident IN (SELECT id FROM incidents WHERE resolved IS NOT NULL AND resolved<?)',
       cutoff,
     );
+  }
+
+  /** Caller keeps expiry, orphan revalidation and queue progress in one transaction. */
+  prune(cutoff: number) {
+    this.storage.sql.exec('DELETE FROM incident_notes WHERE at<?', cutoff);
+    const pending = this.rows<{ id: number; note: string }>(
+      'SELECT id,note FROM incident_note_gc ORDER BY id LIMIT ?',
+      MAX_ORPHAN_NOTE_CANDIDATES,
+    );
+    for (const candidate of pending) {
+      this.storage.sql.exec(
+        'DELETE FROM incident_notes WHERE id=? AND NOT EXISTS(SELECT 1 FROM incidents WHERE incidents.id=incident_notes.incident)',
+        candidate.note,
+      );
+      this.storage.sql.exec('DELETE FROM incident_note_gc WHERE id=?', candidate.id);
+    }
   }
 }

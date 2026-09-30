@@ -26,6 +26,8 @@ jobs:
       - run: npm run test:examples
       - run: npm run test:check-cache
       - run: npm run test:monitor-unavailable
+      - run: npm run test:retention
+      - run: npm run test:retention-cost
       - run: npm run test:monitor-cost
       - name: Test real local Worker and Durable Object
         run: |

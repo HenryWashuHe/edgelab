@@ -42,11 +42,21 @@ The same fixture measured incident-list reads falling from 48,660 to 421, with i
 
 Runtime parity tests compare cached rows and derived metrics with authoritative source SQL. They cover late inserts, updates, deletes, moved slots/services, gaps, source pruning, corrupt projections, clock rollback, migration invalidation, and eviction. Both dashboard windows and budget evaluation also retain parity across maintenance, legacy or invalid observation times, and policy revisions. The [validation record](evidence/VALIDATION.md) separates those runtime tests from live verification.
 
-Reproduce the controlled resource fixtures with `npm run test:check-cache` and `npm run test:monitor-cost`. They use isolated local storage and do not query the Cloudflare account.
+Reproduce the controlled resource fixtures with `npm run test:check-cache`, `npm run test:monitor-cost`, and `npm run test:retention-cost`. They use isolated local storage and do not query the Cloudflare account.
+
+## Keep retained metadata from growing idle cleanup cost
+
+Version 3.4.1 addresses policy versions and notes that remain useful. A controlled comparison against the pinned 3.4.0 source found two-target cron reads increasing from 79 to 3,354 when each target retained 720 referenced policy versions and 100 valid private notes. Those rows must remain available; removing them to make the test cheaper would change the evidence contract.
+
+The [retention decision](adr/006-metadata-retention-work.md) replaces repeated eligibility scans with persisted FIFO candidate queues. Triggers record lost references and imports, while cleanup rechecks current source references before removing anything. Every completed cleanup examines at most 32 version candidates and 32 orphan-note candidates. Indexed age expiry and atomic deletion of all notes attached to an expired resolved incident remain eager. Runtime tests cover replacement, restored references, migration, eviction, faster new arrivals and transaction rollback.
+
+The [whole-cron comparison](evidence/releases/3.4.1-retention-cost.json) measured 94 reads and 40 writes for both the small and grown two-target fixture across three consecutive minutes. Its five-target counterpart measured 189 reads and 82 writes for both sizes. Public summary and budget hashes matched the baseline, and protected source checks, versions, notes and open incidents stayed unchanged. The new queues add a small fixed idle cost while removing the measured growth dependence.
+
+A backlog of 96 unused versions and 96 orphan notes was processed in three cleanups. Each two-target pass used 348 reads and 168 writes; five-target passes used 443 reads and 210 writes. Queue, trigger, index and AUTOINCREMENT work is included. Migration scans, true expiry, backlog churn and other account activity still consume resources; these fixtures do not establish unlimited capacity or explain every row charged in the production outage.
 
 ## A separate write limit remains
 
-The [3.3.2 whole-monitor fixture](evidence/releases/3.3.2-monitor-cost.json) rechecked three consecutive warm cron minutes against synthetic seven-day history. It includes trigger/index work, one check/job per target, and two scheduler events expiring each minute.
+The historical [3.3.2 whole-monitor fixture](evidence/releases/3.3.2-monitor-cost.json) rechecked three consecutive warm cron minutes against synthetic seven-day history. It includes trigger/index work, one check/job per target, and two scheduler events expiring each minute. Its read counts predate the retention queues; the 3.4.1 comparison above records their additional work.
 
 | Targets | Reads per cron minute | Writes per cron minute | Projected writes per 1,440 minutes | Reads per complete dashboard view |
 | ------- | --------------------: | ---------------------: | ---------------------------------: | --------------------------------: |
@@ -67,3 +77,4 @@ The archived boundary check was taken at 07:11 UTC on September 30 and reported 
 
 - Implemented a persisted seven-day Cloudflare Durable Objects check projection with source-change repair and eviction recovery; a controlled local workerd fixture measured one SQLite row per repeated projection read versus 4,321 for the original budget source scan, with source-parity tests.
 - Reworked incident-history queries to preserve all active open incidents and the latest 100 resolved incidents; a controlled local SQLite fixture reduced examined rows from 48,660 to 421 while returning the same 320 incidents.
+- Implemented persisted, reference-aware retention queues in Cloudflare Durable Objects; a controlled two-target cron fixture reduced reads from 3,354 to 94 with grown policy/note history, preserving source evidence and public summary hashes across cleanup and rollback tests.
