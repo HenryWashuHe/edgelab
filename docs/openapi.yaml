@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.2.1
+  version: 3.3.1
   description: |
     Public monitoring read model and single-owner operator control plane.
     Laboratory endpoints are documented in LAB.md. No public probe or target-enrollment endpoint exists.
@@ -43,10 +43,13 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/ReadinessResponse' }
         '503':
-          description: Monitoring is starting, partially observed, or stalled
+          description: Monitoring is starting, partially observed, stalled, or storage cannot be read
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ReadinessResponse' }
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ReadinessResponse'
+                  - $ref: '#/components/schemas/MonitoringUnavailable'
         '405': { $ref: '#/components/responses/Error' }
   /api/ops/status:
     get:
@@ -64,6 +67,7 @@ paths:
               schema: { $ref: '#/components/schemas/StatusSnapshot' }
         '403': { $ref: '#/components/responses/Error' }
         '405': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/MonitoringUnavailable' }
   /api/ops/export:
     get:
       summary: Download a public monitoring report
@@ -91,6 +95,7 @@ paths:
                       measurement: { type: string }
         '403': { $ref: '#/components/responses/Error' }
         '405': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/MonitoringUnavailable' }
   /api/ops/incidents/{incidentId}:
     get:
       summary: Investigate incident observations, policy versions, and lifecycle
@@ -124,6 +129,7 @@ paths:
         '403': { $ref: '#/components/responses/Error' }
         '404': { $ref: '#/components/responses/Error' }
         '405': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/MonitoringUnavailable' }
   /api/ops/incident-note:
     post:
       summary: Add a private progress note or postmortem to an active-target incident
@@ -171,6 +177,136 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
         '413': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/MonitoringUnavailable' }
+  /api/ops/incident-brief:
+    post:
+      summary: Generate a private evidence-grounded investigation brief
+      description: |
+        Freezes the newest public-safe incident evidence page and its SHA-256 hash; private notes,
+        targets and credentials are excluded from inference. Deterministic facts are separate from
+        AI hypotheses, which remain unverified even with valid citations. Requires an enabled AI
+        capability. Four inference attempts per UTC day, one start per UTC minute, one pending call,
+        and a 20-second deadline apply. No cron generation, automatic retry, model fallback or action execution.
+        Reuse the same UUID after a lost response: it retrieves the frozen request without dispatching
+        again. A failed/interrupted request is terminal; a new deliberate attempt needs a new UUID.
+        Records expire 30 days after creation and are absent from public status, export and incident detail.
+      security: [{ operatorToken: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [incident, requestId]
+              properties:
+                incident: { type: string, format: uuid }
+                requestId:
+                  type: string
+                  format: uuid
+                  pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+      responses:
+        '201':
+          description: New complete brief, or deterministic insufficient evidence without inference
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BriefResponse' }
+        '200':
+          description: Retained terminal request; no new inference
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BriefResponse' }
+        '202':
+          description: This request already owns a pending inference; retrieve using GET
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BriefResponse' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '405': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '413': { $ref: '#/components/responses/Error' }
+        '422':
+          description: Frozen evidence could not fit the bounded model input; failed request retained without dispatch
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BriefError' }
+        '429':
+          description: Application quota or pending-call gate; no new dispatch reserved
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BriefError' }
+        '502':
+          description: Provider or validation failure; retained sanitized result when available
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BriefError' }
+        '503':
+          description: AI capability/provider failure, or monitoring storage unavailable
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/BriefError'
+                  - $ref: '#/components/schemas/MonitoringUnavailable'
+  /api/ops/incident-briefs/{requestId}:
+    get:
+      summary: Retrieve the frozen private request without inference
+      security: [{ operatorToken: [] }]
+      parameters:
+        - in: path
+          name: requestId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Retained terminal request; an expired dispatch is interrupted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BriefResponse' }
+        '202':
+          description: Retained pending request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BriefResponse' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '405': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/MonitoringUnavailable' }
+  /api/ops/incidents/{incidentId}/briefs:
+    get:
+      summary: Latest five private requests, capability and application quota
+      security: [{ operatorToken: [] }]
+      parameters:
+        - in: path
+          name: incidentId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Capability can be disabled while retained records remain readable
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [capability, records, quota]
+                properties:
+                  capability: { type: string, enum: [enabled, disabled] }
+                  records:
+                    type: array
+                    maxItems: 5
+                    items: { $ref: '#/components/schemas/BriefRecord' }
+                  quota: { $ref: '#/components/schemas/BriefQuota' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '405': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/MonitoringUnavailable' }
   /api/ops/audit:
     get:
       summary: Latest 100 audit records and private incident notes
@@ -208,6 +344,7 @@ paths:
         '401': { $ref: '#/components/responses/Error' }
         '403': { $ref: '#/components/responses/Error' }
         '405': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/MonitoringUnavailable' }
   /api/ops/policy:
     post:
       summary: Change policy with optimistic revision control
@@ -241,6 +378,7 @@ paths:
         '405': { $ref: '#/components/responses/Error' }
         '409': { $ref: '#/components/responses/Error' }
         '413': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/MonitoringUnavailable' }
   /api/ops/acknowledge:
     post:
       summary: Acknowledge an open incident with a private investigation note
@@ -274,6 +412,7 @@ paths:
         '405': { $ref: '#/components/responses/Error' }
         '409': { $ref: '#/components/responses/Error' }
         '413': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/MonitoringUnavailable' }
 components:
   securitySchemes:
     operatorToken:
@@ -281,6 +420,19 @@ components:
       scheme: bearer
       description: Random deployment secret, not an identity JWT. Never send as a query parameter.
   responses:
+    MonitoringUnavailable:
+      description: Storage cannot be read. No successful snapshot or readiness is asserted; original provider exceptions remain private.
+      headers:
+        Retry-After:
+          {
+            schema: { type: string },
+            description: Sixty seconds; explicit refresh remains possible,
+          }
+        Date:
+          { schema: { type: string }, description: Server response time for quota-reset backoff }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/MonitoringUnavailable' }
     Error:
       description: |
         400 validation; 401 absent/invalid credential; 403 Origin mismatch;
@@ -291,6 +443,20 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    MonitoringUnavailable:
+      type: object
+      required: [error, code, reason, retryAtUTC]
+      additionalProperties: false
+      properties:
+        error: { type: string }
+        code: { type: string, const: monitor-storage-unavailable }
+        reason: { type: string, enum: [daily-read-limit, daily-write-limit, storage-unavailable] }
+        retryAtUTC:
+          {
+            type: [string, 'null'],
+            format: date-time,
+            description: Next midnight UTC only when a Free-plan daily row limit was identified; otherwise null,
+          }
     Error:
       type: object
       required: [error]
@@ -369,6 +535,19 @@ components:
           description: Good-check objective, including validity and latency.
         failureThreshold: { type: integer, minimum: 1, maximum: 10 }
         recoveryThreshold: { type: integer, minimum: 1, maximum: 10 }
+    Policy:
+      allOf:
+        - $ref: '#/components/schemas/PolicyPatch'
+        - type: object
+          required:
+            [
+              paused,
+              timeoutMs,
+              latencyObjectiveMs,
+              availabilityTarget,
+              failureThreshold,
+              recoveryThreshold,
+            ]
     Check:
       type: object
       required: [service, slot, at, outcome, status, latency, revision, observedAt]
@@ -406,7 +585,7 @@ components:
         name: { type: string }
         transport: { type: string, enum: [origin, https] }
         assertion: { type: string, enum: [ok-json, catalog-json] }
-        policy: { $ref: '#/components/schemas/PolicyPatch' }
+        policy: { $ref: '#/components/schemas/Policy' }
         provenance:
           type: string
           enum: [recorded, recovered-current]
@@ -471,6 +650,296 @@ components:
           type: string
           maxLength: 500
           description: Private original acknowledgement note; present only with a valid operator credential.
+    BriefQuota:
+      type: object
+      required: [day, attempts, remaining, nextAllowedAt, pendingUntil]
+      properties:
+        day: { type: string, format: date }
+        attempts: { type: integer, minimum: 0, maximum: 4 }
+        remaining: { type: integer, minimum: 0, maximum: 4 }
+        nextAllowedAt: { type: [integer, 'null'], description: Earliest next UTC minute start }
+        pendingUntil: { type: [integer, 'null'], description: Current persisted dispatch deadline }
+    BriefResponse:
+      type: object
+      required: [brief]
+      properties:
+        brief: { $ref: '#/components/schemas/BriefRecord' }
+        alreadyRecorded: { type: boolean, const: true }
+    BriefError:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+        brief: { $ref: '#/components/schemas/BriefRecord' }
+        quota: { $ref: '#/components/schemas/BriefQuota' }
+        capability: { type: string, const: disabled }
+    BriefRecord:
+      type: object
+      required:
+        [
+          requestId,
+          incident,
+          service,
+          createdAt,
+          completedAt,
+          state,
+          evidence,
+          evidenceHash,
+          evidenceSchemaVersion,
+          promptVersion,
+          model,
+          promptEvidenceIds,
+          omittedEvidenceCount,
+          messageBytes,
+          inputBytes,
+          generated,
+          failure,
+        ]
+      properties:
+        requestId: { type: string, format: uuid }
+        incident: { type: string, format: uuid }
+        service: { type: string }
+        createdAt: { type: integer }
+        completedAt: { type: [integer, 'null'] }
+        state:
+          { type: string, enum: [pending, complete, failed, interrupted, insufficient-evidence] }
+        evidence: { $ref: '#/components/schemas/BriefEvidence' }
+        evidenceHash: { type: string, pattern: '^[0-9a-f]{64}$' }
+        evidenceSchemaVersion: { type: integer, const: 1 }
+        promptVersion: { type: integer, const: 1 }
+        model: { type: string, const: '@cf/meta/llama-3.3-70b-instruct-fp8-fast' }
+        promptEvidenceIds: { type: array, uniqueItems: true, items: { type: string } }
+        omittedEvidenceCount: { type: integer, minimum: 0 }
+        messageBytes: { type: integer, minimum: 0, maximum: 2048 }
+        inputBytes: { type: integer, minimum: 0, maximum: 4096 }
+        generated:
+          oneOf:
+            - $ref: '#/components/schemas/GeneratedBrief'
+            - type: 'null'
+        failure:
+          oneOf:
+            - type: object
+              required: [code, message]
+              properties:
+                code:
+                  {
+                    type: string,
+                    enum:
+                      [
+                        provider-unavailable,
+                        provider-capacity,
+                        provider-quota,
+                        provider-auth,
+                        timeout,
+                        invalid-output,
+                        evidence-limit,
+                        interrupted,
+                      ],
+                  }
+                message:
+                  { type: string, description: Sanitized fixed message; no raw provider output }
+            - type: 'null'
+    GeneratedBrief:
+      type: object
+      additionalProperties: false
+      required: [hypotheses]
+      properties:
+        hypotheses:
+          type: array
+          maxItems: 2
+          items:
+            type: object
+            additionalProperties: false
+            required: [kind, explanation, evidenceIds, nextChecks]
+            properties:
+              kind:
+                {
+                  type: string,
+                  enum:
+                    [
+                      upstream-http-error,
+                      latency-or-timeout,
+                      response-contract,
+                      transport-failure,
+                      evidence-gap,
+                    ],
+                }
+              explanation: { type: string, minLength: 1, maxLength: 200 }
+              evidenceIds:
+                {
+                  type: array,
+                  minItems: 1,
+                  maxItems: 3,
+                  uniqueItems: true,
+                  items: { type: string },
+                  description: 'IDs actually included in the frozen prompt, with a relevant symptom for this kind',
+                }
+              nextChecks:
+                {
+                  type: array,
+                  minItems: 1,
+                  maxItems: 2,
+                  uniqueItems: true,
+                  items:
+                    {
+                      type: string,
+                      enum:
+                        [
+                          inspect-service-logs,
+                          compare-deployments,
+                          verify-response-contract,
+                          review-latency-and-timeout,
+                          compare-policy-versions,
+                          inspect-monitor-scheduler,
+                        ],
+                    },
+                }
+    BriefEvidence:
+      type: object
+      description: Frozen whitelisted public-safe evidence, independently hashed. Facts are computed by code; citations do not prove AI hypotheses.
+      required:
+        [
+          schemaVersion,
+          capturedAt,
+          incident,
+          range,
+          checks,
+          versions,
+          lifecycle,
+          facts,
+          limits,
+          references,
+        ]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        capturedAt: { type: integer }
+        incident: { $ref: '#/components/schemas/Incident' }
+        range:
+          type: object
+          required: [fromSlot, toSlot, retentionStart, limitedByRetention]
+          properties:
+            fromSlot: { type: integer, minimum: 0 }
+            toSlot: { type: integer, minimum: 0 }
+            retentionStart: { type: integer }
+            limitedByRetention: { type: boolean }
+        checks:
+          type: array
+          maxItems: 50
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Check'
+              - type: object
+                required: [service, id, timing]
+                properties:
+                  service: { type: string }
+                  id: { type: string }
+                  timing: { type: string, enum: [verified, legacy, invalid] }
+        versions:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/IncidentPolicyVersion'
+              - type: object
+                required: [id]
+                properties:
+                  id: { type: string }
+        lifecycle:
+          type: array
+          maxItems: 3
+          items:
+            type: object
+            required: [id, action, at]
+            properties:
+              id: { type: string }
+              action:
+                { type: string, enum: [incident.opened, incident.acknowledged, incident.recovered] }
+              at: { type: integer }
+        facts:
+          type: object
+          description: Deterministic counts and coverage strictly within the frozen selected slice; not full-incident or request availability.
+          required:
+            [
+              recordedChecks,
+              verifiedChecks,
+              goodChecks,
+              badChecks,
+              maintenanceChecks,
+              legacyChecks,
+              invalidTimingChecks,
+              missingMinutesWithinSlice,
+              selectedFromSlot,
+              selectedToSlot,
+              finishedExpectedMinutesWithinSlice,
+              finishedEligibleMinutesWithinSlice,
+              verifiedCoveragePercentWithinFinishedSlice,
+              outcomes,
+            ]
+          properties:
+            recordedChecks: { type: integer, minimum: 0, maximum: 50 }
+            verifiedChecks: { type: integer, minimum: 0, maximum: 50 }
+            goodChecks: { type: integer, minimum: 0, maximum: 50 }
+            badChecks: { type: integer, minimum: 0, maximum: 50 }
+            maintenanceChecks: { type: integer, minimum: 0, maximum: 50 }
+            legacyChecks: { type: integer, minimum: 0, maximum: 50 }
+            invalidTimingChecks: { type: integer, minimum: 0, maximum: 50 }
+            missingMinutesWithinSlice: { type: [integer, 'null'], minimum: 0 }
+            selectedFromSlot: { type: [integer, 'null'], minimum: 0 }
+            selectedToSlot: { type: [integer, 'null'], minimum: 0 }
+            finishedExpectedMinutesWithinSlice: { type: [integer, 'null'], minimum: 0 }
+            finishedEligibleMinutesWithinSlice: { type: [integer, 'null'], minimum: 0 }
+            verifiedCoveragePercentWithinFinishedSlice:
+              { type: [number, 'null'], minimum: 0, maximum: 100 }
+            outcomes:
+              type: object
+              required: [good, http-error, timeout, network-error, invalid-body, slow, maintenance]
+              properties:
+                good: { type: integer, minimum: 0 }
+                http-error: { type: integer, minimum: 0 }
+                timeout: { type: integer, minimum: 0 }
+                network-error: { type: integer, minimum: 0 }
+                invalid-body: { type: integer, minimum: 0 }
+                slow: { type: integer, minimum: 0 }
+                maintenance: { type: integer, minimum: 0 }
+        limits:
+          type: object
+          description: Explicit paging and sampling limits; no response bodies or private notes.
+          required:
+            [
+              checkLimit,
+              checksOmitted,
+              olderPagesAvailable,
+              limitedByRetention,
+              missingPolicyRevisions,
+              recoveredPolicyRevisions,
+              includesCurrentMinute,
+              measurement,
+              responseBodiesAvailable,
+              privateNotesIncluded,
+            ]
+          properties:
+            checkLimit: { type: integer, const: 50 }
+            checksOmitted: { type: integer, minimum: 0 }
+            olderPagesAvailable: { type: boolean }
+            limitedByRetention: { type: boolean }
+            missingPolicyRevisions:
+              { type: array, uniqueItems: true, items: { type: integer, minimum: 1 } }
+            recoveredPolicyRevisions:
+              { type: array, uniqueItems: true, items: { type: integer, minimum: 1 } }
+            includesCurrentMinute: { type: boolean }
+            measurement: { type: string, const: one-coordinator-sampled-checks }
+            responseBodiesAvailable: { type: boolean, const: false }
+            privateNotesIncluded: { type: boolean, const: false }
+        references:
+          type: array
+          items:
+            type: object
+            required: [id, kind, label, detail, allowedKinds]
+            properties:
+              id: { type: string }
+              kind: { type: string, enum: [check, policy, lifecycle, fact, limit] }
+              label: { type: string }
+              detail: { type: string, description: 'Frozen plain-text evidence, never executable' }
+              allowedKinds: { type: array, items: { type: string } }
     BudgetSignalSnapshot:
       type: object
       required: [evaluation, evaluationStatus, lastFiring]
@@ -637,7 +1106,7 @@ components:
         assertion: { type: string, enum: [ok-json, catalog-json] }
         createdAt: { type: integer }
         revision: { type: integer }
-        policy: { $ref: '#/components/schemas/PolicyPatch' }
+        policy: { $ref: '#/components/schemas/Policy' }
         latest:
           oneOf:
             - $ref: '#/components/schemas/Check'

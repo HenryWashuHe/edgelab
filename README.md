@@ -17,6 +17,7 @@ The included deployment monitors its actual public gateway and private catalog s
 - **Honest SLO reporting:** verified good-check ratio, p95, error-budget consumption, maintenance exclusion, missing-sample coverage, and legacy unverified counts. Missing data is unknown. Current incomplete minutes and legacy checks without an observation start timestamp receive no verified SLO credit.
 - **Paired-window budget signals:** scheduled evaluation of rapid, sustained, and gradual sampled-check burn. Each rule exposes both windows, verified coverage, policy maturity, and its reason. Persisted firing evidence and captured policy context survive missing observations, stale scheduling, maintenance, policy changes, and source-history pruning; older missing context remains explicit.
 - **Operator access:** a deployment secret gates writes and audit access. The browser stores the token only in memory. Same-origin checks, bounded payloads, optimistic writes, and deploy-time target enrollment define the boundary.
+- **Evidence-grounded incident briefs:** an operator can request a bounded Workers AI investigation brief when inference is enabled. Frozen observations, policy history, limits and a SHA-256 hash supply deterministic facts; separately labeled AI hypotheses must cite relevant evidence. Durable request IDs prevent automatic redispatch after response loss or interruption.
 - **Engineering lab:** isolated per-session token buckets, circuit breakers, actual cached payloads, timeout experiments, traces, CSV/JSON export, and cancellable guided runs.
 - **Evidence:** deterministic unit tests, real workerd/SQLite fault tests, local and live HTTP verification, and repeatable concurrency benchmarks with raw results.
 
@@ -52,6 +53,7 @@ flowchart LR
   G --> M[MonitorStore / singleton SQLite DO]
   M --> P[Private catalog Worker]
   M --> H[Approved HTTPS health endpoint]
+  M --> AI[Workers AI / deliberate operator request]
   M --- S[(Checks / jobs / incidents / policy versions / notes / scheduler / budget signals / audit)]
   G --> L[ReliabilityLab / per-session SQLite DO]
   L --> P
@@ -86,6 +88,10 @@ npm run test:monitor      # actual monitor auth, incidents, concurrency, leases,
 npm run test:incident     # incident evidence, private notes, pagination, idempotency
 npm run test:upgrade      # migration and observation timing
 npm run test:budget       # persisted budget signals, eviction, gaps, revision changes
+npm run test:brief        # frozen evidence, AI fakes, quotas, retry and deadline fencing
+npm run test:check-cache  # source parity, mutation repair, eviction and measured SQL reads
+npm run test:monitor-unavailable # safe quota failures and authentication precedence
+npm run test:monitor-cost # whole-cron read/write measurements in isolated SQLite
 # With the local server running:
 npm run test:integration  # lab HTTP behavior and isolation
 BASE_URL=http://localhost:8787 npm run benchmark
@@ -115,6 +121,22 @@ Remote commands read the ignored `.env.operator`; local commands read `.dev.vars
 The dashboard retains an uncertain note's ID and exact body in authenticated Operations memory across investigation close/reopen. Lock, credential changes, leaving Operations, or reload clear this session-only state. A successful operator write remains confirmed even if the following audit/status refresh fails; read failures are reported separately.
 
 Version 3.2.1 retains export `schemaVersion: 4`, including per-service `budget` and additive nullable `lastFiring.policyContext`. Newly captured policy versions have `recorded` provenance. Migration can recover only the policy currently persisted by v3, marked `recovered-current`; it cannot recreate earlier historical policies. Legacy checks remain available as evidence with `observedAt: null` and are excluded from verified metrics. See the [measurement rules](docs/MEASUREMENT.md) for interpretation.
+
+## Storage-aware monitoring
+
+Cron and dashboard reads share a persisted projection of at most 10,080 finished minute slots per service. New finished observations append incrementally; SQLite triggers mark changed covered slots for source repair. Eviction retains the projection. Original observations remain authoritative, and a view never creates checks or renews their timestamps. The original SQL metrics and burn evaluator are preserved.
+
+Storage failures return a sanitized JSON 503, with readiness unavailable and gateway liveness separate. Browser refreshes run once per minute, coalesce duplicate reads, and back off on a known daily quota while cached evidence continues to age. The Free-plan allowance is shared with other account activity. Controlled whole-monitor measurements and their limits are in the verification record; configured maximum targets are not a Free-plan capacity guarantee.
+
+## Workers AI incident briefs
+
+Open an incident investigation after unlocking Operations to inspect private brief history and, when enabled, generate a new brief. `POST /api/ops/incident-brief` accepts only `{incident, requestId}`. `GET /api/ops/incident-briefs/<requestId>` retrieves that frozen request without inference. The authenticated `GET /api/ops/incidents/<id>/briefs` lists the latest five records, capability and application quota. Briefs never enter public status, exports or incident detail.
+
+Each request freezes up to 50 observations, referenced policies, lifecycle, deterministic counts and explicit evidence limits. A SHA-256 hash identifies the captured snapshot. The bounded prompt selects representative references and reports omissions. The response may contain up to two hypotheses with applicable evidence IDs and allowlisted investigation suggestions. Citations establish relevance to recorded symptoms, not causality. The UI renders model strings as text and never executes suggestions or modifies incident state.
+
+The application permits four inference attempts per UTC day, one start per UTC minute and one pending request, with a 20-second deadline. Failed attempts consume their reservation. While its record is retained, reusing a UUID returns its original state without another dispatch; failures and interrupted requests are terminal. The AI quota does not limit deterministic records or total storage. This bounds application dispatch, without claiming exactly-once provider billing. Records expire 30 days after creation. Missing verified failures produce deterministic insufficient evidence, with no AI call.
+
+Inference uses the fixed [Llama 3.3 70B model](https://developers.cloudflare.com/workers-ai/models/llama-3.3-70b-instruct-fp8-fast/) through the native AI binding, with 2 KiB message content, 4 KiB serialized input and 512 output tokens. Ordinary tests use fakes. `AI_BRIEFS_ENABLED` defaults to `false`; verify the account's plan and shared [Workers AI allocation](https://developers.cloudflare.com/workers-ai/platform/pricing/) before deliberately enabling it. No billing upgrade is performed by this project. The binding alone does not prove a real model call succeeded. See the [operator runbook](docs/OPERATIONS.md) and release validation for the actual verified capability.
 
 ## Interpreting budget signals
 

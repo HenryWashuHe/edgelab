@@ -1,0 +1,199 @@
+{
+  "verifiedAt": "2026-09-30T06:43:32.979Z",
+  "release": "3.3.0",
+  "environment": "Disposable local workerd/SQLite plus browser and fault proxy",
+  "provider": "Controlled fake; zero native Workers AI calls",
+  "browserViewport": {
+    "observedWidth": 1280,
+    "requestedMobileOverrideApplied": false
+  },
+  "checks": [
+    "Frozen deterministic facts, evidence citations and SHA-256 provenance are inspectable",
+    "Confirmed committed response loss replays same UUID: two browser POST deliveries, one provider dispatch",
+    "Dialog close/reopen retrieves retained UUID using GET",
+    "Pending generation survives close/reopen and completes with one provider dispatch",
+    "Invalid model output retains failed record and frozen facts, with no accepted hypotheses",
+    "Four daily model starts exhaust browser admission; a controlled next UTC day resets it",
+    "Disabled gate with binding present retains private history",
+    "Delayed private read aborts on Lock and cannot restore private state",
+    "No verified bad observations produces insufficient evidence, no prepared prompt and no inference",
+    "Escape closes dialog and restores incident trigger focus"
+  ],
+  "fakeProviderCalls": 4,
+  "records": [
+    {
+      "requestId": "32a52fc0-6abf-4517-ba14-69dc4196b5c7",
+      "incident": "8cc24878-6152-40a0-82df-f8d45f31e2dd",
+      "state": "insufficient-evidence",
+      "evidenceHash": "f0c6c4cc9e5400628cbe51c8129e9eecc66fdf6a9fcea092ea1ee4bd38078379",
+      "facts": {
+        "recordedChecks": 0,
+        "verifiedChecks": 0,
+        "goodChecks": 0,
+        "badChecks": 0,
+        "maintenanceChecks": 0,
+        "legacyChecks": 0,
+        "invalidTimingChecks": 0,
+        "missingMinutesWithinSlice": null,
+        "selectedFromSlot": null,
+        "selectedToSlot": null,
+        "finishedExpectedMinutesWithinSlice": null,
+        "finishedEligibleMinutesWithinSlice": null,
+        "verifiedCoveragePercentWithinFinishedSlice": null,
+        "outcomes": {
+          "good": 0,
+          "http-error": 0,
+          "timeout": 0,
+          "network-error": 0,
+          "invalid-body": 0,
+          "slow": 0,
+          "maintenance": 0
+        }
+      },
+      "hypothesisCount": 0,
+      "failure": null
+    },
+    {
+      "requestId": "0d6f6121-9e0b-430d-a9d2-f2d29a981d2d",
+      "incident": "8cc24878-6152-40a0-82df-f8d45f31e2db",
+      "state": "failed",
+      "evidenceHash": "fa32ba955ed21c0874893766848323ecb1f7d740ab6d6e82d936f8728c5471ab",
+      "facts": {
+        "recordedChecks": 50,
+        "verifiedChecks": 50,
+        "goodChecks": 30,
+        "badChecks": 20,
+        "maintenanceChecks": 0,
+        "legacyChecks": 0,
+        "invalidTimingChecks": 0,
+        "missingMinutesWithinSlice": 0,
+        "selectedFromSlot": 29845785,
+        "selectedToSlot": 29845834,
+        "finishedExpectedMinutesWithinSlice": 50,
+        "finishedEligibleMinutesWithinSlice": 50,
+        "verifiedCoveragePercentWithinFinishedSlice": 100,
+        "outcomes": {
+          "good": 30,
+          "http-error": 20,
+          "timeout": 0,
+          "network-error": 0,
+          "invalid-body": 0,
+          "slow": 0,
+          "maintenance": 0
+        }
+      },
+      "hypothesisCount": 0,
+      "failure": {
+        "code": "invalid-output",
+        "message": "The AI response failed the required schema or evidence checks."
+      }
+    },
+    {
+      "requestId": "9cf81ae4-52a0-4e31-9e90-a59c55a7cb78",
+      "incident": "8cc24878-6152-40a0-82df-f8d45f31e2db",
+      "state": "complete",
+      "evidenceHash": "871478accfb3af9fb19d2caf5d4431e0799ebf69d708dfba8d39ced0befd2364",
+      "facts": {
+        "recordedChecks": 50,
+        "verifiedChecks": 50,
+        "goodChecks": 30,
+        "badChecks": 20,
+        "maintenanceChecks": 0,
+        "legacyChecks": 0,
+        "invalidTimingChecks": 0,
+        "missingMinutesWithinSlice": 0,
+        "selectedFromSlot": 29845785,
+        "selectedToSlot": 29845834,
+        "finishedExpectedMinutesWithinSlice": 50,
+        "finishedEligibleMinutesWithinSlice": 50,
+        "verifiedCoveragePercentWithinFinishedSlice": 100,
+        "outcomes": {
+          "good": 30,
+          "http-error": 20,
+          "timeout": 0,
+          "network-error": 0,
+          "invalid-body": 0,
+          "slow": 0,
+          "maintenance": 0
+        }
+      },
+      "hypothesisCount": 1,
+      "failure": null
+    },
+    {
+      "requestId": "be00cfe8-8366-4c7d-ab71-d5e9bb9d304f",
+      "incident": "8cc24878-6152-40a0-82df-f8d45f31e2db",
+      "state": "complete",
+      "evidenceHash": "2f23e36e4135e17b5df87b615e8e6497d447350405a671fe46da9c24f7e9c441",
+      "facts": {
+        "recordedChecks": 50,
+        "verifiedChecks": 50,
+        "goodChecks": 30,
+        "badChecks": 20,
+        "maintenanceChecks": 0,
+        "legacyChecks": 0,
+        "invalidTimingChecks": 0,
+        "missingMinutesWithinSlice": 0,
+        "selectedFromSlot": 29845785,
+        "selectedToSlot": 29845834,
+        "finishedExpectedMinutesWithinSlice": 50,
+        "finishedEligibleMinutesWithinSlice": 50,
+        "verifiedCoveragePercentWithinFinishedSlice": 100,
+        "outcomes": {
+          "good": 30,
+          "http-error": 20,
+          "timeout": 0,
+          "network-error": 0,
+          "invalid-body": 0,
+          "slow": 0,
+          "maintenance": 0
+        }
+      },
+      "hypothesisCount": 1,
+      "failure": null
+    },
+    {
+      "requestId": "211a098f-dcfa-4573-9e28-59b05fb6a6fa",
+      "incident": "8cc24878-6152-40a0-82df-f8d45f31e2db",
+      "state": "complete",
+      "evidenceHash": "05f5bf17b457daeee218438b9ed10b2766b738671e6c7f0b2b611a511ab80490",
+      "facts": {
+        "recordedChecks": 50,
+        "verifiedChecks": 50,
+        "goodChecks": 26,
+        "badChecks": 24,
+        "maintenanceChecks": 0,
+        "legacyChecks": 0,
+        "invalidTimingChecks": 0,
+        "missingMinutesWithinSlice": 0,
+        "selectedFromSlot": 29845776,
+        "selectedToSlot": 29845825,
+        "finishedExpectedMinutesWithinSlice": 49,
+        "finishedEligibleMinutesWithinSlice": 49,
+        "verifiedCoveragePercentWithinFinishedSlice": 100,
+        "outcomes": {
+          "good": 26,
+          "http-error": 24,
+          "timeout": 0,
+          "network-error": 0,
+          "invalid-body": 0,
+          "slow": 0,
+          "maintenance": 0
+        }
+      },
+      "hypothesisCount": 1,
+      "failure": null
+    }
+  ],
+  "lostResponse": {
+    "requestId": "be00cfe8-8366-4c7d-ab71-d5e9bb9d304f",
+    "browserPostDeliveries": 2,
+    "providerDispatches": 1,
+    "confirmedStoredState": "complete"
+  },
+  "limitations": [
+    "No native model quality, capacity, access or billing claim",
+    "No production incident history was seeded",
+    "Mobile viewport override did not apply; new panel was observed at 1280px"
+  ]
+}

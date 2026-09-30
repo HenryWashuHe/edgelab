@@ -1,5 +1,7 @@
 import { MonitorStore, operatorAuthorized, type MonitorEnv } from './monitor';
+import { createMonitorForwarder } from './monitor-forwarder';
 export { MonitorStore };
+const forwardMonitor = createMonitorForwarder();
 import { callOrigin } from './origin-client';
 import { DurableObject } from 'cloudflare:workers';
 import {
@@ -215,7 +217,8 @@ async function boundedBody(request: Request): Promise<string> {
 export default {
   async scheduled(controller: ScheduledController, env: Env): Promise<void> {
     const stub = env.MONITORS.get(env.MONITORS.idFromName('operations'));
-    const response = await stub.fetch(
+    const response = await forwardMonitor(
+      stub,
       new Request('https://monitor.internal/tick', {
         method: 'POST',
         body: JSON.stringify({ slot: Math.floor(controller.scheduledTime / 60000) }),
@@ -232,14 +235,15 @@ export default {
         ok: true,
         colo: colo(request),
         platform: 'Cloudflare Workers + Durable Objects',
-        version: '3.2.1',
+        version: '3.3.1',
         origin: 'service-binding',
       });
     if (url.pathname === '/api/ready') {
       if (request.method !== 'GET')
         return json({ error: 'Method not allowed' }, 405, { Allow: 'GET' });
-      return env.MONITORS.get(env.MONITORS.idFromName('operations')).fetch(
-        'https://monitor.internal/ready',
+      return forwardMonitor(
+        env.MONITORS.get(env.MONITORS.idFromName('operations')),
+        new Request('https://monitor.internal/ready'),
       );
     }
     if (url.pathname.startsWith('/api/ops/')) {
@@ -248,11 +252,28 @@ export default {
         return json({ error: 'Cross-origin requests are not allowed' }, 403);
       const action = url.pathname.slice('/api/ops/'.length);
       const incidentDetail = /^incidents\/[0-9a-f-]{36}$/i.test(action);
+      const incidentBriefs = /^incidents\/[0-9a-f-]{36}\/briefs$/i.test(action);
+      const briefDetail = /^incident-briefs\/[0-9a-f-]{36}$/i.test(action);
       const method =
-        ['status', 'audit', 'export'].includes(action) || incidentDetail ? 'GET' : 'POST';
+        ['status', 'audit', 'export'].includes(action) ||
+        incidentDetail ||
+        incidentBriefs ||
+        briefDetail
+          ? 'GET'
+          : 'POST';
       if (
-        !['status', 'audit', 'export', 'policy', 'acknowledge', 'incident-note'].includes(action) &&
-        !incidentDetail
+        ![
+          'status',
+          'audit',
+          'export',
+          'policy',
+          'acknowledge',
+          'incident-note',
+          'incident-brief',
+        ].includes(action) &&
+        !incidentDetail &&
+        !incidentBriefs &&
+        !briefDetail
       )
         return json({ error: 'Not found' }, 404);
       if (request.method !== method)
@@ -291,7 +312,8 @@ export default {
       internal.searchParams.set('window', url.searchParams.get('window') === '7d' ? '7d' : '24h');
       if (incidentDetail && url.searchParams.has('before'))
         internal.searchParams.set('before', url.searchParams.get('before')!);
-      const response = await stub.fetch(
+      const response = await forwardMonitor(
+        stub,
         new Request(internal, {
           method,
           body,

@@ -1,0 +1,55 @@
+{
+  "verifiedAt": "2026-09-30T07:11:30.679Z",
+  "baseUrl": "https://edgelab-reliability.edgelab-henrywashuhe.workers.dev",
+  "health": {
+    "ok": true,
+    "colo": "EWR",
+    "platform": "Cloudflare Workers + Durable Objects",
+    "version": "3.3.1",
+    "origin": "service-binding"
+  },
+  "verification": "Deployed sanitized storage-unavailable responses and auth precedence verified. This is a quota-failure boundary check, not successful autonomous monitoring recovery.",
+  "autonomousRecovery": "pending daily quota reset and new observed minutes",
+  "productionInferenceCalls": 0,
+  "historySeeded": false,
+  "checks": [
+    {
+      "path": "/api/ready",
+      "status": 503,
+      "response": {
+        "error": "Monitoring storage is temporarily unavailable. Current monitoring cannot be confirmed.",
+        "code": "monitor-storage-unavailable",
+        "reason": "daily-read-limit",
+        "retryAtUTC": "2026-10-01T00:00:00.000Z"
+      }
+    },
+    {
+      "path": "/api/ops/status",
+      "status": 503,
+      "response": {
+        "error": "Monitoring storage is temporarily unavailable. Current monitoring cannot be confirmed.",
+        "code": "monitor-storage-unavailable",
+        "reason": "daily-read-limit",
+        "retryAtUTC": "2026-10-01T00:00:00.000Z"
+      }
+    },
+    {
+      "path": "/api/ops/export",
+      "status": 503,
+      "response": {
+        "error": "Monitoring storage is temporarily unavailable. Current monitoring cannot be confirmed.",
+        "code": "monitor-storage-unavailable",
+        "reason": "daily-read-limit",
+        "retryAtUTC": "2026-10-01T00:00:00.000Z"
+      }
+    },
+    {
+      "path": "/api/ops/audit",
+      "status": 401
+    },
+    {
+      "path": "/api/ops/incident-briefs/00000000-0000-4000-8000-000000000000",
+      "status": 401
+    }
+  ]
+}

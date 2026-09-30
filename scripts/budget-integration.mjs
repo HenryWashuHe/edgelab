@@ -21,6 +21,20 @@ await build({
   target: 'esnext',
   external: ['cloudflare:workers'],
 });
+const domainBundle = await build({
+  stdin: {
+    contents:
+      "export {evaluateBurnRates} from './worker/burn-rate'; export {windowBounds} from './worker/monitor-domain';",
+    resolveDir: process.cwd(),
+  },
+  bundle: true,
+  format: 'esm',
+  platform: 'node',
+  write: false,
+});
+const { evaluateBurnRates, windowBounds } = await import(
+  'data:text/javascript;base64,' + Buffer.from(domainBundle.outputFiles[0].text).toString('base64')
+);
 let calls = 0;
 const runtimeOptions = (configuredTarget = target) =>
   convertV4MiniflareOptions({
@@ -73,10 +87,14 @@ try {
       body: JSON.stringify({ slot: Math.floor(now / MINUTE) }),
     });
     assert.equal(response.status, 200);
-    return response.json();
+    const result = await response.json();
+    await assertAuthoritativeEquivalence();
+    return result;
   };
-  const read = async () => {
-    const response = await mf.dispatchFetch('https://edgelab.example/api/ops/status');
+  const read = async (window = '24h') => {
+    const response = await mf.dispatchFetch(
+      `https://edgelab.example/api/ops/status?window=${window}`,
+    );
     assert.equal(response.status, 200);
     return response.json();
   };
@@ -99,6 +117,81 @@ try {
   let storage = await mf.unsafeGetDurableObjectStorage('gateway', 'MonitorStore', {
     name: 'operations',
   });
+  const assertAuthoritativeEquivalence = async () => {
+    for (const window of ['24h', '7d']) {
+      const snapshot = await read(window);
+      const service = snapshot.services[0];
+      const bounds = windowBounds(service.createdAt, snapshot.now, window === '7d' ? 10080 : 1440);
+      const stats = (
+        await storage.exec(
+          "SELECT COUNT(*) total, COALESCE(SUM(outcome!='maintenance' AND observed_at IS NOT NULL),0) observed, COALESCE(SUM(outcome='good' AND observed_at IS NOT NULL),0) good, COALESCE(SUM(outcome='maintenance' AND observed_at IS NOT NULL),0) maintenance, COALESCE(SUM(observed_at IS NULL),0) unverified FROM checks WHERE service=? AND slot BETWEEN ? AND ?",
+          service.id,
+          bounds.start,
+          bounds.end,
+        )
+      )[0];
+      const p95 = stats.observed
+        ? (
+            await storage.exec(
+              "SELECT latency FROM checks WHERE service=? AND slot BETWEEN ? AND ? AND outcome!='maintenance' AND observed_at IS NOT NULL ORDER BY latency LIMIT 1 OFFSET ?",
+              service.id,
+              bounds.start,
+              bounds.end,
+              Math.ceil(stats.observed * 0.95) - 1,
+            )
+          )[0].latency
+        : null;
+      const eligible = bounds.expected - stats.maintenance;
+      const allowedBad = stats.observed * (1 - service.policy.availabilityTarget / 100);
+      assert.deepEqual(service.metrics, {
+        ...stats,
+        expected: bounds.expected,
+        missing: Math.max(0, bounds.expected - stats.total),
+        coverage: eligible > 0 ? (100 * stats.observed) / eligible : null,
+        goodRatio: stats.observed ? (100 * stats.good) / stats.observed : null,
+        p95Ms: p95,
+        budgetConsumed: allowedBad > 0 ? (100 * (stats.observed - stats.good)) / allowedBad : null,
+        windowStart: bounds.start * MINUTE,
+        windowEnd: (bounds.end + 1) * MINUTE,
+      });
+      assert.deepEqual(
+        service.hourly,
+        await storage.exec(
+          "SELECT CAST(slot/60 AS INTEGER)*3600000 AS at, COUNT(*) AS total, SUM(outcome='good' AND observed_at IS NOT NULL) AS good, SUM(outcome='maintenance' AND observed_at IS NOT NULL) AS maintenance, SUM(observed_at IS NULL) AS unverified FROM checks WHERE service=? AND slot BETWEEN ? AND ? GROUP BY CAST(slot/60 AS INTEGER) ORDER BY at",
+          service.id,
+          bounds.start,
+          bounds.end,
+        ),
+      );
+      if (window === '24h') {
+        const evaluation = service.budget.evaluation;
+        const end = Math.floor(evaluation.computedAt / MINUTE) - 1;
+        const version = (
+          await storage.exec(
+            'SELECT recorded_at FROM service_versions WHERE service=? AND revision=?',
+            service.id,
+            service.revision,
+          )
+        )[0];
+        assert.deepEqual(
+          evaluation,
+          evaluateBurnRates({
+            now: evaluation.computedAt,
+            revision: service.revision,
+            policyRecordedAt: version.recorded_at,
+            target: service.policy.availabilityTarget,
+            paused: service.policy.paused,
+            checks: await storage.exec(
+              'SELECT slot,observed_at AS observedAt,revision,outcome FROM checks WHERE service=? AND slot BETWEEN ? AND ? ORDER BY slot',
+              service.id,
+              end - 4319,
+              end,
+            ),
+          }),
+        );
+      }
+    }
+  };
   const currentSlot = Math.floor(now / MINUTE);
   const end = currentSlot - 1;
   const start = end - 4320 + 1;
@@ -121,16 +214,20 @@ try {
       );
       await storage.exec(
         `INSERT INTO checks(service,slot,at,outcome,status,latency,revision,observed_at) VALUES ${slots.map(() => '(?,?,?,?,?,?,?,?)').join(',')}`,
-        ...slots.flatMap((slot) => [
-          'catalog',
-          slot,
-          slot * MINUTE + 1020,
-          slot === lastSlot ? 'http-error' : 'good',
-          slot === lastSlot ? 503 : 200,
-          20,
-          revision,
-          slot * MINUTE + 1000,
-        ]),
+        ...slots.flatMap((slot) => {
+          const offset = lastSlot - slot;
+          const maintenance = [400, 401, 402].includes(offset);
+          return [
+            'catalog',
+            slot,
+            slot * MINUTE + 1020,
+            slot === lastSlot ? 'http-error' : maintenance ? 'maintenance' : 'good',
+            maintenance ? null : slot === lastSlot ? 503 : 200,
+            maintenance ? 0 : (offset % 101) * 11,
+            offset === 700 ? revision - 1 : revision,
+            offset === 500 ? null : slot * MINUTE + (offset === 600 ? MINUTE : 0) + 1000,
+          ];
+        }),
       );
     }
   };
@@ -524,6 +621,9 @@ try {
   assert.deepEqual(await budget(), contextRetained);
   console.log(
     'PASS immutable warning policy survives target/name/assertion/objective replacement, 31-day source pruning, and eviction',
+  );
+  console.log(
+    'PASS every evaluation and both dashboard windows match authoritative original SQL across gaps, corrections, policy changes, retention, and eviction',
   );
 } finally {
   await mf.dispose();

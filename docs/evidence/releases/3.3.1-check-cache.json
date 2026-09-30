@@ -1,0 +1,85 @@
+{
+  "measuredAt": "2026-09-30T07:05:20.488Z",
+  "environment": {
+    "node": "v25.4.0",
+    "runtime": "local workerd via Miniflare",
+    "miniflare": "5.20260926.0-alpha",
+    "workerd": "1.20260926.1",
+    "accountCalls": 0,
+    "nativeInferenceCalls": 0
+  },
+  "fixture": "local-workerd-two-services-12000-checks-each",
+  "method": "Actual consumed SqlStorageCursor.rowsRead; local controlled data, no account quota or production inference",
+  "assumptions": {
+    "sourceChecksPerService": 12000,
+    "sourceServices": 2,
+    "cacheCapacityFinishedSlotsPerService": 10080,
+    "baselineService": "catalog",
+    "baselineSourceIndex": "PRIMARY KEY(service,slot)",
+    "baselineOutcomes": "all good, status200, latency20ms, revision1, actual start slot+1000ms and completion slot+1020ms",
+    "baselineReports": "Three independent range scans: counts/sums, latency sort with nearest-rank95% offset, and hourly grouping",
+    "baselineBudget": "One ordered source scan across4320finishedslots",
+    "bootstrapChanges": "One deleted covered slot and one legacy null observation start before first cache load",
+    "scope": "Helper and list cursor costs only; excludes constructorDDL, probe writes, cleanup, policies, readiness and other account usage"
+  },
+  "originalSnapshotRowsReadPerService": {
+    "1440": {
+      "stats": 1441,
+      "p95": 2881,
+      "hourly": 2906,
+      "total": 7228
+    },
+    "10080": {
+      "stats": 10081,
+      "p95": 20161,
+      "hourly": 20330,
+      "total": 50572
+    }
+  },
+  "originalBudgetRowsReadPerService": 4321,
+  "bootstrap": {
+    "mode": "bootstrap",
+    "rowsRead": 10080,
+    "rowsWritten": 2,
+    "sourceRowsRead": 10080,
+    "dirtySlots": 0
+  },
+  "repeated": {
+    "mode": "hit",
+    "rowsRead": 1,
+    "rowsWritten": 0,
+    "sourceRowsRead": 0,
+    "dirtySlots": 0
+  },
+  "afterEviction": {
+    "mode": "hit",
+    "rowsRead": 1,
+    "rowsWritten": 0,
+    "sourceRowsRead": 0,
+    "dirtySlots": 0
+  },
+  "nextFinishedMinute": {
+    "mode": "append",
+    "rowsRead": 4,
+    "rowsWritten": 1,
+    "sourceRowsRead": 2,
+    "dirtySlots": 0
+  },
+  "lateCompletion": {
+    "mode": "repair",
+    "rowsRead": 6,
+    "rowsWritten": 2,
+    "sourceRowsRead": 2,
+    "dirtySlots": 1
+  },
+  "incidents": {
+    "resolvedRowsPerService": 6000,
+    "activeServices": 2,
+    "inactiveServices": 1,
+    "activeOpenRows": 220,
+    "originalListRowsRead": 48660,
+    "boundedListRowsRead": 421,
+    "returnedRows": 320,
+    "baselineSchema": "Original incident primary-key only; new derived partial indexes temporarily dropped inside this isolated fixture, then restored via ensureSchema"
+  }
+}

@@ -81,6 +81,26 @@ Operations export `schemaVersion: 4` contains bounded service history, summaries
 
 A successful operator write and its subsequent read are separate evidence. A failed status or audit refresh does not undo a confirmed write. An uncertain note submission keeps its UUID and exact payload in authenticated browser memory so closing and reopening the investigation can retry the same request without creating another intended note. This state is session-only: locking, changing credentials, leaving Operations, or reloading clears it; no browser-storage recovery is promised.
 
+## Frozen incident briefs
+
+Version 3.3 adds an authenticated, explicitly requested investigation brief. Before any model call, code copies the newest incident evidence page: at most 50 descending checks, policy versions referenced by those checks, and public lifecycle events. The snapshot contains deterministic facts and explicit limitations, receives a canonical SHA-256 hash, and remains self-contained after live checks or source versions are pruned. Private notes, acknowledgement text, target URLs, credentials, and response bodies are excluded. The newest page can omit much of a long incident; a stored brief is neither a complete investigation nor a storage backup.
+
+Brief facts verify each check's actual start against its UTC slot and require completion at or after that start and no later than capture time. Legacy, inconsistent, and future timing remain separate from verified observations. Good, bad, maintenance, and outcome counts refer only to the frozen selected checks. Missing minutes are counted strictly between the oldest and newest selected slots; omitted older pages and retention loss have separate flags and never become invented checks. Missing historical policy context is not reconstructed from current settings.
+
+- `finishedExpectedMinutesWithinSlice` counts finished UTC minutes between the oldest selected slot and the earlier of the newest slot or the minute before capture.
+- `finishedEligibleMinutesWithinSlice` subtracts only verified maintenance checks in those finished minutes.
+- `verifiedCoveragePercentWithinFinishedSlice` is verified non-maintenance checks in those minutes divided by their eligible count, multiplied by 100. It is null when no selected minute has finished or no eligible minute remains.
+
+A completed current-minute check can contribute a recorded symptom, but is excluded from finished-slice coverage and produces an explicit unfinished-minute notice. Slice coverage is independent of paired-window signal qualification and never claims coverage for the full incident, a full SLO window, or customer requests. Verified outcomes still describe symptoms rather than their cause.
+
+The model receives representative references and deterministic limits within 2 KiB of combined message contents and 4 KiB of serialized input, with a 512-token output limit. The stored `promptEvidenceIds` show exactly which references were sent; `omittedEvidenceCount` counts frozen references omitted from model input. This is distinct from checks omitted during capture, older evidence pages, and retention loss. Full selected citations remain inspectable in the frozen snapshot, but generated output may cite only IDs actually supplied to the model. Byte limits do not establish exact token usage or an account billing guarantee.
+
+`@cf/meta/llama-3.3-70b-instruct-fp8-fast` produces at most two possible explanations using fixed categories and next-check enums. Code rejects invalid schema, unknown or omitted citations, unrelated symptom citations, arbitrary actions, HTML, URLs, oversized output, and tool calls. A valid citation demonstrates relevance to a frozen symptom; it does not prove an explanation or root cause. The interface separates deterministic facts from all AI prose, labels that prose unverified, and renders it as escaped text. Suggestions are never executed. [Cloudflare JSON mode](https://developers.cloudflare.com/workers-ai/features/json-mode/) still requires handling output that fails the requested schema.
+
+Durable request ownership precedes inference. A same-ID retry or status read retrieves the original pending or terminal record without redispatch. No verified bad check produces deterministic insufficient evidence without a model call. Model attempts are limited to four per UTC day, one start per UTC minute, one persisted pending attempt, and a 20-second deadline. Expired ownership fences late results; provider cancellation cannot prove that remote work stopped. Missing capability and provider quota/access/capacity failures are explicit. Cloudflare's free allocation is shared across the account, so these application limits do not promise available account quota. Briefs remain private, are retained for 30 days after creation subject to incident/service eligibility, and are absent from public status and exports.
+
+The browser never automatically submits generation. Unknown responses retain their UUID in authenticated Operations memory for an intentional same-ID retry; closing and reopening the investigation preserves it, while Lock, credential changes, leaving Operations, and reload clear it. Reads recover stored results without keeping private brief data in browser storage. CI uses controlled fake AI responses. A real-model capability claim requires separate successful inference evidence; a disabled deployment or fake-provider test cannot establish it.
+
 ## Concurrency benchmark
 
 Run against a server you own:
@@ -100,3 +120,7 @@ The local results are in [benchmark-local.json](evidence/benchmark-local.json); 
 ## Evidence hierarchy
 
 Unit tests exercise deterministic state transitions and parsing. Synthetic signal timelines cover alternating failures, isolated recent failure, short-window recovery, inclusive trigger thresholds, 95% coverage boundaries, sparse maintenance, policy maturity, wrong timing/revision, duplicate ambiguity, and empty data. Runtime tests exercise workerd, SQLite transactions, real Durable Object eviction, alarm behavior, service bindings, schedule invocation, and persisted warning retention through gaps and revisions. Live tests verify deployed routing and bindings. Real autonomous scheduled samples prove the cron is operational. None alone proves all the others; CI and release evidence record them separately.
+
+## Database resource evidence
+
+The 3.3.1 shared projection reduces examined SQLite rows while preserving source-equivalent metrics. Read and write costs are separate: indexes improve reads but add writes. Controlled resource fixtures report actual consumed cursor counters, including trigger work, and distinguish initial bootstrap from repeated, advanced, repaired and evicted reads. Daily projections describe only the measured workload; they are not remaining account allowance or a global capacity guarantee. See the [resource decision](adr/005-bounded-monitoring-reads.md) and release evidence.

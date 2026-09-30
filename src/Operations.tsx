@@ -32,10 +32,21 @@ const labels: Record<string, string> = {
   unknown: 'Awaiting checks',
   maintenance: 'Maintenance',
 };
+const STATUS_REFRESH_MS = 60000;
+type OperationsFailure = {
+  error?: string;
+  code?: string;
+  reason?: string;
+  retryAtUTC?: string | null;
+};
 class OperationsRequestError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly code?: string,
+    readonly reason?: string,
+    readonly retryAtUTC?: string | null,
+    readonly retryDelayMs = STATUS_REFRESH_MS,
   ) {
     super(message);
   }
@@ -57,12 +68,25 @@ async function request<T>(
       ? AbortSignal.any([signal, AbortSignal.timeout(15000)])
       : AbortSignal.timeout(15000),
   });
-  const data = (await response.json()) as T & { error?: string };
-  if (!response.ok)
+  const data = (await response.json()) as T & OperationsFailure;
+  if (!response.ok) {
+    const retryAfter = Number(response.headers.get('Retry-After')) * 1000;
+    const serverDate = Date.parse(response.headers.get('Date') ?? '');
+    const resetAt = Date.parse(data.retryAtUTC ?? '');
+    const knownDailyLimit = ['daily-read-limit', 'daily-write-limit'].includes(data.reason ?? '');
+    const untilReset =
+      knownDailyLimit && Number.isFinite(serverDate) && Number.isFinite(resetAt)
+        ? Math.max(0, resetAt - serverDate + 1000)
+        : 0;
     throw new OperationsRequestError(
       data.error || `Request failed (${response.status})`,
       response.status,
+      data.code,
+      data.reason,
+      data.retryAtUTC,
+      Math.max(STATUS_REFRESH_MS, Number.isFinite(retryAfter) ? retryAfter : 0, untilReset),
     );
+  }
   return data;
 }
 export function Operations() {
@@ -71,6 +95,7 @@ export function Operations() {
   const receivedAt = useRef(0);
   const [windowSize, setWindowSize] = useState('24h');
   const [error, setError] = useState('');
+  const [statusFailure, setStatusFailure] = useState<OperationsRequestError | null>(null);
   const [formError, setFormError] = useState('');
   const [formErrorOwner, setFormErrorOwner] = useState<object | null>(null);
   const [notice, setNotice] = useState('');
@@ -81,6 +106,7 @@ export function Operations() {
   const [audit, setAudit] = useState<Audit | null>(null);
   const [auditWarning, setAuditWarning] = useState('');
   const [pendingNotes, setPendingNotes] = useState<Record<string, PendingIncidentNote>>({});
+  const [briefRequestIds, setBriefRequestIds] = useState<Record<string, string>>({});
   const operatorSession = useRef({ token: '', generation: 0 });
   const privateReads = useRef(new Set<AbortController>());
   const actionSequence = useRef(0);
@@ -95,41 +121,102 @@ export function Operations() {
   const [note, setNote] = useState('');
   const latest = useRef(0);
   const mounted = useRef(true);
-  async function refresh() {
-    const sequence = ++latest.current;
+  const reportingWindow = useRef(windowSize);
+  const automaticRead = useRef({ window: windowSize, nextAt: 0 });
+  const statusRead = useRef<{
+    window: string;
+    controller: AbortController;
+    promise: Promise<void>;
+  } | null>(null);
+  function refresh(options: { automatic?: boolean; fresh?: boolean } = {}): Promise<void> {
+    const window = reportingWindow.current;
+    const ongoing = statusRead.current;
+    if (!options.fresh && ongoing?.window === window) return ongoing.promise;
     const requestStartedAt = performance.now();
-    try {
-      const next = await request<OperationsSnapshot>(`status?window=${windowSize}`);
-      if (mounted.current && sequence === latest.current) {
-        receivedAt.current = requestStartedAt;
-        setAgeNow(performance.now());
-        setData(next);
-        setError('');
+    if (
+      options.automatic &&
+      automaticRead.current.window === window &&
+      requestStartedAt < automaticRead.current.nextAt
+    )
+      return Promise.resolve();
+    const sequence = ++latest.current;
+    ongoing?.controller.abort();
+    const controller = new AbortController();
+    const read = { window, controller, promise: Promise.resolve() };
+    automaticRead.current = {
+      window,
+      nextAt: Math.max(
+        requestStartedAt + STATUS_REFRESH_MS,
+        automaticRead.current.window === window ? automaticRead.current.nextAt : 0,
+      ),
+    };
+    read.promise = (async () => {
+      try {
+        const next = await request<OperationsSnapshot>(
+          `status?window=${window}`,
+          '',
+          undefined,
+          controller.signal,
+        );
+        if (mounted.current && sequence === latest.current) {
+          receivedAt.current = requestStartedAt;
+          automaticRead.current = { window, nextAt: requestStartedAt + STATUS_REFRESH_MS };
+          setAgeNow(performance.now());
+          setData(next);
+          setError('');
+          setStatusFailure(null);
+        }
+      } catch (e) {
+        if (mounted.current && sequence === latest.current && !controller.signal.aborted) {
+          const failure = e instanceof OperationsRequestError ? e : null;
+          setStatusFailure(failure);
+          setError(
+            failure?.code === 'monitor-storage-unavailable'
+              ? 'Monitoring storage is unavailable'
+              : (e as Error).message,
+          );
+          if (failure?.code === 'monitor-storage-unavailable')
+            automaticRead.current = {
+              window,
+              nextAt: Math.max(
+                automaticRead.current.nextAt,
+                performance.now() + failure.retryDelayMs,
+              ),
+            };
+        }
+      } finally {
+        if (statusRead.current === read) statusRead.current = null;
       }
-    } catch (e) {
-      if (mounted.current && sequence === latest.current) setError((e as Error).message);
-    }
+    })();
+    statusRead.current = read;
+    return read.promise;
   }
   useEffect(() => {
     mounted.current = true;
-    refresh();
-    const timer = setInterval(() => {
+    refresh({ fresh: true });
+    const ageTimer = setInterval(() => {
+      if (document.visibilityState === 'visible') setAgeNow(performance.now());
+    }, 15000);
+    const readTimer = setInterval(() => {
       if (document.visibilityState === 'visible') {
         setAgeNow(performance.now());
-        refresh();
+        refresh({ automatic: true });
       }
-    }, 15000);
+    }, STATUS_REFRESH_MS);
     const visible = () => {
       if (document.visibilityState === 'visible') {
         setAgeNow(performance.now());
-        refresh();
+        refresh({ automatic: true });
       }
     };
     document.addEventListener('visibilitychange', visible);
     return () => {
       mounted.current = false;
       latest.current++;
-      clearInterval(timer);
+      statusRead.current?.controller.abort();
+      statusRead.current = null;
+      clearInterval(ageTimer);
+      clearInterval(readTimer);
       document.removeEventListener('visibilitychange', visible);
     };
   }, [windowSize]);
@@ -187,10 +274,11 @@ export function Operations() {
       if (active()) {
         // A write confirmation stands independently of these follow-up reads.
         // Even a rejected or ambiguous write refreshes the authoritative public revision.
-        const reads: Promise<unknown>[] = [refresh()];
+        const reads: Promise<unknown>[] = options.mutation ? [refresh({ fresh: true })] : [];
         if (succeeded && options.auditAfterSuccess) reads.push(loadAudit());
         const results = await Promise.allSettled(reads);
-        if (active() && results[1]?.status === 'rejected')
+        const auditResult = results[options.mutation ? 1 : 0];
+        if (active() && options.auditAfterSuccess && auditResult?.status === 'rejected')
           setAuditWarning(
             `${changed ? 'Saved; audit refresh unavailable.' : 'Audit refresh unavailable.'} Use Refresh audit to load the latest audit trail.`,
           );
@@ -234,6 +322,7 @@ export function Operations() {
     setAudit(null);
     setAuditWarning('');
     setPendingNotes({});
+    setBriefRequestIds({});
     setNote('');
     setAcknowledgementNotice('');
     setEditing(null);
@@ -271,6 +360,12 @@ export function Operations() {
   const snapshotAge = data ? Math.max(0, performance.now() - receivedAt.current) : 0;
   const displayNow = data ? data.now + snapshotAge : 0;
   const freshServerSnapshot = data !== null && snapshotAge <= MONITOR_FRESHNESS_MS;
+  const currentSnapshotConfirmed = !error && freshServerSnapshot;
+  const storageUnavailable = statusFailure?.code === 'monitor-storage-unavailable';
+  const dailyStorageLimit =
+    storageUnavailable &&
+    ['daily-read-limit', 'daily-write-limit'].includes(statusFailure.reason ?? '');
+  const storageResetAt = dailyStorageLimit ? Date.parse(statusFailure.retryAtUTC ?? '') : NaN;
   const renderedOperatorSession = operatorSession.current;
   const monitoring = data
     ? monitoringReadiness({
@@ -285,13 +380,15 @@ export function Operations() {
       })
     : undefined;
   const observedStatus = (s: Service) =>
-    s.policy.paused
-      ? 'maintenance'
-      : !s.latest ||
-          s.latest.observedAt === null ||
-          displayNow - s.latest.observedAt > MONITOR_FRESHNESS_MS
-        ? 'unknown'
-        : s.status;
+    !currentSnapshotConfirmed
+      ? 'unknown'
+      : s.policy.paused
+        ? 'maintenance'
+        : !s.latest ||
+            s.latest.observedAt === null ||
+            displayNow - s.latest.observedAt > MONITOR_FRESHNESS_MS
+          ? 'unknown'
+          : s.status;
   const open = data?.incidents.filter((i) => !i.resolved) ?? [];
   const service = data?.services.find((s) => s.id === selected) ?? data?.services[0];
   const currentAcknowledgement = acknowledging
@@ -312,7 +409,10 @@ export function Operations() {
           <select
             id="ops-window"
             value={windowSize}
-            onChange={(e) => setWindowSize(e.target.value)}
+            onChange={(e) => {
+              reportingWindow.current = e.target.value;
+              setWindowSize(e.target.value);
+            }}
           >
             <option value="24h">Last 24 hours</option>
             <option value="7d">Last 7 days</option>
@@ -336,8 +436,18 @@ export function Operations() {
       )}
       {error && (
         <div className="error-banner" role="alert">
-          Status refresh unavailable: {error}. Cached observations are shown; current monitoring
-          cannot be confirmed.
+          Status refresh unavailable: {error}.{' '}
+          {data ? 'Cached observations are shown.' : 'No monitoring snapshot has loaded.'} Current
+          monitoring cannot be confirmed.
+          {dailyStorageLimit && (
+            <>
+              {' '}
+              Daily monitoring storage limit reached.
+              {Number.isFinite(storageResetAt)
+                ? ` The server reports a quota reset at ${new Date(storageResetAt).toUTCString()}. Retry after that time; automatic reads are backed off.`
+                : ' Automatic reads are backed off; retry after the daily quota resets.'}
+            </>
+          )}
         </div>
       )}
       {auditWarning && (
@@ -352,7 +462,10 @@ export function Operations() {
         </div>
       )}
       {monitoring && (
-        <div className={`ops-monitoring ${monitoring.status}`} role="status">
+        <div
+          className={`ops-monitoring ${currentSnapshotConfirmed ? monitoring.status : 'partial'}`}
+          role="status"
+        >
           <div>
             <strong>
               {error
@@ -391,15 +504,21 @@ export function Operations() {
         </div>
         <div>
           <span>OPEN INCIDENTS</span>
-          <strong className={open.length ? 'ops-red' : 'ops-green'}>
+          <strong className={open.length ? 'ops-red' : currentSnapshotConfirmed ? 'ops-green' : ''}>
             {data ? open.length : '—'}
           </strong>
-          <small>{open.length ? 'Investigation required' : 'No detected active incidents'}</small>
+          <small>
+            {!currentSnapshotConfirmed
+              ? 'Current incident state unconfirmed'
+              : open.length
+                ? 'Investigation required'
+                : 'No detected active incidents'}
+          </small>
         </div>
         <div>
           <span>OBSERVED CHECKS</span>
           <strong>{data ? checks.toLocaleString() : '—'}</strong>
-          <small>Verified finished minutes · {windowSize}</small>
+          <small>Verified finished minutes · {data?.window ?? windowSize}</small>
         </div>
         <div>
           <span>MISSING CHECKS</span>
@@ -453,7 +572,11 @@ export function Operations() {
         {tab === 'services' && (
           <>
             {!data ? (
-              <div className="ops-empty">Connecting to the monitoring coordinator…</div>
+              <div className="ops-empty">
+                {error
+                  ? 'Monitoring observations are unavailable. Refresh to try again.'
+                  : 'Connecting to the monitoring coordinator…'}
+              </div>
             ) : !data.services.length ? (
               <div className="ops-empty">
                 No services configured. Add deployment-approved targets in wrangler.jsonc.
@@ -481,7 +604,9 @@ export function Operations() {
                           </small>
                         </span>
                         <span className={`health-badge ${observedStatus(s)}`}>
-                          {labels[observedStatus(s)]}
+                          {!currentSnapshotConfirmed
+                            ? 'Current state unconfirmed'
+                            : labels[observedStatus(s)]}
                         </span>
                       </div>
                       <div className="service-metrics">
@@ -562,7 +687,14 @@ export function Operations() {
                         observation timing are excluded from the SLO.
                       </p>
                     )}
-                    <BudgetSignalsPanel budget={service.budget} snapshotNow={displayNow} />
+                    <BudgetSignalsPanel
+                      budget={
+                        storageUnavailable && service.budget.evaluationStatus === 'current'
+                          ? { ...service.budget, evaluationStatus: 'stale' }
+                          : service.budget
+                      }
+                      snapshotNow={displayNow}
+                    />
                     <div className="ops-chart-heading">
                       <h3>Observation history</h3>
                       <div className="ops-legend">
@@ -645,10 +777,23 @@ export function Operations() {
               Incidents follow measured failures and recoveries. Acknowledging records ownership;
               recovery requires successful checks.
             </p>
-            {!data?.incidents.length ? (
+            {!data ? (
+              <div className="ops-empty">
+                <h3>Incident state unconfirmed</h3>
+                <p>
+                  {error
+                    ? 'Monitoring storage could not be read. Refresh to try again.'
+                    : 'Waiting for the first monitoring snapshot.'}
+                </p>
+              </div>
+            ) : !data.incidents.length ? (
               <div className="ops-empty">
                 <ShieldCheck size={30} />
-                <h3>No recorded incidents</h3>
+                <h3>
+                  {currentSnapshotConfirmed
+                    ? 'No recorded incidents'
+                    : 'No incidents in the cached snapshot'}
+                </h3>
                 <p>
                   There is no invented history. Incidents appear after a service crosses its failure
                   threshold.
@@ -795,6 +940,7 @@ export function Operations() {
                     abortPrivateReads();
                     operatorSession.current = { token: key, generation: session.generation + 1 };
                     setPendingNotes({});
+                    setBriefRequestIds({});
                     setAudit(nextAudit);
                     setAuditWarning('');
                     setToken(key);
@@ -822,9 +968,9 @@ export function Operations() {
                   Unlock console
                 </button>
                 <small>
-                  The token and pending notes stay in this browser tab until Lock, leaving
-                  Operations, or page reload. Provision or rotate the token with the repository’s
-                  operator setup command.
+                  The token, pending notes, and retained brief request IDs stay in this browser tab
+                  until Lock, leaving Operations, or page reload. Provision or rotate the token with
+                  the repository’s operator setup command.
                 </small>
               </form>
             ) : (
@@ -893,7 +1039,7 @@ export function Operations() {
       <footer className="ops-footer">
         <span>
           Snapshot {data ? new Date(data.now).toLocaleTimeString() : 'pending'} · refreshes every
-          15s while visible
+          60s while visible · cached evidence keeps aging between reads
         </span>
         <a href="https://github.com/HenryWashuHe/edgelab" target="_blank" rel="noreferrer">
           Source & reproducible tests <ArrowUpRight size={14} />
@@ -908,6 +1054,20 @@ export function Operations() {
           }
           token={token}
           submission={token ? (pendingNotes[investigating.id] ?? null) : null}
+          briefRequestId={token ? (briefRequestIds[investigating.id] ?? null) : null}
+          changeBriefRequestId={(requestId) => {
+            if (
+              !mounted.current ||
+              !renderedOperatorSession.token ||
+              operatorSession.current !== renderedOperatorSession
+            )
+              return;
+            setBriefRequestIds((previous) =>
+              operatorSession.current === renderedOperatorSession
+                ? { ...previous, [investigating.id]: requestId }
+                : previous,
+            );
+          }}
           changeSubmission={(submission) => {
             if (
               !mounted.current ||

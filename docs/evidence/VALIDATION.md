@@ -1,5 +1,27 @@
 # Verification record
 
+## EdgeLab 3.3.1
+
+Gateway deployment: `39e332e2-226f-40df-94f5-e85a6d0b5887`. The private origin is unchanged; AI generation stays disabled. Production autonomous recovery remains pending the Free-plan daily quota reset. The last successful full live monitoring verification remains 3.2.1.
+
+Formatting, 95 unit tests, strict TypeScript, production assets and both Worker bundles pass. Actual workerd/SQLite monitoring, migration, budget, incident, brief and lab lifecycle suites pass after integration. Budget evaluations and both dashboard windows match the original source SQL across mixed outcomes, maintenance, legacy/invalid start times, policy revisions, gaps, corrections, retention and eviction. The gateway failure fixture verifies sanitized503 responses, liveness/readiness separation, failed exports, cooldown and auth precedence.
+
+The [check-cache measurements](releases/3.3.1-check-cache.json) record actual cursor reads for original queries and persisted projections. Covered late inserts, updates, deletes, moved slots/services, empty gaps, corruption, rollback and migration repair preserve source equivalence. Bounded incident listing preserves all active open incidents plus the exact global latest100 resolved with stable ties and no private-note leakage. The [whole-monitor measurements](releases/3.3.1-monitor-cost.json) include trigger/index costs: two targets use78 reads/40 writes per warm minute with steady retention, while five targets use82 writes and exceed the Free daily write allowance when projected over a day. These controlled workloads exclude other account activity and initial migrations.
+
+Browser checks showed cached service and incident states become unconfirmed on a structured quota failure. An initial failure showed no loaded snapshot and no invented zero-incident result. The [local browser backoff record](releases/3.3.1-browser-backoff.json) confirms no automatic status request for128seconds after the known limit, while local evidence continued aging.
+
+The [live storage-boundary record](releases/3.3.1-storage-boundary.json) verifies the deployed gateway version, structured quota503s and auth precedence. This deliberately records unavailable monitoring; it does not claim new successful cron minutes or native inference. Full production verification must run after reset and observe genuinely new autonomous checks.
+
+## EdgeLab 3.3
+
+Gateway deployment: `2a626843-eb51-4a56-9424-b2629d4e22f6`. The private origin implementation was unchanged. The deployed Workers AI binding is present, while `AI_BRIEFS_ENABLED` remains `false`. No native inference was performed; model access, live output quality, and remaining shared AI allocation are unverified. The deployed runtime reports Free-plan storage enforcement.
+
+Formatting, 92 unit tests, strict TypeScript, production assets, and both Worker dry-run bundles passed. The existing monitoring, incident, schema-upgrade, budget and resilience-lab lifecycle runtime suites passed. Nine additional actual workerd/SQLite groups cover private admission, disabled capability, immutable capture, insufficient evidence, UUID replay/conflicts, concurrency, independent cron progress, UTC quota rollover, latest-five listing, malformed/tool/oversized provider envelopes, sanitized failures, deadline ownership, replaced tokens, interruption, source-history pruning, orphan cleanup, service eligibility and 30-day retention.
+
+The [local brief QA record](releases/3.3.0-brief-qa.json) uses the actual Worker/SQLite runtime with a controlled fake provider and a separate fault proxy. Browser checks cover frozen facts, inspectable citations and hash provenance, confirmed response loss with two same-UUID POST deliveries and one provider dispatch, pending completion after dialog closure, rejected model output, daily admission exhaustion, disabled generation with retained history, Lock aborting a private read, and insufficient evidence without inference. Escape restores focus to the incident trigger. Production incident history was not seeded. The mobile viewport control did not apply during this run; the new panel was verified at 1280px, and this release does not claim a new mobile browser check.
+
+Production verification failed: status and readiness returned HTTP 500, and a live Worker exception identified exhausted Free-plan database row reads. No 3.3 autonomous verification artifact was produced. The last successful full production verification remains the 3.2.1 record. The quota failure led to a derived-check cache, indexed cleanup and explicit unavailable responses in 3.3.1. Stored source evidence was preserved.
+
 ## EdgeLab 3.2.1
 
 Gateway deployment: `4f4abd2e-7004-466a-aaf2-577f2201b417`. The private origin implementation was unchanged.

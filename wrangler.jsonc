@@ -10,6 +10,7 @@
     "run_worker_first": ["/api/*"],
   },
   "services": [{ "binding": "ORIGIN", "service": "edgelab-origin" }],
+  "ai": { "binding": "AI" },
   "durable_objects": {
     "bindings": [
       { "name": "LABS", "class_name": "ReliabilityLab" },
@@ -22,6 +23,7 @@
   ],
   "triggers": { "crons": ["* * * * *"] },
   "vars": {
+    "AI_BRIEFS_ENABLED": "false",
     "MONITOR_TARGETS": "[{\"id\":\"catalog\",\"name\":\"Catalog service\",\"url\":\"https://origin.internal/catalog\",\"transport\":\"origin\",\"assertion\":\"catalog-json\"},{\"id\":\"gateway\",\"name\":\"Gateway API\",\"url\":\"https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/api/health\",\"transport\":\"https\",\"assertion\":\"ok-json\"}]",
   },
   "observability": { "enabled": true },

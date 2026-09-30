@@ -13,7 +13,7 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 ## Verify an actual release
 
 1. Confirm the published commit passes GitHub CI.
-2. For a v3.2.1 release, `GET /api/health` must report version 3.2.1. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
+2. For a v3.3 release, `GET /api/health` must report version 3.3.1. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
 3. `GET /api/ops/status` must list the expected target names. Public output must not contain the operator token, target URLs, or investigation notes.
 4. Allow cron propagation ([Cloudflare documents up to 15 minutes](https://developers.cloudflare.com/workers/configuration/cron-triggers/)). Verify each service receives observations in two distinct scheduled minutes without clicking a “run” button. Check `latest.slot`, the actual probe start `latest.observedAt`, and completion `latest.at`, not just the page's snapshot timestamp. Trigger propagation is not permission to backfill: an invocation whose scheduled minute has passed is recorded as `skipped-late` and makes no observation.
 5. The private catalog probe must validate actual JSON through its service binding; the gateway probe must reach the configured public HTTPS health endpoint.
@@ -38,6 +38,18 @@ The dashboard preserves an uncertain note's request ID and exact body in authent
 If monitoring itself stops, service status becomes unknown and missing coverage rises. `/api/ready` permits at most three minutes since the last completed scheduled run and the actual start of every active service's latest current-revision check. It returns `starting` before any run completes, `stalled` for stale or impossible scheduler evidence, and `partial` when the scheduler is fresh but an active service lacks fresh evidence. Paused services are ignored; a fresh scheduler with all services paused is healthy and states that no probes are expected. This endpoint measures monitoring freshness, not upstream success.
 
 Investigate cron configuration, deployment errors, quotas, `monitor.tick` logs, and the status snapshot's latest 20 persisted scheduler events. A skipped late event cannot fill a historical gap. Check `/api/ready` from outside Cloudflare for correlated provider outages. The system does not convert missing probes into good samples or close incidents automatically.
+
+## Workers AI investigation briefs
+
+Unlock Operations and open an incident to inspect its private brief panel. Normal evidence and private notes work independently of inference. The AI binding is declared by deployment configuration, while `AI_BRIEFS_ENABLED` defaults to `false`; disabled capability is reported honestly. Confirm the account's Workers plan and shared [AI allocation](https://developers.cloudflare.com/workers-ai/platform/pricing/) before setting this deployment variable to `true` and deploying. The application does not upgrade billing. On Free, exhausted allocation fails; on Paid, other account activity can cause overage even when this application's cap is respected.
+
+Generate sends `{incident, requestId}` to `POST /api/ops/incident-brief`. Keep that UUID after a lost response and use `GET /api/ops/incident-briefs/<requestId>` to retrieve its state. Retrying the same UUID while its record is retained never starts another inference. After the 30-day record expires, use a new UUID; the old identifier no longer supplies deduplication. A private read may mark an expired pending lease interrupted, but cannot run AI. The authenticated per-incident `/briefs` route returns the latest five requests, capability and deployment-wide quota. Terminal failed/interrupted records require a new deliberate generation with a new UUID; there is no automatic repair, fallback or retry.
+
+Each request freezes the newest bounded public-safe evidence slice with deterministic counts, historical policy context, lifecycle, limitations and SHA-256. It excludes operator notes, target URLs, credentials and raw response bodies. The model sees a representative bounded subset, with omissions reported separately. Inspect frozen citations beside each unverified hypothesis; they establish a relevant symptom, not a proven cause. Suggestions are allowlisted investigation labels and are never executed. No AI result changes policy, incident state or private notes.
+
+Four attempted starts per UTC day, one start per UTC minute, one pending inference and a 20-second deadline apply. Provider/validation failures consume their reservation. Crashes or expired dispatch ownership become terminal interrupted records. These guarantees bound application dispatch and cannot establish exactly-once provider billing. Provider access, allocation, capacity, timeout and invalid output have sanitized failure states. If retained evidence has no verified bad checks, the request records insufficient evidence without calling AI.
+
+Opening/reopening the panel and bounded polling perform only reads. The authenticated browser session retains its requested UUID across modal close/reopen; Lock, new credentials, leaving Operations and reload clear that session reference. History remains available through the authenticated server lookup while retained. Delayed callbacks cannot restore private results after Lock. Briefs expire 30 days after creation; public status, exports and incident evidence never include them. Automated checks use fake providers and cannot alone prove the native model was run. Record any real controlled-replay verification separately from production incident history.
 
 ## Investigating a budget signal
 
@@ -95,3 +107,11 @@ If workerd reports SQLite busy, another dev process likely uses the same `.wrang
 Two monitored services produce at most 2,880 scheduled probes/day, plus cron invocations, storage, reads, and lab traffic. This is an invocation estimate, not a bill. Five targets cap deployment fan-out. Each probe is bounded at 10 seconds maximum; default is 3 seconds. Public status queries and lab sessions still consume account quota. Restrict access using Cloudflare Access when exposing only to reviewers; add an independent perimeter policy before offering this as an anonymous multi-tenant service.
 
 References: [Cron triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/), [SQLite Durable Objects](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/), [Service bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/).
+
+## Storage-limit recovery
+
+A 503 with code `monitor-storage-unavailable` means current monitoring cannot be confirmed. `daily-read-limit` and `daily-write-limit` identify Free-plan database quota exceptions; `retryAtUTC` gives the next midnight UTC. A generic storage failure has a null reset time. Gateway `/api/health` can still respond while `/api/ready` is unavailable. An export failure returns JSON without an attachment or invented healthy report.
+
+Keep source checks and incidents. A rollback does not restore an exhausted shared allowance, and deleting history is not a quota refund. Browser automatic status reads back off using server response time; explicit refresh remains available. After the reset, require new autonomous observations and healthy readiness before declaring recovery. The release verifier does not invoke a manual tick. Do not upgrade billing as an automatic recovery action.
+
+The seven-day check projection is derived data; cache invalidation, mutation repair and legacy migration preserve the original source. Indexed cleanup avoids repeated table scans. New indexes have an initial read/write cost. The isolated whole-monitor fixture measures the two-target deployment and the five-target configuration separately; other account traffic, fresh migrations, abnormal churn and resilience-lab usage consume additional allowance.

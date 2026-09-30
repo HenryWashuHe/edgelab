@@ -1,0 +1,8 @@
+{
+  "verifiedAt": "2026-09-30T07:11:56.588Z",
+  "elapsedMs": 128599,
+  "statusRequestsAtStart": 12,
+  "statusRequestsAtEnd": 12,
+  "environment": "Local fake quota failure; actual browser",
+  "claim": "No automatic status read during a full60secondcadenceafter recognizedquotafailure"
+}

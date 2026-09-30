@@ -7,6 +7,7 @@ import type {
   IncidentPolicyVersion,
 } from '../worker/incident-evidence';
 import './incident-workspace.css';
+import { IncidentBriefPanel } from './IncidentBriefPanel';
 
 const when = (at: number | null) => (at === null ? 'Unavailable' : new Date(at).toLocaleString());
 const lifecycleLabels = {
@@ -38,6 +39,8 @@ export function IncidentWorkspace({
   token,
   submission,
   changeSubmission,
+  briefRequestId,
+  changeBriefRequestId,
   close,
 }: {
   incidentId: string;
@@ -45,6 +48,8 @@ export function IncidentWorkspace({
   token: string;
   submission: PendingIncidentNote | null;
   changeSubmission: (submission: PendingIncidentNote | null) => void;
+  briefRequestId: string | null;
+  changeBriefRequestId: (requestId: string) => void;
   close: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -335,6 +340,14 @@ export function IncidentWorkspace({
                 </button>
               )}
             </section>
+            {token && (
+              <IncidentBriefPanel
+                incidentId={incidentId}
+                token={token}
+                requestId={briefRequestId}
+                changeRequestId={changeBriefRequestId}
+              />
+            )}
             <section className="investigation-section investigation-notes">
               <h3>
                 <LockKeyhole size={16} /> Private investigation notes

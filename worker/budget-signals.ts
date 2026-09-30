@@ -1,11 +1,7 @@
-import {
-  evaluateBurnRates,
-  type BurnRateCheck,
-  type BurnRateEvaluation,
-  type BurnRuleEvidence,
-} from './burn-rate';
+import { evaluateBurnRates, type BurnRateEvaluation, type BurnRuleEvidence } from './burn-rate';
 import { MINUTE, type MonitorPolicy } from './monitor-domain';
 import type { IncidentPolicyVersion } from './incident-evidence';
+import { MonitorCheckCache } from './monitor-check-cache';
 
 export type BudgetFiringEvidence = {
   firstFiredAt: number;
@@ -40,12 +36,21 @@ const EVALUATION_FRESHNESS_MS = 180000;
 
 /** One current evaluation and one retained warning per approved service; no delivery side effects. */
 export class BudgetSignals {
-  constructor(private readonly storage: DurableObjectStorage) {}
+  private readonly checkCache: MonitorCheckCache;
+  private readonly ownsCheckCache: boolean;
+  constructor(
+    private readonly storage: DurableObjectStorage,
+    checkCache?: MonitorCheckCache,
+  ) {
+    this.checkCache = checkCache ?? new MonitorCheckCache(storage);
+    this.ownsCheckCache = checkCache === undefined;
+  }
 
   ensureSchema() {
     this.storage.sql.exec(
       'CREATE TABLE IF NOT EXISTS budget_signals (service TEXT PRIMARY KEY, revision INTEGER NOT NULL, computed_at INTEGER NOT NULL, evaluation TEXT NOT NULL, last_firing TEXT)',
     );
+    if (this.ownsCheckCache) this.checkCache.ensureSchema();
   }
 
   private rows<T extends Record<string, SqlStorageValue>>(
@@ -65,12 +70,9 @@ export class BudgetSignals {
       throw new Error('Budget policy context must match the evaluated service revision and policy');
     return this.storage.transactionSync(() => {
       const end = Math.floor(input.now / MINUTE) - 1;
-      const checks = this.rows<BurnRateCheck>(
-        'SELECT slot,observed_at AS observedAt,revision,outcome FROM checks WHERE service=? AND slot BETWEEN ? AND ? ORDER BY slot',
-        input.service,
-        end - MAX_WINDOW_MINUTES + 1,
-        end,
-      );
+      const checks = this.checkCache
+        .read(input.service, end)
+        .filter((check) => check.slot >= end - MAX_WINDOW_MINUTES + 1);
       const evaluation = evaluateBurnRates({
         now: input.now,
         revision: input.revision,

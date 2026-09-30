@@ -79,6 +79,12 @@ export class IncidentEvidence {
     this.storage.sql.exec(
       'CREATE INDEX IF NOT EXISTS incident_notes_by_incident ON incident_notes(incident, at, id)',
     );
+    this.storage.sql.exec(
+      'CREATE INDEX IF NOT EXISTS incidents_open_by_service ON incidents(service,opened DESC,id DESC) WHERE resolved IS NULL',
+    );
+    this.storage.sql.exec(
+      'CREATE INDEX IF NOT EXISTS incidents_resolved_by_service ON incidents(service,opened DESC,id DESC) WHERE resolved IS NOT NULL',
+    );
   }
 
   private rows<T extends Record<string, SqlStorageValue>>(
@@ -92,16 +98,28 @@ export class IncidentEvidence {
   list(activeIds: Iterable<string>): PublicIncident[] {
     const ids = [...new Set(activeIds)];
     if (!ids.length) return [];
-    const placeholders = ids.map(() => '?').join(',');
-    const open = this.rows<IncidentRow>(
-      `SELECT * FROM incidents WHERE service IN (${placeholders}) AND resolved IS NULL ORDER BY opened DESC, id DESC`,
-      ...ids,
-    );
-    const resolved = this.rows<IncidentRow>(
-      `SELECT * FROM incidents WHERE service IN (${placeholders}) AND resolved IS NOT NULL ORDER BY opened DESC, id DESC LIMIT 100`,
-      ...ids,
-    );
-    return [...open, ...resolved].map(publicIncident);
+    const order = (left: IncidentRow, right: IncidentRow) =>
+      right.opened - left.opened || (left.id < right.id ? 1 : left.id > right.id ? -1 : 0);
+    const open: IncidentRow[] = [];
+    const resolved: IncidentRow[] = [];
+    for (const id of ids) {
+      open.push(
+        ...this.rows<IncidentRow>(
+          'SELECT * FROM incidents WHERE service=? AND resolved IS NULL ORDER BY opened DESC,id DESC',
+          id,
+        ),
+      );
+      // A row below its service's top 100 cannot enter the global top 100.
+      // Per-service indexed limits avoid scanning all resolved history to sort
+      // a multi-service IN query; all active open incidents remain untruncated.
+      resolved.push(
+        ...this.rows<IncidentRow>(
+          'SELECT * FROM incidents WHERE service=? AND resolved IS NOT NULL ORDER BY opened DESC,id DESC LIMIT 100',
+          id,
+        ),
+      );
+    }
+    return [...open.sort(order), ...resolved.sort(order).slice(0, 100)].map(publicIncident);
   }
 
   detail(

@@ -1,0 +1,215 @@
+.incident-brief {
+  color: #4e6373;
+}
+.brief-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0;
+}
+.brief-quota,
+.brief-request-id {
+  font-size: 11px;
+  line-height: 1.8;
+  color: #71818d;
+  overflow-wrap: anywhere;
+}
+.brief-history {
+  margin: 18px 0;
+}
+.brief-history label {
+  display: block;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+.brief-history select {
+  width: min(100%, 560px);
+  padding: 10px;
+  color: #425b6e;
+  background: #fff;
+  border: 1px solid #dce3e9;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+}
+.brief-state {
+  border-left: 3px solid #8e9ead;
+  padding: 12px 16px;
+  background: #f5f7f9;
+  margin: 18px 0;
+}
+.brief-state.complete {
+  border-color: #5c947e;
+}
+.brief-state.failed,
+.brief-state.interrupted {
+  border-color: #c17c58;
+}
+.brief-state p {
+  margin: 7px 0 0;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.incident-brief h4 {
+  font-size: 13px;
+  margin: 18px 0 10px;
+  color: #304353;
+}
+.brief-observed > p,
+.brief-explanations p {
+  font-size: 12px;
+  line-height: 1.8;
+}
+.brief-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+.brief-facts dt {
+  color: #71818d;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.brief-facts dd {
+  margin: 6px 0 0;
+  font-size: 17px;
+  color: #304353;
+}
+.brief-caution {
+  font-size: 11px !important;
+  line-height: 1.8;
+  padding: 12px 14px;
+  background: #fff9ec;
+  border: 1px solid #ece0c7;
+  border-radius: 6px;
+  color: #806842;
+}
+.brief-snapshot,
+.brief-provenance {
+  margin-top: 16px;
+  font-size: 11px;
+}
+.brief-snapshot summary,
+.brief-provenance summary,
+.brief-citations summary {
+  cursor: pointer;
+  color: #4f6d83;
+  line-height: 1.8;
+}
+.brief-snapshot-table {
+  max-height: min(350px, 40dvh);
+  overflow: auto;
+  margin-top: 14px;
+  border: 1px solid #e3e9ef;
+  border-radius: 6px;
+}
+.brief-snapshot table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.brief-snapshot caption {
+  padding: 10px 12px;
+  text-align: left;
+  color: #71818d;
+  background: #fafbfd;
+}
+.brief-snapshot th,
+.brief-snapshot td {
+  padding: 10px 12px;
+  border-top: 1px solid #e9edf0;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+.brief-snapshot th {
+  position: sticky;
+  top: 0;
+  background: #fafbfd;
+  color: #71818d;
+}
+.brief-snapshot-policy {
+  margin: 12px 0;
+}
+.brief-snapshot-policy p,
+.brief-snapshot-lifecycle {
+  font-size: 11px;
+  line-height: 1.8;
+}
+.brief-explanations {
+  padding-top: 10px;
+  margin-top: 20px;
+  border-top: 1px solid #e9edf0;
+}
+.brief-explanations article {
+  padding: 14px 16px;
+  border: 1px solid #e2e8ee;
+  border-radius: 7px;
+  margin: 12px 0;
+  background: #fafbfd;
+}
+.brief-explanations article > p {
+  margin: 0 0 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.brief-citations {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.brief-citations details {
+  font-size: 11px;
+  padding: 8px 10px;
+  border: 1px solid #e2e8ee;
+  border-radius: 5px;
+  background: #fff;
+}
+.brief-citations p {
+  font-size: 11px;
+  margin: 8px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.brief-citations small {
+  color: #71818d;
+  overflow-wrap: anywhere;
+}
+.brief-explanations .brief-next-label {
+  margin: 14px 0 4px;
+  font-size: 11px;
+}
+.brief-explanations ul {
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 6px 0 0;
+}
+.brief-provenance dl > div {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 10px;
+  line-height: 1.7;
+}
+.brief-provenance dt {
+  color: #71818d;
+}
+.brief-provenance dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .brief-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .brief-provenance dl > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .brief-controls > button {
+    flex: 1;
+    justify-content: center;
+  }
+}

@@ -17,11 +17,15 @@ import { probe } from './monitor-probe';
 import { IncidentEvidence, type IncidentPolicyVersion } from './incident-evidence';
 import { classifyTick, monitoringReadiness } from './monitor-readiness';
 import { BudgetSignals } from './budget-signals';
+import { IncidentBriefs } from './incident-briefs';
+import { MonitorCheckCache } from './monitor-check-cache';
 export interface MonitorEnv {
   MONITORS: DurableObjectNamespace<MonitorStore>;
   ORIGIN: Fetcher;
   MONITOR_TARGETS?: string;
   OPERATOR_TOKEN?: string;
+  AI?: Ai;
+  AI_BRIEFS_ENABLED?: string;
 }
 type ServiceRow = {
   id: string;
@@ -58,6 +62,8 @@ const reply = (data: unknown, status = 200) =>
 export class MonitorStore extends DurableObject<MonitorEnv> {
   private evidence: IncidentEvidence;
   private budgets: BudgetSignals;
+  private briefs: IncidentBriefs;
+  private checkCache: MonitorCheckCache;
   constructor(ctx: DurableObjectState, env: MonitorEnv) {
     super(ctx, env);
     const sql = ctx.storage.sql;
@@ -68,6 +74,9 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       'CREATE TABLE IF NOT EXISTS checks (service TEXT NOT NULL, slot INTEGER NOT NULL, at INTEGER NOT NULL, outcome TEXT NOT NULL, status INTEGER, latency INTEGER NOT NULL, revision INTEGER NOT NULL, PRIMARY KEY(service, slot))',
     );
     sql.exec('CREATE INDEX IF NOT EXISTS checks_retention ON checks(at)');
+    sql.exec('CREATE INDEX IF NOT EXISTS checks_policy_version ON checks(service,revision)');
+    this.checkCache = new MonitorCheckCache(ctx.storage);
+    this.checkCache.ensureSchema();
     // Existing observations cannot prove when their probe started. Preserve them as
     // legacy evidence, but never invent a timestamp or include them in verified SLOs.
     const columns = sql.exec<{ name: string }>('PRAGMA table_info(checks)').toArray();
@@ -82,6 +91,8 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
           state.lastSlot = null;
           sql.exec('UPDATE services SET state=? WHERE id=?', JSON.stringify(state), row.id);
         }
+        // Keep projection invalidation atomic with the legacy timing reset.
+        this.checkCache.invalidateAll();
       });
     }
     sql.exec(
@@ -93,19 +104,29 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
     sql.exec(
       'CREATE TABLE IF NOT EXISTS jobs (service TEXT NOT NULL, slot INTEGER NOT NULL, token TEXT NOT NULL, lease INTEGER NOT NULL, done INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(service, slot))',
     );
+    sql.exec('CREATE INDEX IF NOT EXISTS jobs_retention ON jobs(slot)');
+    sql.exec('CREATE INDEX IF NOT EXISTS jobs_pending ON jobs(service,lease) WHERE done=0');
     sql.exec(
       "CREATE TABLE IF NOT EXISTS incidents (id TEXT PRIMARY KEY, service TEXT NOT NULL, opened INTEGER NOT NULL, resolved INTEGER, acknowledged INTEGER, note TEXT NOT NULL DEFAULT '')",
     );
     sql.exec(
       'CREATE UNIQUE INDEX IF NOT EXISTS one_open_incident ON incidents(service) WHERE resolved IS NULL',
     );
+    sql.exec('CREATE INDEX IF NOT EXISTS incidents_retention ON incidents(resolved)');
+    sql.exec('CREATE INDEX IF NOT EXISTS scheduler_events_retention ON scheduler_events(at)');
+    sql.exec('CREATE INDEX IF NOT EXISTS scheduler_events_status ON scheduler_events(status,id)');
     sql.exec(
       'CREATE TABLE IF NOT EXISTS audit (id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER NOT NULL, action TEXT NOT NULL, service TEXT NOT NULL, detail TEXT NOT NULL)',
     );
+    sql.exec('CREATE INDEX IF NOT EXISTS audit_retention ON audit(at)');
     this.evidence = new IncidentEvidence(ctx.storage);
     this.evidence.ensureSchema();
-    this.budgets = new BudgetSignals(ctx.storage);
+    sql.exec('CREATE INDEX IF NOT EXISTS incident_notes_retention ON incident_notes(at)');
+    this.budgets = new BudgetSignals(ctx.storage, this.checkCache);
     this.budgets.ensureSchema();
+    this.briefs = new IncidentBriefs(ctx.storage, () => this.now());
+    this.briefs.ensureSchema();
+    sql.exec('CREATE INDEX IF NOT EXISTS incident_briefs_retention ON incident_briefs(created_at)');
   }
   /** Overridden only by the workerd test fixture; production uses wall-clock time. */
   protected now() {
@@ -206,6 +227,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
     const targets = this.syncTargets();
     const activeIds = targets.map((target) => target.id);
     const url = new URL(request.url);
+    const briefAI = this.env.AI_BRIEFS_ENABLED === 'true' ? this.env.AI : undefined;
     if (request.method === 'GET' && url.pathname === '/status')
       return reply(this.snapshot(targets, url.searchParams.get('window') === '7d' ? 10080 : 1440));
     if (request.method === 'GET' && url.pathname === '/ready') {
@@ -214,6 +236,30 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         { ok: monitoring.status === 'healthy', monitoring },
         monitoring.status === 'healthy' ? 200 : 503,
       );
+    }
+    const incidentBriefs = /^\/incidents\/([0-9a-f-]{36})\/briefs$/i.exec(url.pathname);
+    const briefDetail = /^\/incident-briefs\/([0-9a-f-]{36})$/i.exec(url.pathname);
+    if (incidentBriefs || briefDetail || url.pathname === '/incident-brief') {
+      if (request.headers.get('X-Operator-Authorized') !== 'true')
+        return reply({ error: 'Operator token required' }, 401);
+      if (request.method === 'GET' && incidentBriefs) {
+        const result = this.briefs.list(incidentBriefs[1], activeIds, this.now(), Boolean(briefAI));
+        return reply(result.data, result.status);
+      }
+      if (request.method === 'GET' && briefDetail) {
+        const result = this.briefs.read(briefDetail[1], activeIds, this.now());
+        return reply(result.data, result.status);
+      }
+      if (request.method === 'POST' && url.pathname === '/incident-brief') {
+        const result = await this.briefs.generate(
+          await request.json(),
+          activeIds,
+          this.now(),
+          briefAI,
+        );
+        return reply(result.data, result.status);
+      }
+      return reply({ error: 'Method not allowed' }, 405);
     }
     if (request.method === 'GET' && url.pathname.startsWith('/incidents/')) {
       const raw = url.searchParams.get('before');
@@ -296,6 +342,8 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         this.ctx.storage.sql.exec('DELETE FROM scheduler_events WHERE at < ?', cutoff);
         this.evidence.prune(cutoff);
         this.budgets.prune(cutoff, activeIds);
+        this.briefs.prune(cutoff, activeIds);
+        this.checkCache.prune(activeIds);
         this.ctx.storage.sql.exec(
           'DELETE FROM service_versions WHERE NOT EXISTS(SELECT 1 FROM checks WHERE checks.service=service_versions.service AND checks.revision=service_versions.revision) AND NOT EXISTS(SELECT 1 FROM services WHERE services.id=service_versions.service AND services.revision=service_versions.revision)',
         );
@@ -519,27 +567,41 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
           target.id,
         )[0] ?? null;
       const bounds = windowBounds(row.created, now, minutes);
-      const stats = this.rows<{
-        total: number;
-        observed: number;
-        good: number;
-        maintenance: number;
-        unverified: number;
-      }>(
-        "SELECT COUNT(*) total, COALESCE(SUM(outcome!='maintenance' AND observed_at IS NOT NULL),0) observed, COALESCE(SUM(outcome='good' AND observed_at IS NOT NULL),0) good, COALESCE(SUM(outcome='maintenance' AND observed_at IS NOT NULL),0) maintenance, COALESCE(SUM(observed_at IS NULL),0) unverified FROM checks WHERE service=? AND slot BETWEEN ? AND ?",
-        target.id,
-        bounds.start,
-        bounds.end,
-      )[0];
-      const p95 = stats.observed
-        ? (this.rows<{ latency: number }>(
-            "SELECT latency FROM checks WHERE service=? AND slot BETWEEN ? AND ? AND outcome!='maintenance' AND observed_at IS NOT NULL ORDER BY latency LIMIT 1 OFFSET ?",
-            target.id,
-            bounds.start,
-            bounds.end,
-            Math.ceil(stats.observed * 0.95) - 1,
-          )[0]?.latency ?? null)
-        : null;
+      const windowChecks = this.checkCache
+        .read(target.id, bounds.end)
+        .filter((check) => check.slot >= bounds.start);
+      const stats = { total: 0, observed: 0, good: 0, maintenance: 0, unverified: 0 };
+      const latencies: number[] = [];
+      const byHour = new Map<
+        number,
+        { at: number; total: number; good: number; maintenance: number; unverified: number }
+      >();
+      for (const check of windowChecks) {
+        stats.total++;
+        const hour = Math.floor(check.slot / 60) * 3600000;
+        let hourly = byHour.get(hour);
+        if (!hourly) {
+          hourly = { at: hour, total: 0, good: 0, maintenance: 0, unverified: 0 };
+          byHour.set(hour, hourly);
+        }
+        hourly.total++;
+        if (check.observedAt === null) {
+          stats.unverified++;
+          hourly.unverified++;
+        } else if (check.outcome === 'maintenance') {
+          stats.maintenance++;
+          hourly.maintenance++;
+        } else {
+          stats.observed++;
+          latencies.push(check.latency);
+          if (check.outcome === 'good') {
+            stats.good++;
+            hourly.good++;
+          }
+        }
+      }
+      latencies.sort((left, right) => left - right);
+      const p95 = stats.observed ? latencies[Math.ceil(stats.observed * 0.95) - 1] : null;
       const eligible = bounds.expected - stats.maintenance;
       const allowedBad = stats.observed * (1 - policy.availabilityTarget / 100);
       return {
@@ -582,16 +644,11 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
           'SELECT service,slot,at,outcome,status,latency,revision,observed_at AS observedAt FROM checks WHERE service=? ORDER BY slot DESC LIMIT 60',
           target.id,
         ),
-        hourly: this.rows(
-          "SELECT CAST(slot/60 AS INTEGER)*3600000 AS at, COUNT(*) AS total, SUM(outcome='good' AND observed_at IS NOT NULL) AS good, SUM(outcome='maintenance' AND observed_at IS NOT NULL) AS maintenance, SUM(observed_at IS NULL) AS unverified FROM checks WHERE service=? AND slot BETWEEN ? AND ? GROUP BY CAST(slot/60 AS INTEGER) ORDER BY at",
-          target.id,
-          bounds.start,
-          bounds.end,
-        ),
+        hourly: [...byHour.values()].sort((left, right) => left.at - right.at),
       };
     });
     return {
-      version: '3.2.1',
+      version: '3.3.1',
       now,
       window: minutes === 1440 ? '24h' : '7d',
       retentionDays: 30,
