@@ -15,6 +15,7 @@ The included deployment monitors its actual public gateway and private catalog s
 - **Reliable scheduling:** atomic persisted leases, per-service/minute uniqueness, retry deduplication, crash recovery, and policy revision fencing. Observations retain their actual probe start time; a completion may cross a minute boundary without becoming a new sample.
 - **Monitoring readiness:** a separate readiness endpoint checks persisted scheduler completion and active-service freshness against a three-minute limit. Dashboard reads cannot renew that evidence. Recent scheduler diagnostics explain starts, completions, and skipped late events.
 - **Honest SLO reporting:** verified good-check ratio, p95, error-budget consumption, maintenance exclusion, missing-sample coverage, and legacy unverified counts. Missing data is unknown. Current incomplete minutes and legacy checks without an observation start timestamp receive no verified SLO credit.
+- **Paired-window budget signals:** scheduled evaluation of rapid, sustained, and gradual sampled-check burn. Each rule exposes both windows, verified coverage, policy maturity, and its reason. Persisted firing evidence survives missing observations, stale scheduling, maintenance, and policy changes.
 - **Operator access:** a deployment secret gates writes and audit access. The browser stores the token only in memory. Same-origin checks, bounded payloads, optimistic writes, and deploy-time target enrollment define the boundary.
 - **Engineering lab:** isolated per-session token buckets, circuit breakers, actual cached payloads, timeout experiments, traces, CSV/JSON export, and cancellable guided runs.
 - **Evidence:** deterministic unit tests, real workerd/SQLite fault tests, local and live HTTP verification, and repeatable concurrency benchmarks with raw results.
@@ -51,7 +52,7 @@ flowchart LR
   G --> M[MonitorStore / singleton SQLite DO]
   M --> P[Private catalog Worker]
   M --> H[Approved HTTPS health endpoint]
-  M --- S[(Checks / jobs / incidents / policy versions / notes / scheduler / audit)]
+  M --- S[(Checks / jobs / incidents / policy versions / notes / scheduler / budget signals / audit)]
   G --> L[ReliabilityLab / per-session SQLite DO]
   L --> P
 ```
@@ -82,12 +83,15 @@ No paid feature is required by the code. Usage depends on targets, probes, publi
 npm run check             # formatting, unit tests, TS/build, both deployment dry-runs
 npm run test:lifecycle    # actual lab eviction, expiry alarms, late completion fencing
 npm run test:monitor      # actual monitor auth, incidents, concurrency, leases, retention
+npm run test:incident     # incident evidence, private notes, pagination, idempotency
+npm run test:upgrade      # migration and observation timing
+npm run test:budget       # persisted budget signals, eviction, gaps, revision changes
 # With the local server running:
 npm run test:integration  # lab HTTP behavior and isolation
 BASE_URL=http://localhost:8787 npm run benchmark
 ```
 
-CI runs the first four checks on every push and PR, then starts both Workers and runs HTTP integration tests. Monitor tests use real SQLite/workerd and controlled service failures. They also invoke the actual scheduled handler. The benchmark supports `ROUNDS=1..10`, tests 1/12/24/48 concurrent requests against a fresh lab per trial, and writes results under [docs/evidence](docs/evidence).
+CI runs the verification scripts on every push and PR, then starts both Workers and runs HTTP integration tests. Monitor tests use real SQLite/workerd and controlled service failures. They also invoke the actual scheduled handler. Synthetic timelines test paired-window signal thresholds and sampling gates; the budget runtime suite verifies durable evidence and read-only aging. The benchmark supports `ROUNDS=1..10`, tests 1/12/24/48 concurrent requests against a fresh lab per trial, and writes results under [docs/evidence](docs/evidence).
 
 [Benchmark methodology](docs/MEASUREMENT.md) distinguishes controlled burst admission from sustained throughput. Results are measurements of a specified environment, not Cloudflare-scale performance claims.
 
@@ -108,7 +112,15 @@ Remote commands read the ignored `.env.operator`; local commands read `.dev.vars
 
 `POST /api/ops/incident-note` accepts `{ "incident": "...", "requestId": "UUID-v4", "note": "..." }` with an operator bearer token. Notes contain 1–500 characters with non-whitespace content, and each incident has a maximum of 100 retained notes. Reuse the same request ID and exact payload after a lost response: the retry returns the existing note. Reusing an ID for a different payload returns 409. Notes can be added after recovery.
 
-Version 3.1 reports use export `schemaVersion: 4`. Newly captured policy versions have `recorded` provenance. Migration can recover only the policy currently persisted by v3, marked `recovered-current`; it cannot recreate earlier historical policies. Legacy checks remain available as evidence with `observedAt: null` and are excluded from verified metrics. See the [measurement rules](docs/MEASUREMENT.md) for interpretation.
+Version 3.2 reports retain export `schemaVersion: 4` and add `service.budget` to each service. Newly captured policy versions have `recorded` provenance. Migration can recover only the policy currently persisted by v3, marked `recovered-current`; it cannot recreate earlier historical policies. Legacy checks remain available as evidence with `observedAt: null` and are excluded from verified metrics. See the [measurement rules](docs/MEASUREMENT.md) for interpretation.
+
+## Interpreting budget signals
+
+The coordinator evaluates finished-minute history after scheduled probes complete. `service.budget` contains the persisted `evaluation`, its `evaluationStatus`, and retained `lastFiring` evidence. An evaluation is current only for the same policy revision and at most 180 seconds after computation. Dashboard reads age that evidence; they never recompute it.
+
+Rule version 1 uses 60/5-minute windows at 14.4×, 360/30 at 6×, and 4,320/360 at 1×, following the [Google SRE Workbook's 30-day-budget examples](https://sre.google/workbook/alerting-on-slos/). EdgeLab adds its own conservative sampling gates: full current-policy windows, at least 95% verified coverage, 20 non-maintenance observations in the long window, and five in the short window. Both windows must reach the threshold. Rapid firing takes priority over sustained, then gradual; a qualified rapid warning remains visible while longer rules await mature history.
+
+These are coarse probe signals. At a 99.9% target, one bad check among 60 produces about 16.7× burn and can trigger the rapid warning when both windows qualify. Missing evidence cannot prove clearance. The interface distinguishes a previous warning below its trigger from a stale result or warning retained under an earlier policy. Pausing monitoring does not recover an incident. Signals appear in the application; they do not send external notifications or establish customer-request uptime. The [measurement methodology](docs/MEASUREMENT.md) and [signal decision](docs/adr/003-sampled-budget-signals.md) explain the boundaries.
 
 ## Project map
 
@@ -117,6 +129,7 @@ Version 3.1 reports use export `schemaVersion: 4`. Newly captured policy version
 | Monitoring state machine and validation        | `worker/monitor-domain.ts`                        |
 | Timing and monitoring freshness                | `worker/monitor-readiness.ts`                     |
 | Incident evidence and private notes            | `worker/incident-evidence.ts`                     |
+| Paired-window evaluation and persisted signals | `worker/burn-rate.ts`, `worker/budget-signals.ts` |
 | Bounded probes                                 | `worker/monitor-probe.ts`                         |
 | SQLite coordinator and operator authentication | `worker/monitor.ts`                               |
 | Gateway, cron handler, laboratory coordinator  | `worker/index.ts`                                 |
@@ -126,20 +139,23 @@ Version 3.1 reports use export `schemaVersion: 4`. Newly captured policy version
 | Runtime tests and benchmarks                   | `scripts/`, `tests/`                              |
 | Deployment and CI                              | `wrangler*.jsonc`, `.github/workflows/ci.yml`     |
 
-## How to present the project
-
-> Built a Cloudflare reliability workspace with scheduled monitoring and SQLite-backed Durable Object coordination; implemented durable incident investigations, paginated evidence tied to policy revisions, retry-safe private notes, monitor readiness, and coverage-qualified SLO reporting.
-
-Resume claims should describe implemented behavior:
-
-- Coordinated scheduled probes with persisted leases, minute-level deduplication, policy revision fencing, and rejection of historical backfill.
-- Preserved incident lifecycle and investigation evidence across eviction, with authenticated idempotent note writes and explicit migration provenance.
-- Verified failure recovery, timing boundaries, persistence, authorization, and concurrency through deterministic and actual-runtime tests.
-
-Be ready to explain why unknown observations cannot become uptime, why a lease needs a fencing token, why acknowledgement differs from recovery, and why one coordinator's sampled network path cannot prove global availability. Link the running dashboard, raw benchmark evidence, and CI. Add performance numbers only with their actual test conditions.
-
 ## Scope and limits
 
 This is a single-owner, small-service operations application with a deliberately bounded deployment model. It does not provide tenant billing, global independent probes, or external email/PagerDuty delivery. Incident notifications live in the dashboard. Monitoring shares the provider being monitored; an independent external monitor can inspect `/api/ready`. Readiness describes observation freshness, so fresh checks reporting upstream failure can still produce healthy monitoring readiness.
 
 Public incident lists include every open incident for active targets and the latest 100 resolved incidents for those targets. Open incidents and current policies persist. Checks, resolved incidents, audit events, scheduler diagnostics, and appended private notes have 30-day retention. Original acknowledgement notes follow their incident record's retention. Exports are bounded reports; collect them periodically if longer history is required.
+
+Each configured service retains one latest budget evaluation and one last firing record, including through a prolonged monitoring gap. This is bounded diagnostic evidence, not a complete warning-event history. Removed services' old signal records are pruned after 30 days. A changed policy restarts window maturity; a new deployment cannot immediately claim three days of verified current-policy history.
+
+## How to present the project
+
+> Built a Cloudflare reliability workspace with scheduled monitoring and SQLite-backed Durable Object coordination; implemented durable incident investigations, paired-window error-budget evidence, retry-safe private notes, monitor readiness, and coverage-qualified reporting.
+
+Be ready to explain why unknown observations cannot become uptime, why a lease needs a fencing token, why acknowledgement differs from recovery, and why one coordinator's sampled network path cannot prove global availability. Link the running dashboard, raw benchmark evidence, and CI. Add performance numbers only with their actual test conditions.
+
+Resume claims should describe implemented behavior:
+
+- Coordinated scheduled probes with persisted leases, minute-level deduplication, policy revision fencing, and rejection of historical backfill.
+- Preserved incident lifecycle and investigation evidence across eviction, with authenticated idempotent note writes and explicit migration provenance.
+- Implemented versioned paired-window burn evaluation with coverage and policy-maturity gates, persisted evidence, and retained warnings across monitoring gaps.
+- Verified failure recovery, threshold boundaries, observation timing, authorization, and durable signal behavior through synthetic timelines and actual-runtime tests.

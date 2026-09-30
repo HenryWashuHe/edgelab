@@ -1,5 +1,15 @@
 # Verification record
 
+## EdgeLab 3.2
+
+Gateway deployment: `71751324-800c-40d7-aaa3-adaf5535c334`. The private origin implementation was unchanged.
+
+Strict TypeScript, production build, formatting, and both Worker dry-run bundles passed, with 73 unit tests. Eight actual workerd/SQLite budget groups cover intermittent failures without an incident streak, warning evidence across eviction, unknown observations, qualified recovery, rule changes, stale evidence, policy generations, maintenance, and retention. Existing monitoring, incident, and migration suites also passed after integration.
+
+Browser verification used actual local gateway/SQLite fixtures and a separate local proxy injecting HTTP 503 only for status refreshes. A fresh rapid signal showed 500× long-window and 600× short-window burn at full coverage. Keyboard disclosure revealed reconciled counts. After three minutes without successful refreshes, the cached monitor became stalled, the signal became stale, and retained firing was explicitly unconfirmed. Switching away and back could not renew evidence age. Mobile evidence stayed within the document and scrolled horizontally within its accessible table region. Production was not used for these failure fixtures.
+
+The [3.2 release evidence](releases/3.2.0-live-monitoring.json) records new autonomous observations and persisted budget evaluations for both deployed services, with finished-minute window bounds and reconciled counts. Readiness, export format, authentication, and privacy are checked. Signals with immature long windows remain insufficient, independently of shorter qualified rules.
+
 ## EdgeLab 3.1
 
 Gateway deployment: `4ab32ee0-dc19-484d-812b-5595b60a3156`. The private origin implementation was unchanged. Public URL: [EdgeLab](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev).
@@ -8,13 +18,15 @@ Verified locally with strict TypeScript, production Vite build, Prettier, both W
 
 Browser verification used an isolated real Worker/SQLite fixture, including 71 observations and policy history. Verified keyboard opening, Escape and focus restoration, 50-to-71-row pagination, unavailable historical policies, private note submission, loss of private access after reload, bounded evidence-table scrolling, mobile layout without document overflow, and no browser errors. These incident fixtures were never inserted into production.
 
-Production verification uses [live-monitoring.json](live-monitoring.json) for two new autonomous good observations per service, observation-start/minute agreement, healthy monitor readiness, schema-4 export, operator authentication, and public privacy. No manual scheduler endpoint is invoked. The production HTTP integration suite separately passed origin/cached-payload recovery, timeout, 24-request concurrency and isolation, input validation, reset fencing, and bounded history in a disposable lab session.
+Production verification uses the [3.1 release evidence](releases/3.1.0-live-monitoring.json) for two new autonomous good observations per service, observation-start/minute agreement, healthy monitor readiness, schema-4 export, operator authentication, and public privacy. No manual scheduler endpoint is invoked. The production HTTP integration suite separately passed origin/cached-payload recovery, timeout, 24-request concurrency and isolation, input validation, reset fencing, and bounded history in a disposable lab session.
 
 Migration deliberately preserves old observations as unverified, excludes them from verified reliability metrics, and resets streaks while retaining open incidents. Reliability ratios therefore start with new timed observations; the preserved legacy rows do not acquire retrospective credit.
 
 ## EdgeLab 3.0
 
 Release verification performed 2026-09-29 UTC. This is evidence of a newly deployed application, not a long-term reliability claim.
+
+This record predates the stricter observation-time model. Version 3.1 supersedes the original past-minute replay tests; preserved earlier checks are explicitly unverified. The original production snapshot is archived in the [3.0 release evidence](releases/3.0.0-live-monitoring.json).
 
 | Requirement                                   | Evidence                                                                                                                                                                                                             |
 | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

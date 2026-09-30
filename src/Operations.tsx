@@ -14,6 +14,8 @@ import {
 import type { OperationsSnapshot } from '../worker/monitor';
 import type { MonitorPolicy } from '../worker/monitor-domain';
 import { IncidentWorkspace } from './IncidentWorkspace';
+import { BudgetSignalsPanel } from './BudgetSignalsPanel';
+import { monitoringReadiness, MONITOR_FRESHNESS_MS } from '../worker/monitor-readiness';
 import './operations.css';
 type Service = OperationsSnapshot['services'][number];
 type Incident = OperationsSnapshot['incidents'][number];
@@ -46,6 +48,8 @@ async function request<T>(path: string, token = '', body?: unknown): Promise<T> 
 }
 export function Operations() {
   const [data, setData] = useState<OperationsSnapshot | null>(null);
+  const [, setAgeNow] = useState(0);
+  const receivedAt = useRef(0);
   const [windowSize, setWindowSize] = useState('24h');
   const [error, setError] = useState('');
   const [formError, setFormError] = useState('');
@@ -65,9 +69,12 @@ export function Operations() {
   const mounted = useRef(true);
   async function refresh() {
     const sequence = ++latest.current;
+    const requestStartedAt = performance.now();
     try {
       const next = await request<OperationsSnapshot>(`status?window=${windowSize}`);
       if (mounted.current && sequence === latest.current) {
+        receivedAt.current = requestStartedAt;
+        setAgeNow(performance.now());
         setData(next);
         setError('');
       }
@@ -79,12 +86,23 @@ export function Operations() {
     mounted.current = true;
     refresh();
     const timer = setInterval(() => {
-      if (document.visibilityState === 'visible') refresh();
+      if (document.visibilityState === 'visible') {
+        setAgeNow(performance.now());
+        refresh();
+      }
     }, 15000);
+    const visible = () => {
+      if (document.visibilityState === 'visible') {
+        setAgeNow(performance.now());
+        refresh();
+      }
+    };
+    document.addEventListener('visibilitychange', visible);
     return () => {
       mounted.current = false;
       latest.current++;
       clearInterval(timer);
+      document.removeEventListener('visibilitychange', visible);
     };
   }, [windowSize]);
   async function action(fn: () => Promise<void>) {
@@ -108,7 +126,29 @@ export function Operations() {
     const next = await request<Audit>('audit', key);
     setAudit(next);
   }
-  const monitoring = data?.monitoring;
+  // Age cached evidence even if a subsequent HTTP refresh fails. Use a monotonic
+  // elapsed interval with the server snapshot time, avoiding browser clock skew.
+  const displayNow = data ? data.now + Math.max(0, performance.now() - receivedAt.current) : 0;
+  const monitoring = data
+    ? monitoringReadiness({
+        now: displayNow,
+        lastStartedAt: data.monitoring.lastStartedAt,
+        lastCompletedAt: data.monitoring.lastCompletedAt,
+        lastSlot: data.monitoring.lastSlot,
+        services: data.services.map((s) => ({
+          paused: s.policy.paused,
+          lastObservedAt: s.latest?.revision === s.revision ? s.latest.observedAt : null,
+        })),
+      })
+    : undefined;
+  const observedStatus = (s: Service) =>
+    s.policy.paused
+      ? 'maintenance'
+      : !s.latest ||
+          s.latest.observedAt === null ||
+          displayNow - s.latest.observedAt > MONITOR_FRESHNESS_MS
+        ? 'unknown'
+        : s.status;
   const open = data?.incidents.filter((i) => !i.resolved) ?? [];
   const service = data?.services.find((s) => s.id === selected) ?? data?.services[0];
   const missing = data?.services.reduce((sum, s) => sum + s.metrics.missing, 0) ?? 0;
@@ -272,7 +312,9 @@ export function Operations() {
                               : 'Public HTTPS endpoint'}
                           </small>
                         </span>
-                        <span className={`health-badge ${s.status}`}>{labels[s.status]}</span>
+                        <span className={`health-badge ${observedStatus(s)}`}>
+                          {labels[observedStatus(s)]}
+                        </span>
                       </div>
                       <div className="service-metrics">
                         <div>
@@ -288,7 +330,7 @@ export function Operations() {
                           <b>{s.metrics.p95Ms === null ? '—' : `${s.metrics.p95Ms} ms`}</b>
                         </div>
                       </div>
-                      <CheckStrip service={s} now={data.now} />
+                      <CheckStrip service={s} now={displayNow} />
                       <div className="service-foot">
                         <span>Last 60 minutes</span>
                         <span>
@@ -352,6 +394,7 @@ export function Operations() {
                         observation timing are excluded from the SLO.
                       </p>
                     )}
+                    <BudgetSignalsPanel budget={service.budget} snapshotNow={displayNow} />
                     <div className="ops-chart-heading">
                       <h3>Observation history</h3>
                       <div className="ops-legend">

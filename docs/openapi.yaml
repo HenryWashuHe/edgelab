@@ -1,11 +1,13 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.1.0
+  version: 3.2.0
   description: |
     Public monitoring read model and single-owner operator control plane.
     Laboratory endpoints are documented in LAB.md. No public probe or target-enrollment endpoint exists.
     All responses disable caching. Operations API browser Origins must match the API origin.
+    Sampled-check budget signals are recorded by scheduled monitoring runs; public reads only age
+    persisted evidence. Signals do not deliver notifications or change incident state.
 servers:
   - url: https://edgelab-reliability.edgelab-henrywashuhe.workers.dev
   - url: http://localhost:8787
@@ -469,6 +471,134 @@ components:
           type: string
           maxLength: 500
           description: Private original acknowledgement note; present only with a valid operator credential.
+    BudgetSignalSnapshot:
+      type: object
+      required: [evaluation, evaluationStatus, lastFiring]
+      description: |
+        Latest persisted sampled-check evaluation and retained historical warning evidence.
+        Only current evaluations establish present signal confidence: the stored revision must
+        match the service policy, and evaluation age must be between zero and 180000 milliseconds
+        inclusive. Stale or changed-policy results remain inspectable but cannot establish clearance.
+        Reads never recompute an evaluation or renew its timestamp. Signals neither send external
+        notifications nor open, acknowledge, or resolve monitoring incidents.
+      properties:
+        evaluation:
+          oneOf:
+            - $ref: '#/components/schemas/BurnRateEvaluation'
+            - type: 'null'
+        evaluationStatus:
+          type: string
+          enum: [current, stale, policy-changed, not-evaluated]
+        lastFiring:
+          description: Preserved through clear, insufficient evidence, maintenance, and policy changes. Null until a qualified rule first fires.
+          oneOf:
+            - $ref: '#/components/schemas/BudgetFiringEvidence'
+            - type: 'null'
+    BurnRateEvaluation:
+      type: object
+      required: [ruleVersion, revision, computedAt, state, highestFiring, rules]
+      description: |
+        Evaluates finished UTC minutes under the current policy revision, using at most the latest
+        4320 minutes. Only checks with a verified observation timestamp in their scheduled minute
+        count. Fixed paired thresholds use a 30-day sampled-check budget basis: rapid 60m/5m at
+        14.4x, sustained 360m/30m at 6x, and gradual 4320m/360m at 1x. These are probe signals,
+        not customer-request availability or geographically independent uptime measurements.
+      properties:
+        ruleVersion: { type: integer, const: 1 }
+        revision: { type: integer, minimum: 1 }
+        computedAt: { type: integer, description: Scheduled evaluation Unix milliseconds }
+        state:
+          type: string
+          enum: [firing, clear, insufficient-evidence, maintenance]
+        highestFiring:
+          type: [string, 'null']
+          enum: [rapid, sustained, gradual, null]
+          description: Highest-priority qualified firing rule, or null. Priority is rapid, sustained, then gradual.
+        rules:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items: { $ref: '#/components/schemas/BurnRuleEvidence' }
+    BurnRuleEvidence:
+      type: object
+      required: [id, name, long, short, threshold, state, reason]
+      description: |
+        Both windows must fall fully within the current policy's history, have at least 95% verified
+        coverage, and contain at least twenty long-window and five short-window non-maintenance
+        observations. A firing rule meets its threshold in both windows. Clear requires qualified
+        evidence; unknown or immature windows produce insufficient-evidence instead.
+      properties:
+        id: { type: string, enum: [rapid, sustained, gradual] }
+        name: { type: string }
+        long: { $ref: '#/components/schemas/BurnWindowEvidence' }
+        short: { $ref: '#/components/schemas/BurnWindowEvidence' }
+        threshold: { type: number, minimum: 0 }
+        state:
+          type: string
+          enum: [firing, clear, insufficient-evidence, maintenance]
+        reason: { type: string }
+    BurnWindowEvidence:
+      type: object
+      required:
+        [
+          minutes,
+          startSlot,
+          endSlot,
+          expected,
+          observed,
+          good,
+          bad,
+          maintenance,
+          unknown,
+          coverage,
+          burnRate,
+          mature,
+        ]
+      properties:
+        minutes: { type: integer, minimum: 1 }
+        startSlot: { type: integer, description: Inclusive first Unix minute }
+        endSlot: { type: integer, description: Inclusive last finished Unix minute }
+        expected: { type: integer, minimum: 1 }
+        observed: { type: integer, minimum: 0, description: Verified good plus bad observations }
+        good: { type: integer, minimum: 0 }
+        bad: { type: integer, minimum: 0 }
+        maintenance: { type: integer, minimum: 0 }
+        unknown:
+          type: integer
+          minimum: 0
+          description: Missing, legacy, mistimed, or different-policy slots; no success credit.
+        coverage:
+          type: [number, 'null']
+          minimum: 0
+          maximum: 100
+          description: Percentage of eligible minutes observed; maintenance is excluded from the denominator.
+        burnRate:
+          type: [number, 'null']
+          minimum: 0
+          description: Observed bad fraction divided by the current policy's allowed bad fraction; null with no observations.
+        mature:
+          type: boolean
+          description: Entire window starts at or after the first complete minute of the current policy.
+    BudgetFiringEvidence:
+      type: object
+      required: [firstFiredAt, lastConfirmedAt, revision, rule, evidence]
+      description: |
+        Last qualified highest-priority warning, retained even when later evidence cannot confirm
+        its state. First-fired time continues only while the previous evaluation is current and
+        firing under the same revision and highest rule. Clear, insufficient evidence, changed
+        policy/rule, or stale evaluation starts a new confirmed interval on subsequent firing.
+        These timestamps describe evaluations; they are not outage or incident timestamps.
+      properties:
+        firstFiredAt:
+          {
+            type: integer,
+            description: First evaluation Unix milliseconds in the confirmed interval,
+          }
+        lastConfirmedAt:
+          { type: integer, description: Most recent qualified firing evaluation Unix milliseconds }
+        revision: { type: integer, minimum: 1 }
+        rule: { type: string, description: Retained firing rule identifier }
+        evidence: { $ref: '#/components/schemas/BurnRuleEvidence' }
     Service:
       type: object
       required:
@@ -483,6 +613,7 @@ components:
           latest,
           status,
           state,
+          budget,
           metrics,
           history,
           hourly,
@@ -507,6 +638,7 @@ components:
             successes: { type: integer }
             lastSlot: { type: [integer, 'null'] }
             incidentId: { type: [string, 'null'] }
+        budget: { $ref: '#/components/schemas/BudgetSignalSnapshot' }
         metrics:
           type: object
           description: Finished minutes only; legacy checks without observedAt are unverified and excluded from observed/good/maintenance/P95. Null ratios when denominators are zero. Budget uses current target; outcomes use original policy.

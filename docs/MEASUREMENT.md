@@ -32,11 +32,46 @@ A probe samples one coordinator's network path. It is neither customer-request a
 
 The clock advances on a read, but the persisted heartbeat does not. Dashboard activity cannot keep a stopped scheduler healthy. The latest 20 scheduler diagnostics expose persisted events; they are not independent uptime observations. Fresh failed upstream probes can produce healthy monitoring readiness: this signal describes whether monitoring is operating, not whether monitored services are successful. Same-provider readiness still needs an independent observer to detect correlated provider failure.
 
+## Paired-window sampled-check signals
+
+Version 3.2 adds fixed rule version 1. The thresholds follow the [Google SRE Workbook's 30-day-budget examples](https://sre.google/workbook/alerting-on-slos/), with a short window confirming that elevated long-window burn is still ongoing:
+
+| Rule      | Long window            | Short window          | Trigger in both windows |
+| --------- | ---------------------- | --------------------- | ----------------------- |
+| Rapid     | 60 minutes             | 5 minutes             | At least 14.4×          |
+| Sustained | 360 minutes / 6 hours  | 30 minutes            | At least 6×             |
+| Gradual   | 4,320 minutes / 3 days | 360 minutes / 6 hours | At least 1×             |
+
+For each window, burn rate = (verified bad / verified non-maintenance observations) / (1 − current target / 100). The selected 24-hour or 7-day report does not change the fixed signal windows or their 30-day budget basis. This does not assert that a full 30-day operating history has already been collected.
+
+Windows include exactly their fixed number of finished UTC slots, ending at `floor(now / 60,000) − 1`. A slot is verified only when its check has the current revision, a known actual start in that same minute, and a start at or after the current policy's recorded time. Identical duplicate records count once; conflicting records make the slot unknown. Legacy, wrong-revision, incorrectly timed, and missing evidence remain unknown. This stricter signal eligibility is distinct from a report aggregating outcomes under historical revisions.
+
+- Expected = the full window length in minutes.
+- Observed = verified good + verified bad, excluding maintenance.
+- Unknown = expected − observed − verified maintenance.
+- Eligible = expected − verified maintenance.
+- Coverage = observed / eligible × 100; an all-maintenance window has null coverage and burn.
+- Mature = the entire window begins at or after the first complete minute under the current policy, `ceil(policyRecordedAt / 60,000)`.
+
+EdgeLab's gates require mature long and short windows, at least 95% verified coverage in each, at least 20 non-maintenance observations in the long window, and five in the short window. These coverage, count, and full-policy-window gates are project choices, not canonical Google parameters. Maintenance cannot make sparse observations sufficient: a rapid five-minute window with one maintenance minute has four non-maintenance observations and fails the short-window count gate.
+
+Each rule is `firing` when both qualified windows meet its threshold, `clear` when both qualify but do not both reach it, `insufficient-evidence` when either lacks qualification, and `maintenance` when paused or both windows contain only verified maintenance. Overall state gives any firing rule priority, ordered rapid, sustained, then gradual. Otherwise insufficient evidence takes priority over clear/maintenance. A rapid rule can qualify after its first complete hour while sustained and gradual await six hours and three days; longer-rule immaturity must not hide a rapid warning. Conversely, one qualified clear rule does not establish that every rule has enough evidence.
+
+One bad check among 60 at a 99.9% target yields approximately `(1 / 60) / 0.001 = 16.7×` burn. It can fire the rapid signal if the recent window also qualifies. This is a coarse synthetic-check ratio, not a customer-request error rate, independent geographic measurement, uptime guarantee, or paging policy. Signals do not open/recover consecutive-failure incidents or send external notifications.
+
+### Persisted evidence and freshness
+
+The coordinator computes signal evidence after scheduled probes complete and stores one latest evaluation per service. Public status and schemaVersion 4 exports add `service.budget` with `evaluation`, `evaluationStatus`, and `lastFiring`. Reads never recompute evaluation or renew its `computedAt` timestamp. Status is `not-evaluated` before the first recorded evaluation, `policy-changed` when its revision differs from the current policy, `stale` when its age exceeds 180,000 milliseconds or timing is impossible, and otherwise `current`. The three-minute boundary is inclusive.
+
+Only a current evaluation establishes a present firing or clear result. `lastFiring` retains the selected warning's rule, revision, recorded first firing, last confirmed firing, and paired-window evidence across insufficient observations, maintenance, policy changes, stale scheduling, and later qualified clear evaluations. One retained record is not a full alert history or proof of uninterrupted failure. The interface labels current firing evidence, a previous warning below its trigger, a warning under a previous policy, or a previous warning without confirmed clearance. A same-policy qualified clear result for the prior rule can establish that it was below its trigger at evaluation time; missing or stale data cannot.
+
+Signal records for configured services survive prolonged gaps. Records for removed services become eligible for 30-day pruning. Policy changes restart maturity; retained historical warnings are never rescored as if they occurred under the replacement policy.
+
 ## Incident evidence and exports
 
 Public incident lists retain all open incidents for active targets and their latest 100 resolved incidents. Detail pages return up to 50 retained checks in descending slot order, with an exclusive `before` cursor and policy context for that page. The evidence interval includes up to ten minutes before detection and the incident interval, subject to 30-day check retention. A retained open incident can outlive its earliest checks; `limitedByRetention` exposes that limit instead of implying a complete timeline.
 
-Operations export `schemaVersion: 4` contains bounded service history, summaries, incident records, readiness, and scheduler diagnostics. Public exports exclude appended investigation and acknowledgement notes. Authenticated detail includes those private fields. Exported summaries and paginated investigations are not a complete storage backup.
+Operations export `schemaVersion: 4` contains bounded service history, summaries, incident records, readiness, scheduler diagnostics, and the additive per-service budget evidence. Public exports exclude appended investigation and acknowledgement notes. Authenticated detail includes those private fields. Exported summaries and paginated investigations are not a complete storage backup.
 
 ## Concurrency benchmark
 
@@ -56,4 +91,4 @@ The local results are in [benchmark-local.json](evidence/benchmark-local.json); 
 
 ## Evidence hierarchy
 
-Unit tests exercise deterministic state transitions and parsing. Runtime tests exercise workerd, SQLite transactions, real Durable Object eviction, alarm behavior, service bindings, and schedule invocation. Live tests verify deployed routing and bindings. Real autonomous scheduled samples prove the cron is operational. None alone proves all the others; CI and release evidence record them separately.
+Unit tests exercise deterministic state transitions and parsing. Synthetic signal timelines cover alternating failures, isolated recent failure, short-window recovery, inclusive trigger thresholds, 95% coverage boundaries, sparse maintenance, policy maturity, wrong timing/revision, duplicate ambiguity, and empty data. Runtime tests exercise workerd, SQLite transactions, real Durable Object eviction, alarm behavior, service bindings, schedule invocation, and persisted warning retention through gaps and revisions. Live tests verify deployed routing and bindings. Real autonomous scheduled samples prove the cron is operational. None alone proves all the others; CI and release evidence record them separately.

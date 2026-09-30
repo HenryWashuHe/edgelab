@@ -20,6 +20,7 @@ jobs:
       - run: npm run test:monitor
       - run: npm run test:incident
       - run: npm run test:upgrade
+      - run: npm run test:budget
       - name: Test real local Worker and Durable Object
         run: |
           npm run dev:workers > /tmp/edgelab.log 2>&1 &

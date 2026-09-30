@@ -16,6 +16,7 @@ import {
 import { probe } from './monitor-probe';
 import { IncidentEvidence } from './incident-evidence';
 import { classifyTick, monitoringReadiness } from './monitor-readiness';
+import { BudgetSignals } from './budget-signals';
 export interface MonitorEnv {
   MONITORS: DurableObjectNamespace<MonitorStore>;
   ORIGIN: Fetcher;
@@ -56,6 +57,7 @@ const reply = (data: unknown, status = 200) =>
   });
 export class MonitorStore extends DurableObject<MonitorEnv> {
   private evidence: IncidentEvidence;
+  private budgets: BudgetSignals;
   constructor(ctx: DurableObjectState, env: MonitorEnv) {
     super(ctx, env);
     const sql = ctx.storage.sql;
@@ -102,6 +104,8 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
     );
     this.evidence = new IncidentEvidence(ctx.storage);
     this.evidence.ensureSchema();
+    this.budgets = new BudgetSignals(ctx.storage);
+    this.budgets.ensureSchema();
   }
   /** Overridden only by the workerd test fixture; production uses wall-clock time. */
   protected now() {
@@ -248,6 +252,22 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       }
       this.scheduleEvent(slot, 'started', {});
       const results = await Promise.all(targets.map((target) => this.check(target, Number(slot))));
+      // Evaluate finished-minute history once per scheduled run, never on dashboard reads.
+      for (const target of targets) {
+        const service = this.rows<ServiceRow>('SELECT * FROM services WHERE id=?', target.id)[0];
+        const version = this.rows<{ recorded_at: number }>(
+          'SELECT recorded_at FROM service_versions WHERE service=? AND revision=?',
+          target.id,
+          service.revision,
+        )[0];
+        this.budgets.update({
+          service: target.id,
+          revision: service.revision,
+          policy: JSON.parse(service.policy),
+          policyRecordedAt: version.recorded_at,
+          now: this.now(),
+        });
+      }
       this.ctx.storage.transactionSync(() => {
         this.scheduleEvent(slot, 'completed', { results });
         const cutoff = this.now() - RETENTION;
@@ -260,6 +280,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         this.ctx.storage.sql.exec('DELETE FROM audit WHERE at < ?', cutoff);
         this.ctx.storage.sql.exec('DELETE FROM scheduler_events WHERE at < ?', cutoff);
         this.evidence.prune(cutoff);
+        this.budgets.prune(cutoff, activeIds);
         this.ctx.storage.sql.exec(
           'DELETE FROM service_versions WHERE NOT EXISTS(SELECT 1 FROM checks WHERE checks.service=service_versions.service AND checks.revision=service_versions.revision) AND NOT EXISTS(SELECT 1 FROM services WHERE services.id=service_versions.service AND services.revision=service_versions.revision)',
         );
@@ -529,6 +550,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
                 ? 'healthy'
                 : 'degraded',
         state,
+        budget: this.budgets.read(target.id, row.revision, now),
         metrics: {
           ...stats,
           expected: bounds.expected,
@@ -554,7 +576,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       };
     });
     return {
-      version: '3.1.0',
+      version: '3.2.0',
       now,
       window: minutes === 1440 ? '24h' : '7d',
       retentionDays: 30,

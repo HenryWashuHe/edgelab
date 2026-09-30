@@ -1,6 +1,6 @@
 {
   "name": "edgelab",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -19,7 +19,8 @@
     "operator:setup": "node scripts/operator-setup.mjs",
     "operator": "node scripts/operator.mjs",
     "test:incident": "node scripts/incident-integration.mjs",
-    "test:upgrade": "node scripts/monitor-upgrade.mjs"
+    "test:upgrade": "node scripts/monitor-upgrade.mjs",
+    "test:budget": "node scripts/budget-integration.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.48.0",
