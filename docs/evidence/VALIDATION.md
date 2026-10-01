@@ -6,6 +6,8 @@ The [frozen distribution](counter-inspector/README.md), built October 1 at 18:33
 
 The standalone checkpoint also passes local formatting, 295 application tests/24 files, 22 counter codec tests, eight asset fault tests, TypeScript/build and both deployment dry-runs. All 16 rebuilt client assets match the shipped 3.12.1 archive. Its nine distribution groups add independent Node CLI proof without production deployment or rendered interaction.
 
+Implementation `3c5c9451cc536430f65f522e40f47f14b004a6ba` passes [complete Linux CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36908346851), including the standalone tests, native counter proof, all application runtime regressions and actual local HTTP integration. Linux exercises the explicit symlink and unwritten FIFO regressions as well as macOS.
+
 ## Existing-RPC counter adapter checkpoint
 
 The second local counter wrapper re-exports Cloudflare's pinned original `Counter` unchanged and uses its existing `getCounterValue()` RPC. It adds zero Durable Object methods/classes and no storage instrumentation. Profile 2 declares a gateway timestamp after that RPC returns, with native revision/commit metadata null; profile 1 retains its original DO-side clock and metered fixture. Both exact known source descriptors are covered by the canonical content hash. All 22 codec Node tests pass, including profile 2 import/export, source immutability and unchanged historical profile 1 hashes.
