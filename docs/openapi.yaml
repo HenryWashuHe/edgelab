@@ -1,11 +1,19 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.12.0
+  version: 3.12.1
   description: |
     Public monitoring read model and single-owner operator control plane.
     HTTP laboratory controls are documented in LAB.md; the observer upgrade and message schema are below.
-    This describes deployed 3.12.0, preserving the additive 3.7.0 view contract.
+    This describes deployed 3.12.1, preserving the additive 3.7.0 view contract.
+    The evidence JSON patch adds no endpoint or HTTP shape: duplicate decoded names reject in offline imports/raw capture inputs.
+    Local validation passes 295 unit tests, 18 counter codec tests and eight asset fault tests.
+    Complete CI passes for `76a5277283da6b214de90f61ef614c5a5a56fe0f`; gateway deployment is 3462b0f8-6d81-4cd6-8706-13fe5c360dae.
+    Live verification at October 1, 17:29:34 UTC confirms two new good scheduled minutes per service,
+    current budgets, healthy readiness and all 16 asset bytes/MIME/revalidation.
+    Record: docs/evidence/releases/3.12.1-live-monitoring.json.
+    Local evidence: docs/evidence/releases/3.12.1-evidence-json/README.md.
+    Rendered observer/import behavior remains unverified. Historical 3.12.0 evidence follows:
     Upstream JSON consumption is bounded to 16384 bytes with best-effort deadline cleanup.
     Deliberate guided-demo Stop confirms settled state once; it adds no endpoint or command.
     Local checks pass 274 unit tests and eight asset fault tests. Complete CI passes for `4a3bc6d27b4805e7f9802b4af0d05869cc39e3d0`.
