@@ -2,6 +2,7 @@ import { RequestInspector } from './RequestInspector';
 import { RouteBoundary } from './RouteBoundary';
 import { navigateToPage, pageLabels, parsePageHash, type AppPage } from './routes';
 import { getMainLabSession, LAB_SESSION_KEY, readExistingLabSession } from './lab-session';
+import { checkDemoStop, settleLabRun } from './lab-run-control';
 import {
   classifyLabFailure,
   isLabHttpFailure,
@@ -254,15 +255,32 @@ function App() {
     setBusy(label);
     setError('');
     try {
-      await fn(task);
-      await refresh(task);
+      const result = await settleLabRun(fn(task), {
+        isCurrent: () => currentTask(task),
+        markUnconfirmed: () => {
+          setStateConfirmed(false);
+          setNotice(
+            'Demo stopped. Requests already sent may have completed. Confirming the latest lab state.',
+          );
+        },
+        confirmState: () => refresh(task),
+      });
+      if (result === 'stopped' && currentTask(task))
+        setNotice(
+          'Demo stopped. Requests already sent may have completed. Showing the latest lab state; no commands were replayed.',
+        );
     } catch (e) {
       if (!currentTask(task)) return;
-      if (e instanceof Error && e.name === 'AbortError')
+      if (
+        label === 'stream' &&
+        e instanceof Error &&
+        e.name === 'AbortError' &&
+        stopController.current?.signal.aborted
+      )
         setNotice((previous) =>
           previous === LAB_UNCONFIRMED_NOTICE
             ? previous
-            : 'Experiment stopped. Completed requests are kept in the log.',
+            : 'Traffic stopped. Requests already sent may have completed; review the current log before repeating work.',
         );
       else failLab(e, task);
     } finally {
@@ -316,11 +334,16 @@ function App() {
       stopController.current = controller;
       const check = () => {
         checkTask(task);
-        controller.signal.throwIfAborted();
+        checkDemoStop(controller.signal);
       };
       const wait = async (ms: number) => {
         check();
-        await pause(ms, controller.signal);
+        try {
+          await pause(ms, controller.signal);
+        } catch (error) {
+          if (error instanceof Error && error.name === 'AbortError') check();
+          throw error;
+        }
         check();
       };
       setStep(0);
@@ -503,7 +526,7 @@ function App() {
             </a>
           </div>
           <div className="sidebar-footer">
-            <span className="tiny-dot" /> EdgeLab v3.11.0 <span>TS</span>
+            <span className="tiny-dot" /> EdgeLab v3.12.0 <span>TS</span>
           </div>
         </div>
       </aside>

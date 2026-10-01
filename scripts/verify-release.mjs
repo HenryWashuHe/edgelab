@@ -17,7 +17,7 @@ const request = async (path, { method = 'GET', headers = {}, body } = {}) => {
 };
 const get = (path, headers = {}) => request(path, { headers });
 const assertStatusRead = (data) => {
-  assert.equal(data.version, '3.11.0');
+  assert.equal(data.version, '3.12.0');
   const read = data.read;
   assert(read && ['storage', 'memory'].includes(read.source));
   assert.deepEqual(Object.keys(read).sort(), [
@@ -37,7 +37,7 @@ const assertStatusRead = (data) => {
   assert(!JSON.stringify(data).includes('budgetSources'));
 };
 const health = await get('/api/health');
-assert.equal(health.data.version, '3.11.0');
+assert.equal(health.data.version, '3.12.0');
 const projectVersion = JSON.parse(await readFile('package.json', 'utf8')).version;
 assert.equal(health.data.version, projectVersion, 'Deployed/package version agreement');
 const deployedAssets = await verifyBuiltAssets(base);

@@ -200,3 +200,9 @@ The dev tooling pins a patched Undici release through npm overrides to avoid the
 ## Loading the recording section in 3.11.0
 
 The replay section and its unchanged historical sample load on selection. Static JavaScript and stylesheet requests are expected; replay selection and recording controls add no application API request, socket or capability access. The built-in recording still requires an explicit load and strict validation, and identical uploads remain generic. A section failure offers navigation or explicit reload; reload discards a page-held recording and does not execute an experiment. Rendered loading, failure and lifecycle behavior remain unverified.
+
+## Stopping a guided demo
+
+Stop prevents future guided steps. Requests already sent may complete; Stop does not undo them. The demo remains busy until dispatched work settles and one guarded state read confirms the current lab. If that read fails, the earlier view stays unconfirmed and Reconnect reads state without replaying a command. Leaving the owner page abandons the follow-up. Unexpected transport or admission failures also make no automatic follow-up. [Decision and protocol evidence](adr/013-asynchronous-lifetimes.md).
+
+Both monitoring and lab origin clients retain at most 16 KiB of JSON body bytes within their timeout. Oversized or malformed lab bodies are invalid; cleanup is best effort and never delays a known failure result. This is not a total heap or provider-termination guarantee.

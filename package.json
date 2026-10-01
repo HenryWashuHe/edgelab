@@ -1,6 +1,6 @@
 {
   "name": "edgelab",
-  "version": "3.11.0",
+  "version": "3.12.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -38,7 +38,8 @@
     "test:benchmark-compatibility": "node scripts/benchmark-compatibility.mjs",
     "test:assets-unit": "node --test scripts/asset-verification.test.mjs",
     "test:assets": "node scripts/verify-assets.mjs",
-    "test:client-build": "node scripts/client-build.mjs"
+    "test:client-build": "node scripts/client-build.mjs",
+    "test:async-lifetime": "node scripts/async-lifetime.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.48.0",

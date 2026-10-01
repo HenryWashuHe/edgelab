@@ -1,0 +1,1117 @@
+{
+  "schemaVersion": 1,
+  "version": "3.12.0",
+  "measuredAt": "2026-10-01T05:28:46.967Z",
+  "runtime": {
+    "node": "v25.4.0",
+    "esbuild": "0.28.1",
+    "miniflare": "5.20260926.0-alpha",
+    "compatibilityDate": "2026-09-01",
+    "cloudflareMetadataFetch": false,
+    "telemetry": false
+  },
+  "build": {
+    "memoryOnly": true,
+    "platform": "neutral",
+    "target": "es2022",
+    "format": "esm",
+    "external": ["cloudflare:workers"],
+    "tsconfig": "tsconfig.json"
+  },
+  "limits": {
+    "overallMs": 60000,
+    "requestMs": 5000,
+    "disposalMs": 10000,
+    "bodyBytes": 16384
+  },
+  "baseline": {
+    "commit": "c31f8f34bca1ac96d38b792287405fb4c97a6cd9",
+    "bundleSha256": "30468010f4116a2198e856fb60716c6f03de7cd03b9685a2ab8902036e074637",
+    "inputs": [
+      {
+        "path": "tests/fixtures/upstream-lifetime.ts",
+        "sha256": "83d1f051ad286f316cc84c0b2b8b09a80f7e29bc358578bc9b889a0f5196b5d8"
+      },
+      {
+        "path": "worker/monitor-domain.ts",
+        "sha256": "15ed1d9218b5c0baeea4061f20077ded6350d02c6b3bb71b2906fc595f16a003"
+      },
+      {
+        "path": "worker/monitor-probe.ts",
+        "sha256": "e06fa750a0a9888b74d32e03848fe966edbe67ae331c73d303d6c4046a87f034"
+      },
+      {
+        "path": "worker/origin-client.ts",
+        "sha256": "4db923944019dd24d3da2e19c1d54cac7247a2d5819db3016cde047374a91548"
+      },
+      {
+        "path": "worker/origin.ts",
+        "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8"
+      }
+    ],
+    "testedWorkerInputs": [
+      {
+        "path": "worker/monitor-domain.ts",
+        "sha256": "15ed1d9218b5c0baeea4061f20077ded6350d02c6b3bb71b2906fc595f16a003"
+      },
+      {
+        "path": "worker/monitor-probe.ts",
+        "sha256": "e06fa750a0a9888b74d32e03848fe966edbe67ae331c73d303d6c4046a87f034"
+      },
+      {
+        "path": "worker/origin-client.ts",
+        "sha256": "4db923944019dd24d3da2e19c1d54cac7247a2d5819db3016cde047374a91548"
+      },
+      {
+        "path": "worker/origin.ts",
+        "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8"
+      }
+    ],
+    "samples": [
+      {
+        "subject": "monitor",
+        "scenario": "healthy",
+        "outcome": "good",
+        "status": 200,
+        "timeoutMs": 500,
+        "elapsedMs": 3,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 24,
+        "sourceBytes": 24,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "monitor",
+        "scenario": "body-timeout",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 44,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 24,
+        "sourceBytes": 24,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": true,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "monitor",
+        "scenario": "body-timeout-cancel-pending",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 42,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 24,
+        "sourceBytes": 24,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": true,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "monitor",
+        "scenario": "late-response",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 43,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 24,
+        "sourceBytes": 24,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": true,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "monitor",
+        "scenario": "status-cancel-pending",
+        "outcome": "http-error",
+        "status": 503,
+        "timeoutMs": 40,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 0,
+        "deliveredBytes": 0,
+        "sourceBytes": 24,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "monitor",
+        "scenario": "oversize",
+        "outcome": "invalid-body",
+        "status": 200,
+        "timeoutMs": 500,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 17,
+        "deliveredBytes": 16385,
+        "sourceBytes": 16385,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "lab",
+        "scenario": "healthy",
+        "outcome": "good",
+        "status": null,
+        "timeoutMs": 500,
+        "elapsedMs": 1,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 146,
+        "sourceBytes": 146,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": true,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "lab",
+        "scenario": "body-timeout",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 43,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 146,
+        "sourceBytes": 146,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": true,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "lab",
+        "scenario": "body-timeout-cancel-pending",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 43,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 146,
+        "sourceBytes": 146,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": true,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "lab",
+        "scenario": "late-response",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 41,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 146,
+        "sourceBytes": 146,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": true,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "lab",
+        "scenario": "status-cancel-pending",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 41,
+        "requests": 1,
+        "pulls": 0,
+        "deliveredBytes": 0,
+        "sourceBytes": 146,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "lab",
+        "scenario": "oversize",
+        "outcome": "good",
+        "status": null,
+        "timeoutMs": 500,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 18,
+        "deliveredBytes": 16385,
+        "sourceBytes": 16385,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": true,
+        "signalAbortedAfterObservation": false
+      }
+    ]
+  },
+  "maintained": {
+    "bundleSha256": "54634f3c7648978f4bcdcbea11265729993d950010d6228447c5ab2b941a2d28",
+    "inputs": [
+      {
+        "path": "tests/fixtures/upstream-lifetime.ts",
+        "sha256": "83d1f051ad286f316cc84c0b2b8b09a80f7e29bc358578bc9b889a0f5196b5d8"
+      },
+      {
+        "path": "worker/bounded-json.ts",
+        "sha256": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1"
+      },
+      {
+        "path": "worker/monitor-domain.ts",
+        "sha256": "15ed1d9218b5c0baeea4061f20077ded6350d02c6b3bb71b2906fc595f16a003"
+      },
+      {
+        "path": "worker/monitor-probe.ts",
+        "sha256": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752"
+      },
+      {
+        "path": "worker/origin-client.ts",
+        "sha256": "1c92a87dc002fa309e032f2b3ebd569c58fa012929db7d9d9be596d2a9e18e59"
+      },
+      {
+        "path": "worker/origin.ts",
+        "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8"
+      }
+    ],
+    "samples": [
+      {
+        "subject": "monitor",
+        "scenario": "healthy",
+        "outcome": "good",
+        "status": 200,
+        "timeoutMs": 500,
+        "elapsedMs": 1,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 24,
+        "sourceBytes": 24,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "monitor",
+        "scenario": "exact-limit",
+        "outcome": "good",
+        "status": 200,
+        "timeoutMs": 500,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 17,
+        "deliveredBytes": 16384,
+        "sourceBytes": 16384,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "monitor",
+        "scenario": "split-utf8",
+        "outcome": "good",
+        "status": 200,
+        "timeoutMs": 500,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 27,
+        "deliveredBytes": 26,
+        "sourceBytes": 26,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "monitor",
+        "scenario": "oversize",
+        "outcome": "invalid-body",
+        "status": 200,
+        "timeoutMs": 500,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 17,
+        "deliveredBytes": 16385,
+        "sourceBytes": 16385,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "monitor",
+        "scenario": "invalid-json",
+        "outcome": "invalid-body",
+        "status": 200,
+        "timeoutMs": 500,
+        "elapsedMs": 2,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 7,
+        "sourceBytes": 7,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "monitor",
+        "scenario": "missing-body",
+        "outcome": "invalid-body",
+        "status": 200,
+        "timeoutMs": 500,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 0,
+        "deliveredBytes": 0,
+        "sourceBytes": 24,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "monitor",
+        "scenario": "network-error",
+        "outcome": "network-error",
+        "status": null,
+        "timeoutMs": 500,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 0,
+        "deliveredBytes": 0,
+        "sourceBytes": 24,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "monitor",
+        "scenario": "status-cancel-pending",
+        "outcome": "http-error",
+        "status": 503,
+        "timeoutMs": 40,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 0,
+        "deliveredBytes": 0,
+        "sourceBytes": 24,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "monitor",
+        "scenario": "status-cancel-rejected",
+        "outcome": "http-error",
+        "status": 503,
+        "timeoutMs": 40,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 0,
+        "deliveredBytes": 0,
+        "sourceBytes": 24,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "monitor",
+        "scenario": "body-timeout",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 41,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 24,
+        "sourceBytes": 24,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "monitor",
+        "scenario": "body-timeout-cancel-pending",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 42,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 24,
+        "sourceBytes": 24,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "monitor",
+        "scenario": "body-timeout-cancel-rejected",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 43,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 24,
+        "sourceBytes": 24,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "monitor",
+        "scenario": "late-response",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 43,
+        "requests": 1,
+        "pulls": 0,
+        "deliveredBytes": 0,
+        "sourceBytes": 24,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "monitor",
+        "scenario": "empty-stream",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 40,
+        "requests": 1,
+        "pulls": 1280,
+        "deliveredBytes": 0,
+        "sourceBytes": 24,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "lab",
+        "scenario": "healthy",
+        "outcome": "good",
+        "status": null,
+        "timeoutMs": 500,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 146,
+        "sourceBytes": 146,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "lab",
+        "scenario": "exact-limit",
+        "outcome": "good",
+        "status": null,
+        "timeoutMs": 500,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 17,
+        "deliveredBytes": 16384,
+        "sourceBytes": 16384,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "lab",
+        "scenario": "split-utf8",
+        "outcome": "good",
+        "status": null,
+        "timeoutMs": 500,
+        "elapsedMs": 4,
+        "requests": 1,
+        "pulls": 149,
+        "deliveredBytes": 148,
+        "sourceBytes": 148,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "lab",
+        "scenario": "oversize",
+        "outcome": "invalid",
+        "status": null,
+        "timeoutMs": 500,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 17,
+        "deliveredBytes": 16385,
+        "sourceBytes": 16385,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "lab",
+        "scenario": "invalid-json",
+        "outcome": "invalid",
+        "status": null,
+        "timeoutMs": 500,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 7,
+        "sourceBytes": 7,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "lab",
+        "scenario": "missing-body",
+        "outcome": "invalid",
+        "status": null,
+        "timeoutMs": 500,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 0,
+        "deliveredBytes": 0,
+        "sourceBytes": 146,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "lab",
+        "scenario": "network-error",
+        "outcome": "error",
+        "status": null,
+        "timeoutMs": 500,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 0,
+        "deliveredBytes": 0,
+        "sourceBytes": 146,
+        "cancelCalls": 0,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "lab",
+        "scenario": "status-cancel-pending",
+        "outcome": "error",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 0,
+        "deliveredBytes": 0,
+        "sourceBytes": 146,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "lab",
+        "scenario": "status-cancel-rejected",
+        "outcome": "error",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 0,
+        "requests": 1,
+        "pulls": 0,
+        "deliveredBytes": 0,
+        "sourceBytes": 146,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": false
+      },
+      {
+        "subject": "lab",
+        "scenario": "body-timeout",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 43,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 146,
+        "sourceBytes": 146,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "lab",
+        "scenario": "body-timeout-cancel-pending",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 43,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 146,
+        "sourceBytes": 146,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "lab",
+        "scenario": "body-timeout-cancel-rejected",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 44,
+        "requests": 1,
+        "pulls": 2,
+        "deliveredBytes": 146,
+        "sourceBytes": 146,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "lab",
+        "scenario": "late-response",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 43,
+        "requests": 1,
+        "pulls": 0,
+        "deliveredBytes": 0,
+        "sourceBytes": 146,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": true
+      },
+      {
+        "subject": "lab",
+        "scenario": "empty-stream",
+        "outcome": "timeout",
+        "status": null,
+        "timeoutMs": 40,
+        "elapsedMs": 40,
+        "requests": 1,
+        "pulls": 1280,
+        "deliveredBytes": 0,
+        "sourceBytes": 146,
+        "cancelCalls": 1,
+        "bodyLockedAfterObservation": false,
+        "signalAbortedAfterObservation": true
+      }
+    ]
+  },
+  "demoStop": [
+    {
+      "scenario": "held-reset",
+      "command": "reset",
+      "result": "stopped",
+      "markedUnconfirmed": 1,
+      "finalReads": 1,
+      "diagnosticReads": 1,
+      "ownerCalls": 5,
+      "postAttempts": 2,
+      "commandDispatches": 1,
+      "replayedWrites": 0,
+      "confirmedAfterController": true,
+      "source": {
+        "total": 0,
+        "originCalls": 0,
+        "events": 0
+      },
+      "sequence": [
+        "mutation-committed",
+        "stop",
+        "response-delivered",
+        "marked-unconfirmed",
+        "confirmation-start",
+        "confirmation-applied",
+        "unlocked"
+      ],
+      "interpretation": "The actual mutation commits before its response is delivered to the controller; deliberate Stop never undoes or repeats it."
+    },
+    {
+      "scenario": "held-request",
+      "command": "request",
+      "result": "stopped",
+      "markedUnconfirmed": 1,
+      "finalReads": 1,
+      "diagnosticReads": 1,
+      "ownerCalls": 5,
+      "postAttempts": 2,
+      "commandDispatches": 1,
+      "replayedWrites": 0,
+      "confirmedAfterController": true,
+      "source": {
+        "total": 1,
+        "originCalls": 1,
+        "events": 1
+      },
+      "sequence": [
+        "mutation-committed",
+        "stop",
+        "response-delivered",
+        "marked-unconfirmed",
+        "confirmation-start",
+        "confirmation-applied",
+        "unlocked"
+      ],
+      "interpretation": "The actual mutation commits before its response is delivered to the controller; deliberate Stop never undoes or repeats it."
+    },
+    {
+      "scenario": "failed-confirmation",
+      "command": "request",
+      "result": "confirmation-error",
+      "markedUnconfirmed": 1,
+      "finalReads": 1,
+      "diagnosticReads": 1,
+      "ownerCalls": 5,
+      "postAttempts": 2,
+      "commandDispatches": 1,
+      "replayedWrites": 0,
+      "confirmedAfterController": false,
+      "source": {
+        "total": 1,
+        "originCalls": 1,
+        "events": 1
+      },
+      "sequence": [
+        "mutation-committed",
+        "stop",
+        "response-delivered",
+        "marked-unconfirmed",
+        "confirmation-start",
+        "unlocked"
+      ],
+      "interpretation": "The actual mutation commits before its response is delivered to the controller; deliberate Stop never undoes or repeats it."
+    },
+    {
+      "scenario": "abandoned-epoch",
+      "command": "request",
+      "result": "abandoned",
+      "markedUnconfirmed": 0,
+      "finalReads": 0,
+      "diagnosticReads": 1,
+      "ownerCalls": 4,
+      "postAttempts": 2,
+      "commandDispatches": 1,
+      "replayedWrites": 0,
+      "confirmedAfterController": null,
+      "source": {
+        "total": 1,
+        "originCalls": 1,
+        "events": 1
+      },
+      "sequence": ["mutation-committed", "stop", "response-delivered", "unlocked"],
+      "interpretation": "No abandoned controller callbacks or follow-up requests; the separate diagnostic observes the committed source."
+    },
+    {
+      "scenario": "transport-loss",
+      "command": "request",
+      "result": "transport-error",
+      "markedUnconfirmed": 0,
+      "finalReads": 0,
+      "diagnosticReads": 1,
+      "ownerCalls": 4,
+      "postAttempts": 2,
+      "commandDispatches": 1,
+      "replayedWrites": 0,
+      "confirmedAfterController": null,
+      "source": {
+        "total": 1,
+        "originCalls": 1,
+        "events": 1
+      },
+      "sequence": ["mutation-committed", "stop", "response-delivered", "unlocked"],
+      "interpretation": "An unknown transport AbortError preserves its failure identity and makes no controller follow-up. The UI caller owns its unconfirmed failure state."
+    },
+    {
+      "scenario": "failed-burst",
+      "result": "admission-error",
+      "finalReads": 0,
+      "markedUnconfirmed": 0,
+      "commandDispatches": 2,
+      "postAttempts": 3,
+      "diagnosticReads": 1,
+      "replayedWrites": 0,
+      "source": {
+        "total": 1,
+        "originCalls": 1,
+        "events": 1
+      },
+      "sequence": [
+        "controlled-refusal",
+        "sibling-committed",
+        "sibling-response-delivered",
+        "unlocked"
+      ],
+      "interpretation": "A test-only HTTP 429 wrapper refuses one call; another actual private-origin call commits and its delivered response is held. The actual batch/run helpers wait for that sibling and perform no automatic state read. This is not a native production admission threshold measurement."
+    }
+  ],
+  "bundles": {
+    "gateway": {
+      "sha256": "0fc9dc36cf9c10b9be297c01749dd20988496dbd03c8e0b19705fd03efe0b39a",
+      "inputs": [
+        {
+          "path": "tests/fixtures/async-gateway.ts",
+          "sha256": "9381c208f66a570e8999562c76b5a8a770f9d6ef7ed61698964a0ccd5fce576c"
+        },
+        {
+          "path": "worker/bounded-json.ts",
+          "sha256": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1"
+        },
+        {
+          "path": "worker/budget-signals.ts",
+          "sha256": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15"
+        },
+        {
+          "path": "worker/burn-rate.ts",
+          "sha256": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c"
+        },
+        {
+          "path": "worker/engine.ts",
+          "sha256": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f"
+        },
+        {
+          "path": "worker/incident-brief-ai.ts",
+          "sha256": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b"
+        },
+        {
+          "path": "worker/incident-brief-domain.ts",
+          "sha256": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1"
+        },
+        {
+          "path": "worker/incident-briefs.ts",
+          "sha256": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d"
+        },
+        {
+          "path": "worker/incident-evidence.ts",
+          "sha256": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2"
+        },
+        {
+          "path": "worker/index.ts",
+          "sha256": "aeb1b9951158d902e308270d3ba85086fa566068e785e48dadcc6f7caa07d200"
+        },
+        {
+          "path": "worker/lab-admission.ts",
+          "sha256": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc"
+        },
+        {
+          "path": "worker/lab-observer.ts",
+          "sha256": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08"
+        },
+        {
+          "path": "worker/metadata-cleanup.ts",
+          "sha256": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee"
+        },
+        {
+          "path": "worker/monitor-check-cache.ts",
+          "sha256": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1"
+        },
+        {
+          "path": "worker/monitor-domain.ts",
+          "sha256": "15ed1d9218b5c0baeea4061f20077ded6350d02c6b3bb71b2906fc595f16a003"
+        },
+        {
+          "path": "worker/monitor-forwarder.ts",
+          "sha256": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e"
+        },
+        {
+          "path": "worker/monitor-probe.ts",
+          "sha256": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752"
+        },
+        {
+          "path": "worker/monitor-readiness.ts",
+          "sha256": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c"
+        },
+        {
+          "path": "worker/monitor-version-retention.ts",
+          "sha256": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455"
+        },
+        {
+          "path": "worker/monitor.ts",
+          "sha256": "931a9f5fc6e63e821594ac282f8930f430a724dfff0690fcc7b0e2798dec6c43"
+        },
+        {
+          "path": "worker/origin-client.ts",
+          "sha256": "1c92a87dc002fa309e032f2b3ebd569c58fa012929db7d9d9be596d2a9e18e59"
+        },
+        {
+          "path": "worker/origin.ts",
+          "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8"
+        },
+        {
+          "path": "worker/status-view-cache.ts",
+          "sha256": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158"
+        }
+      ]
+    },
+    "origin": {
+      "sha256": "2c2f5c182b0b95b57f1c3818fa8f8c6acce2048c3aba7ae2a771b605a098e83c",
+      "inputs": [
+        {
+          "path": "worker/origin.ts",
+          "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8"
+        }
+      ]
+    },
+    "runController": {
+      "sha256": "5cd9630234ea3dd131380c07236ce5202f035d18fa8d9dce63ead2ded844a7af",
+      "inputs": [
+        {
+          "path": "src/lab-run-control.ts",
+          "sha256": "080c3d8c53e63a066fd81ab211d388073d7c4ee0ebc8881fa1360c7080e6818e"
+        }
+      ]
+    },
+    "batchController": {
+      "sha256": "798424212c12d7ab11494a060ba8bf28b97fa656353104351de5b1d93eb2b6f3",
+      "inputs": [
+        {
+          "path": "src/lab-request-control.ts",
+          "sha256": "c94cbe21856aba5f98144b195fc191bb0ffa3d72e1159187a77ff2b3a4d851b5"
+        }
+      ]
+    }
+  },
+  "sourceInputs": [
+    {
+      "path": "package-lock.json",
+      "sha256": "eb1ab61089ac90d9fccec8713e8517d4d67474b6bf93b1ca4cfac4aff49e3d09"
+    },
+    {
+      "path": "package.json",
+      "sha256": "1bf8f860813f13e066a9d13cf4a1dc0383fecbf72978730fede6f57ed672e235"
+    },
+    {
+      "path": "scripts/async-lifetime.mjs",
+      "sha256": "42382543ef4696d690dab5a24f916596e848a4b5ced833d04e3426bdea54d0fe"
+    },
+    {
+      "path": "src/lab-request-control.ts",
+      "sha256": "c94cbe21856aba5f98144b195fc191bb0ffa3d72e1159187a77ff2b3a4d851b5"
+    },
+    {
+      "path": "src/lab-run-control.ts",
+      "sha256": "080c3d8c53e63a066fd81ab211d388073d7c4ee0ebc8881fa1360c7080e6818e"
+    },
+    {
+      "path": "src/main.tsx",
+      "sha256": "ce0fa7783a8718588a0f129fbff2760e9db580110c4cdbdc50caf44980c0ef85"
+    },
+    {
+      "path": "tests/fixtures/async-gateway.ts",
+      "sha256": "9381c208f66a570e8999562c76b5a8a770f9d6ef7ed61698964a0ccd5fce576c"
+    },
+    {
+      "path": "tests/fixtures/upstream-lifetime.ts",
+      "sha256": "83d1f051ad286f316cc84c0b2b8b09a80f7e29bc358578bc9b889a0f5196b5d8"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "9affb71fa759689786bd82d7dbe343c7fbed45e403dbc6fbd658c578d1bdface"
+    },
+    {
+      "path": "worker/bounded-json.ts",
+      "sha256": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1"
+    },
+    {
+      "path": "worker/budget-signals.ts",
+      "sha256": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15"
+    },
+    {
+      "path": "worker/burn-rate.ts",
+      "sha256": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c"
+    },
+    {
+      "path": "worker/engine.ts",
+      "sha256": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f"
+    },
+    {
+      "path": "worker/incident-brief-ai.ts",
+      "sha256": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b"
+    },
+    {
+      "path": "worker/incident-brief-domain.ts",
+      "sha256": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1"
+    },
+    {
+      "path": "worker/incident-briefs.ts",
+      "sha256": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d"
+    },
+    {
+      "path": "worker/incident-evidence.ts",
+      "sha256": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2"
+    },
+    {
+      "path": "worker/index.ts",
+      "sha256": "aeb1b9951158d902e308270d3ba85086fa566068e785e48dadcc6f7caa07d200"
+    },
+    {
+      "path": "worker/lab-admission.ts",
+      "sha256": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc"
+    },
+    {
+      "path": "worker/lab-observer.ts",
+      "sha256": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08"
+    },
+    {
+      "path": "worker/metadata-cleanup.ts",
+      "sha256": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee"
+    },
+    {
+      "path": "worker/monitor-check-cache.ts",
+      "sha256": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1"
+    },
+    {
+      "path": "worker/monitor-domain.ts",
+      "sha256": "15ed1d9218b5c0baeea4061f20077ded6350d02c6b3bb71b2906fc595f16a003"
+    },
+    {
+      "path": "worker/monitor-forwarder.ts",
+      "sha256": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e"
+    },
+    {
+      "path": "worker/monitor-probe.ts",
+      "sha256": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752"
+    },
+    {
+      "path": "worker/monitor-readiness.ts",
+      "sha256": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c"
+    },
+    {
+      "path": "worker/monitor-version-retention.ts",
+      "sha256": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455"
+    },
+    {
+      "path": "worker/monitor.ts",
+      "sha256": "931a9f5fc6e63e821594ac282f8930f430a724dfff0690fcc7b0e2798dec6c43"
+    },
+    {
+      "path": "worker/origin-client.ts",
+      "sha256": "1c92a87dc002fa309e032f2b3ebd569c58fa012929db7d9d9be596d2a9e18e59"
+    },
+    {
+      "path": "worker/origin.ts",
+      "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8"
+    },
+    {
+      "path": "worker/status-view-cache.ts",
+      "sha256": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158"
+    }
+  ],
+  "proof": {
+    "historicalFailureReproduced": true,
+    "allCurrentSamplesPass": true,
+    "sourceStableAfterDisposal": true,
+    "allRuntimesDisposed": true
+  },
+  "interpretation": [
+    "Actual workerd streams use controlled in-isolate fetch adapters that intentionally ignore AbortSignal; this does not prove a network provider stops work.",
+    "The historical fixture closes orphaned source streams only after recording each failing sample. Its baseline worker sources are read from the fixed published Git commit.",
+    "The body cap bounds retained bytes, not total heap, CPU or billing. Cancellation is requested without waiting for its completion.",
+    "The run controller executes in Node against actual local gateway, SQLite Durable Object and private origin protocol; no React DOM or browser behavior is tested.",
+    "Stopped runs make one guarded confirmation read after held successful responses settle. Reads never replay writes or undo committed mutations.",
+    "No production/account calls, native inference, browser controls, external notifications or user dev-server requests occur."
+  ]
+}

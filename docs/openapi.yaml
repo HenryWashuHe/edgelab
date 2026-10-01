@@ -1,11 +1,16 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.11.0
+  version: 3.12.0
   description: |
     Public monitoring read model and single-owner operator control plane.
     HTTP laboratory controls are documented in LAB.md; the observer upgrade and message schema are below.
-    This describes deployed release 3.11.0, preserving the additive 3.7.0 view contract.
+    This describes candidate 3.12.0, preserving the additive 3.7.0 view contract.
+    Upstream JSON consumption is bounded to 16384 bytes with best-effort deadline cleanup.
+    Deliberate guided-demo Stop confirms settled state once; it adds no endpoint or command.
+    Local checks pass 274 unit tests and eight asset fault tests. Complete CI/live checks remain pending.
+    Evidence: docs/evidence/releases/3.12.0-async-lifetime.json and 3.12.0-client-build.json.
+    Historical deployed 3.11.0 evidence follows:
     Demand-loaded sections add no API endpoint or socket command; static chunk downloads are expected.
     3.11.0 local check passes 239 unit tests, eight asset-verifier fault tests, TypeScript, build and
     deployment dry-runs. Its actual client build record is docs/evidence/releases/3.11.0-client-build.json.

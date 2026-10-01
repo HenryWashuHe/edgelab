@@ -8,6 +8,7 @@ import {
   windowBounds,
 } from '../worker/monitor-domain';
 import { probe } from '../worker/monitor-probe';
+import { MAX_UPSTREAM_JSON_BYTES } from '../worker/bounded-json';
 const target = {
   id: 'health',
   name: 'Health',
@@ -149,13 +150,22 @@ describe('bounded monitor probes', () => {
     );
     await vi.advanceTimersByTimeAsync(100);
     expect((await absent).outcome).toBe('timeout');
+    let canceled = 0;
+    const body = new ReadableStream<Uint8Array>({
+      cancel() {
+        canceled++;
+        return Promise.reject(new Error('private cleanup failure'));
+      },
+    });
     const stream = probe(
       target,
       policy,
-      binding(async () => new Response(new ReadableStream({ start() {} }))),
+      binding(async () => new Response(body)),
     );
     await vi.advanceTimersByTimeAsync(100);
     expect((await stream).outcome).toBe('timeout');
+    expect(canceled).toBe(1);
+    expect(body.locked).toBe(false);
   });
   it('counts a correct but slow response against the latency objective', async () => {
     vi.useFakeTimers();
@@ -168,5 +178,80 @@ describe('bounded monitor probes', () => {
     );
     await vi.advanceTimersByTimeAsync(100);
     expect((await result).outcome).toBe('slow');
+  });
+  it('preserves known HTTP failures when cancellation hangs, including successful non-200 responses', async () => {
+    for (const status of [201, 503]) {
+      let canceled = 0;
+      const body = new ReadableStream<Uint8Array>({
+        cancel() {
+          canceled++;
+          return new Promise<void>(() => {});
+        },
+      });
+      expect(
+        await probe(
+          target,
+          defaultPolicy,
+          binding(async () => new Response(body, { status })),
+        ),
+      ).toMatchObject({ outcome: 'http-error', status });
+      expect(canceled).toBe(1);
+      expect(body.locked).toBe(false);
+    }
+  });
+  it('accepts exactly 16 KiB of valid JSON and rejects one byte more', async () => {
+    const base = JSON.stringify({ ok: true, padding: '' });
+    const exact = {
+      ok: true,
+      padding: 'x'.repeat(MAX_UPSTREAM_JSON_BYTES - new TextEncoder().encode(base).length),
+    };
+    expect(
+      await probe(
+        target,
+        defaultPolicy,
+        binding(async () => Response.json(exact)),
+      ),
+    ).toMatchObject({ outcome: 'good', status: 200 });
+    expect(
+      await probe(
+        target,
+        defaultPolicy,
+        binding(async () => Response.json({ ...exact, padding: exact.padding + 'x' })),
+      ),
+    ).toMatchObject({ outcome: 'invalid-body', status: 200 });
+  });
+  it('includes delayed body consumption in latency and never consumes a late fetch response', async () => {
+    vi.useFakeTimers();
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        setTimeout(() => {
+          controller.enqueue(new TextEncoder().encode('{"ok":true}'));
+          controller.close();
+        }, 75);
+      },
+    });
+    const slow = probe(
+      target,
+      { ...defaultPolicy, latencyObjectiveMs: 50 },
+      binding(async () => new Response(body)),
+    );
+    await vi.advanceTimersByTimeAsync(75);
+    expect(await slow).toMatchObject({ outcome: 'slow', status: 200, latencyMs: 75 });
+    let deliver!: (response: Response) => void;
+    const late = probe(
+      target,
+      { ...defaultPolicy, timeoutMs: 100 },
+      binding(() => new Promise((resolve) => (deliver = resolve))),
+    );
+    await vi.advanceTimersByTimeAsync(100);
+    expect(await late).toMatchObject({ outcome: 'timeout', status: null, latencyMs: 100 });
+    const response = Response.json({ ok: true });
+    const reader = vi.spyOn(response.body!, 'getReader');
+    const cancel = vi.spyOn(response.body!, 'cancel');
+    deliver(response);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(reader).not.toHaveBeenCalled();
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(await late).toMatchObject({ outcome: 'timeout', status: null, latencyMs: 100 });
   });
 });
