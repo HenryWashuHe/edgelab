@@ -1308,6 +1308,9 @@ try {
     JSON.stringify(contaminated),
     initialCompleted.id,
   );
+  // Out-of-band fixture edits do not invalidate production's instance-local
+  // status view. Restart it so public status actually projects this edited row.
+  await mf.unsafeEvictDurableObject('gateway', 'MonitorStore', { name: 'operations' });
   await assertPublicCleanup(initialCleanup, initialCompleted.slot);
   assert.deepEqual((await gatewayRead('audit', true)).lastCleanup, {
     at: initialCompleted.at,
@@ -1340,6 +1343,9 @@ try {
     JSON.stringify({ cleanup: { ...initialCleanup, versions: { ...emptyBatch, examined: 1 } } }),
     legacyCompleted.id,
   );
+  // Keep the malformed-source assertion on the public status path after the
+  // direct SQL edit, without accepting a previously materialized valid record.
+  await mf.unsafeEvictDurableObject('gateway', 'MonitorStore', { name: 'operations' });
   assert.deepEqual((await gatewayRead('audit', true)).lastCleanup, {
     at,
     slot: Math.floor(at / 60000),

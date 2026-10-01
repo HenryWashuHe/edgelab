@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile, mkdir, writeFile, copyFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 const base = process.env.BASE_URL;
 if (!base?.startsWith('https://')) throw new Error('Set BASE_URL to your deployed HTTPS gateway');
 const token = (await readFile('.env.operator', 'utf8')).match(/^OPERATOR_TOKEN=(.+)$/m)?.[1];
@@ -13,8 +14,50 @@ const request = async (path, { method = 'GET', headers = {}, body } = {}) => {
   return { response: r, data: await r.json() };
 };
 const get = (path, headers = {}) => request(path, { headers });
+const assertStatusRead = (data) => {
+  assert.equal(data.version, '3.7.0');
+  const read = data.read;
+  assert(read && ['storage', 'memory'].includes(read.source));
+  assert.deepEqual(Object.keys(read).sort(), [
+    'ageMs',
+    'materializedAt',
+    'maxAgeMs',
+    'servedAt',
+    'source',
+  ]);
+  for (const at of [read.materializedAt, read.servedAt])
+    assert(Number.isSafeInteger(at) && at >= 0 && at <= 8640000000000000);
+  assert.equal(read.servedAt, data.now);
+  assert.equal(read.ageMs, read.servedAt - read.materializedAt);
+  assert(read.ageMs >= 0 && read.ageMs < 10000);
+  assert.equal(read.maxAgeMs, 10000);
+  if (read.source === 'storage') assert.equal(read.ageMs, 0);
+  assert(!JSON.stringify(data).includes('budgetSources'));
+};
 const health = await get('/api/health');
-assert.equal(health.data.version, '3.6.0');
+assert.equal(health.data.version, '3.7.0');
+const projectVersion = JSON.parse(await readFile('package.json', 'utf8')).version;
+assert.equal(health.data.version, projectVersion, 'Deployed/package version agreement');
+const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
+const localHTML = await readFile('dist/index.html');
+const assetPaths = [
+  '/',
+  ...new Set(localHTML.toString('utf8').match(/\/assets\/[^"']+\.(?:js|css)/g) ?? []),
+];
+assert(assetPaths.some((path) => path.endsWith('.js')));
+assert(assetPaths.some((path) => path.endsWith('.css')));
+const deployedAssets = [];
+for (const path of assetPaths) {
+  const local = path === '/' ? localHTML : await readFile(`dist${path}`);
+  const response = await fetch(base + path, { signal: AbortSignal.timeout(15000) });
+  assert.equal(response.status, 200, `Deployed asset ${path}`);
+  const served = new Uint8Array(await response.arrayBuffer());
+  assert.equal(hash(served), hash(local), `Deployed/build bytes ${path}`);
+  deployedAssets.push({ path, bytes: served.byteLength, sha256: hash(served) });
+}
+console.log(
+  'PASS deployed/package version and byte-identical production assets; rendering not verified',
+);
 assert.equal((await get('/api/ops/audit')).response.status, 401);
 assert.equal(
   (await get('/api/ops/audit', { Authorization: `Bearer ${token}` })).response.status,
@@ -25,6 +68,41 @@ assert.equal(
   403,
 );
 console.log('PASS live version, public read boundary, and authenticated operator access');
+// These HTTP observations verify provenance, not production SQL cost or browser rendering.
+const statusReuseChecks = [];
+for (const window of ['24h', '7d']) {
+  let witnessedMemory = false;
+  for (let attempt = 0; attempt < 3 && !witnessedMemory; attempt++) {
+    const first = await get(`/api/ops/status?window=${window}`);
+    const second = await get(`/api/ops/status?window=${window}`);
+    for (const result of [first, second]) {
+      assert.equal(result.response.status, 200);
+      assert.equal(result.response.headers.get('Cache-Control'), 'no-store');
+      assert.equal(result.response.headers.get('X-Content-Type-Options'), 'nosniff');
+      assertStatusRead(result.data);
+    }
+    if (
+      second.data.read.source === 'memory' &&
+      first.data.read.materializedAt === second.data.read.materializedAt
+    ) {
+      assert.deepEqual(
+        second.data.services.map((s) => s.latest),
+        first.data.services.map((s) => s.latest),
+      );
+      witnessedMemory = true;
+      statusReuseChecks.push({ window, first: first.data.read, second: second.data.read });
+    }
+  }
+  assert(witnessedMemory, `No same-materialization memory response witnessed for ${window}`);
+  const exported = await get(`/api/ops/export?window=${window}`);
+  assert.equal(exported.response.status, 200);
+  assertStatusRead(exported.data);
+  assert.equal(exported.data.read.source, 'storage');
+  statusReuseChecks.push({ window, authoritativeExport: exported.data.read });
+}
+console.log(
+  'PASS live memory provenance, unchanged observations, and authoritative exports for both windows',
+);
 // Every brief check stops at gateway or UUID validation. Valid private lookups
 // may expire leases, so never perform one or submit a valid generation body here.
 const probeId = '00000000-0000-4000-8000-000000000000';
@@ -118,6 +196,7 @@ let previous = '';
 while (Date.now() - started < 16 * 60_000) {
   const { response, data } = await get('/api/ops/status');
   assert.equal(response.status, 200);
+  assertStatusRead(data);
   assert.equal(data.services.length, 2);
   assert(!JSON.stringify(data).includes(token));
   assert(!JSON.stringify(data).includes('origin.internal'));
@@ -168,6 +247,8 @@ while (Date.now() - started < 16 * 60_000) {
     assert.equal(ready.response.status, 200);
     assert.equal(ready.data.monitoring.status, 'healthy');
     const exported = await get('/api/ops/export');
+    assertStatusRead(exported.data);
+    assert.equal(exported.data.read.source, 'storage');
     assert.equal(exported.data.schemaVersion, 4);
     assert(!JSON.stringify(exported.data).includes('promptEvidenceIds'));
     assert(!JSON.stringify(exported.data).includes('evidenceHash'));
@@ -182,6 +263,8 @@ while (Date.now() - started < 16 * 60_000) {
           verification:
             'Two distinct new good scheduled minutes for each service after verification began, each actual observation start matching its UTC minute. New persisted version1 budget evaluations use finished-minute windows and reconcile observations, maintenance, and unknown counts. No manual tick endpoint was invoked. Readiness healthy, schema4 export, operator audit authentication, and public privacy boundaries checked. All three private brief routes verified for absent/invalid bearer, methods, origin rejection, validation, and no-store headers using only requests rejected before brief transactions or inference; native AI capability and output are not verified by these checks.',
           privateBriefRoutes,
+          statusReuseChecks,
+          deployedAssets,
           health: health.data,
           snapshot: data,
         },

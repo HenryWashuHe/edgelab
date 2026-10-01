@@ -490,7 +490,7 @@ function App() {
             </a>
           </div>
           <div className="sidebar-footer">
-            <span className="tiny-dot" /> EdgeLab v3.6.0 <span>TS</span>
+            <span className="tiny-dot" /> EdgeLab v3.7.0 <span>TS</span>
           </div>
         </div>
       </aside>

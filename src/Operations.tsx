@@ -18,6 +18,7 @@ import { BudgetSignalsPanel } from './BudgetSignalsPanel';
 import { MetadataCleanup } from './MetadataCleanup';
 import type { CleanupRecord } from '../worker/metadata-cleanup';
 import { monitoringReadiness, MONITOR_FRESHNESS_MS } from '../worker/monitor-readiness';
+import { readStatusViewTiming, statusViewTimestamp } from './status-view-timing';
 import './operations.css';
 type Service = OperationsSnapshot['services'][number];
 type Incident = OperationsSnapshot['incidents'][number];
@@ -368,6 +369,11 @@ export function Operations() {
   // elapsed interval with the server snapshot time, avoiding browser clock skew.
   const snapshotAge = data ? Math.max(0, performance.now() - receivedAt.current) : 0;
   const displayNow = data ? data.now + snapshotAge : 0;
+  const viewTiming = readStatusViewTiming(
+    data && 'read' in data ? data.read : undefined,
+    data?.now,
+  );
+  const responseTime = statusViewTimestamp(data?.now);
   const freshServerSnapshot = data !== null && snapshotAge <= MONITOR_FRESHNESS_MS;
   const currentSnapshotConfirmed = !error && freshServerSnapshot;
   const storageUnavailable = statusFailure?.code === 'monitor-storage-unavailable';
@@ -1077,10 +1083,78 @@ export function Operations() {
         )}
       </div>
       <footer className="ops-footer">
-        <span>
-          Snapshot {data ? new Date(data.now).toLocaleTimeString() : 'pending'} · refreshes every
-          60s while visible · cached evidence keeps aging between reads
-        </span>
+        <div className="ops-view-info">
+          <span>
+            Status response {responseTime ?? (data ? 'time unavailable' : 'pending')} · refreshes
+            every 60s while visible · cached evidence keeps aging between reads
+          </span>
+          {data && (
+            <details className="ops-view-timing">
+              <summary>
+                Dashboard view timing ·{' '}
+                {viewTiming
+                  ? viewTiming.source === 'memory'
+                    ? 'Reused view when served'
+                    : 'Read from storage'
+                  : 'Provenance unavailable'}
+              </summary>
+              <div className="ops-view-timing-content">
+                {viewTiming ? (
+                  <>
+                    <dl>
+                      <div>
+                        <dt>View read from storage · UTC</dt>
+                        <dd>
+                          <time dateTime={new Date(viewTiming.materializedAt).toISOString()}>
+                            {statusViewTimestamp(viewTiming.materializedAt)}
+                          </time>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Response served · UTC</dt>
+                        <dd>
+                          <time dateTime={new Date(viewTiming.servedAt).toISOString()}>
+                            {statusViewTimestamp(viewTiming.servedAt)}
+                          </time>
+                        </dd>
+                      </div>
+                      {viewTiming.source === 'memory' && (
+                        <div>
+                          <dt>Reuse age when served</dt>
+                          <dd>
+                            {(viewTiming.ageMs / 1000).toFixed(3)} seconds · maximum{' '}
+                            {viewTiming.maxAgeMs / 1000} seconds
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                    <p>
+                      {viewTiming.source === 'memory'
+                        ? 'This response reused a view read less than ten seconds earlier; it did not read storage again.'
+                        : 'This response read the dashboard view from storage.'}{' '}
+                      Checks and scheduled runs keep their original recorded times. A refresh does
+                      not run a probe.
+                    </p>
+                    <p>
+                      Readiness shown here is based on that view’s evidence. The readiness endpoint
+                      reads monitoring separately.
+                    </p>
+                  </>
+                ) : (
+                  <p>
+                    This response did not include valid view timing. Its storage read time and any
+                    reuse are unavailable; the response time is shown above when recorded.
+                  </p>
+                )}
+                {!currentSnapshotConfirmed && (
+                  <p className="ops-view-unconfirmed">
+                    This response is historical. Current monitoring cannot be confirmed.
+                  </p>
+                )}
+              </div>
+            </details>
+          )}
+        </div>
         <a href="https://github.com/HenryWashuHe/edgelab" target="_blank" rel="noreferrer">
           Source & reproducible tests <ArrowUpRight size={14} />
         </a>

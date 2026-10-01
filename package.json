@@ -1,6 +1,6 @@
 {
   "name": "edgelab",
-  "version": "3.6.0",
+  "version": "3.7.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -30,7 +30,8 @@
     "test:retention": "node scripts/monitor-retention.mjs",
     "test:retention-cost": "node scripts/monitor-retention-cost.mjs",
     "test:lab-observer": "node scripts/lab-observer.mjs",
-    "test:lab-recording": "node scripts/lab-recording.mjs"
+    "test:lab-recording": "node scripts/lab-recording.mjs",
+    "test:status-cache": "node scripts/status-cache.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.48.0",

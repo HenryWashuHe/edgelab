@@ -537,6 +537,9 @@ try {
     JSON.stringify(legacyWarning),
     'catalog',
   );
+  // This legacy-shape SQL edit bypasses production commit invalidation. Read
+  // its source after actual instance eviction, rather than a warmed status view.
+  await mf.unsafeEvictDurableObject('gateway', 'MonitorStore', { name: 'operations' });
   const legacyRead = await budget();
   assert.deepEqual(legacyRead.lastFiring, { ...legacyWarning, policyContext: null });
   assert.equal(

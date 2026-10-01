@@ -16,6 +16,12 @@ export type BudgetSignalSnapshot = {
   evaluationStatus: 'current' | 'stale' | 'policy-changed' | 'not-evaluated';
   lastFiring: BudgetFiringEvidence | null;
 };
+/** Cache-only source metadata. Freshness is authoritative to these SQL columns. */
+export type BudgetAgeSource = { revision: number; computedAt: number } | null;
+export type BudgetSignalMaterialization = {
+  snapshot: BudgetSignalSnapshot;
+  ageSource: BudgetAgeSource;
+};
 export type BudgetSignalInput = {
   service: string;
   revision: number;
@@ -33,6 +39,30 @@ type SignalRow = {
 };
 const MAX_WINDOW_MINUTES = 4320;
 const EVALUATION_FRESHNESS_MS = 180000;
+
+/** Age captured evidence without recomputing it or changing any recorded timestamp. */
+export function projectBudgetSignal(
+  snapshot: BudgetSignalSnapshot,
+  source: BudgetAgeSource,
+  currentRevision: number,
+  now: number,
+): BudgetSignalSnapshot {
+  const age = source === null ? NaN : now - source.computedAt;
+  return {
+    ...snapshot,
+    evaluationStatus:
+      source === null
+        ? 'not-evaluated'
+        : source.revision !== currentRevision
+          ? 'policy-changed'
+          : !Number.isFinite(now) ||
+              !Number.isFinite(age) ||
+              age < 0 ||
+              age > EVALUATION_FRESHNESS_MS
+            ? 'stale'
+            : 'current',
+  };
+}
 
 /** One current evaluation and one retained warning per approved service; no delivery side effects. */
 export class BudgetSignals {
@@ -130,24 +160,35 @@ export class BudgetSignals {
 
   /** Public reads only age persisted evidence; they never recompute or renew its timestamp. */
   read(service: string, currentRevision: number, now: number): BudgetSignalSnapshot {
+    return this.materialize(service, currentRevision, now).snapshot;
+  }
+
+  /** One SQL read supplies both the public view and private metadata for clock projection. */
+  materialize(service: string, currentRevision: number, now: number): BudgetSignalMaterialization {
     const row = this.rows<SignalRow>('SELECT * FROM budget_signals WHERE service=?', service)[0];
-    if (!row) return { evaluation: null, evaluationStatus: 'not-evaluated', lastFiring: null };
-    const age = now - row.computed_at;
-    const evaluationStatus =
-      row.revision !== currentRevision
-        ? 'policy-changed'
-        : !Number.isFinite(now) || !Number.isFinite(age) || age < 0 || age > EVALUATION_FRESHNESS_MS
-          ? 'stale'
-          : 'current';
+    if (!row)
+      return {
+        snapshot: { evaluation: null, evaluationStatus: 'not-evaluated', lastFiring: null },
+        ageSource: null,
+      };
     const lastFiring =
       row.last_firing === null ? null : (JSON.parse(row.last_firing) as BudgetFiringEvidence);
+    const ageSource = { revision: row.revision, computedAt: row.computed_at };
     return {
-      evaluation: JSON.parse(row.evaluation) as BurnRateEvaluation,
-      evaluationStatus,
-      lastFiring:
-        lastFiring === null
-          ? null
-          : { ...lastFiring, policyContext: lastFiring.policyContext ?? null },
+      snapshot: projectBudgetSignal(
+        {
+          evaluation: JSON.parse(row.evaluation) as BurnRateEvaluation,
+          evaluationStatus: 'current',
+          lastFiring:
+            lastFiring === null
+              ? null
+              : { ...lastFiring, policyContext: lastFiring.policyContext ?? null },
+        },
+        ageSource,
+        currentRevision,
+        now,
+      ),
+      ageSource,
     };
   }
 

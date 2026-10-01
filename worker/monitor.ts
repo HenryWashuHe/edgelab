@@ -16,7 +16,14 @@ import {
 import { probe } from './monitor-probe';
 import { IncidentEvidence, type IncidentPolicyVersion } from './incident-evidence';
 import { classifyTick, monitoringReadiness } from './monitor-readiness';
-import { BudgetSignals } from './budget-signals';
+import { BudgetSignals, type BudgetAgeSource } from './budget-signals';
+import {
+  projectStatusView,
+  statusServiceAt,
+  StatusViewCache,
+  validStatusClock,
+  type StatusWindow,
+} from './status-view-cache';
 import { IncidentBriefs } from './incident-briefs';
 import { MonitorCheckCache } from './monitor-check-cache';
 import { MonitorVersionRetention } from './monitor-version-retention';
@@ -73,6 +80,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
   private briefs: IncidentBriefs;
   private checkCache: MonitorCheckCache;
   private versionRetention: MonitorVersionRetention;
+  private readonly statusCache = new StatusViewCache<ReturnType<MonitorStore['snapshot']>>();
   constructor(ctx: DurableObjectState, env: MonitorEnv) {
     super(ctx, env);
     const sql = ctx.storage.sql;
@@ -186,6 +194,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
   }
   private syncTargets() {
     const targets = parseTargets(this.env.MONITOR_TARGETS);
+    let changed = false;
     this.ctx.storage.transactionSync(() => {
       for (const target of targets) {
         const existing = this.rows<ServiceRow>('SELECT * FROM services WHERE id=?', target.id)[0];
@@ -202,6 +211,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
           );
           this.recordVersion(target, 1, defaultPolicy, 'recorded');
           this.event('service.created', target.id, { name: target.name });
+          changed = true;
         } else {
           this.recordVersion(
             JSON.parse(existing.target),
@@ -228,18 +238,51 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
             'recorded',
           );
           this.event('service.target-updated', target.id, { revision: existing.revision + 1 });
+          changed = true;
         }
       }
     });
+    if (changed) this.statusCache.invalidate();
     return targets;
   }
   async fetch(request: Request): Promise<Response> {
+    try {
+      const response = await this.handleFetch(request);
+      if (response.status >= 500) this.statusCache.invalidate();
+      return response;
+    } catch (error) {
+      // Known failures never fall back to a previously successful materialization.
+      this.statusCache.invalidate();
+      throw error;
+    }
+  }
+  private async handleFetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+    const window: StatusWindow = url.searchParams.get('window') === '7d' ? '7d' : '24h';
+    const fingerprint = this.env.MONITOR_TARGETS ?? '';
+    if (request.method === 'GET' && url.pathname === '/status') {
+      const now = this.now();
+      if (!validStatusClock(now)) throw new Error('Monitoring clock is invalid');
+      const cached = this.statusCache.read(window, fingerprint, now);
+      if (cached) return reply(cached);
+    }
     const targets = this.syncTargets();
     const activeIds = targets.map((target) => target.id);
-    const url = new URL(request.url);
     const briefAI = this.env.AI_BRIEFS_ENABLED === 'true' ? this.env.AI : undefined;
-    if (request.method === 'GET' && url.pathname === '/status')
-      return reply(this.snapshot(targets, url.searchParams.get('window') === '7d' ? 10080 : 1440));
+    if (request.method === 'GET' && ['/status', '/export'].includes(url.pathname)) {
+      const budgetSources: BudgetAgeSource[] = [];
+      const snapshot = this.snapshot(
+        targets,
+        window === '7d' ? 10080 : 1440,
+        this.now(),
+        budgetSources,
+      );
+      return reply(
+        url.pathname === '/status'
+          ? this.statusCache.materialize(window, fingerprint, snapshot, budgetSources)
+          : projectStatusView(snapshot, budgetSources, snapshot.now, 'storage'),
+      );
+    }
     if (request.method === 'GET' && url.pathname === '/ready') {
       const monitoring = this.readiness(targets);
       return reply(
@@ -315,9 +358,11 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         return reply({ error: 'Schedule outside current minute' }, 400);
       if (!timing.accepted) {
         this.scheduleEvent(slot, 'skipped-late', { reason: timing.reason });
+        this.statusCache.invalidate();
         return reply({ slot, status: timing.status, results: [] });
       }
       this.scheduleEvent(slot, 'started', {});
+      this.statusCache.invalidate();
       const results = await Promise.all(targets.map((target) => this.check(target, Number(slot))));
       // Evaluate finished-minute history once per scheduled run, never on dashboard reads.
       for (const target of targets) {
@@ -349,6 +394,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
           },
           now: this.now(),
         });
+        this.statusCache.invalidate();
       }
       this.ctx.storage.transactionSync(() => {
         const cutoff = this.now() - RETENTION;
@@ -373,6 +419,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
           cleanup: { schemaVersion: 1, cutoff, versions, orphanNotes } satisfies MetadataCleanup,
         });
       });
+      this.statusCache.invalidate();
       return reply({ slot, results });
     }
     if (url.pathname === '/incident-note') {
@@ -386,7 +433,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         !Number.isInteger(body.revision)
       )
         return reply({ error: 'Known service and revision required' }, 400);
-      return this.ctx.storage.transactionSync(() => {
+      const response = this.ctx.storage.transactionSync(() => {
         const service = this.rows<ServiceRow>(
           'SELECT * FROM services WHERE id=?',
           String(body.service),
@@ -421,6 +468,8 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         });
         return reply({ ok: true, revision: service.revision + 1 });
       });
+      if (response.ok) this.statusCache.invalidate();
+      return response;
     }
     if (url.pathname === '/acknowledge') {
       if (
@@ -430,7 +479,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         body.note.length > 500
       )
         return reply({ error: 'Incident and a note of 1–500 characters required' }, 400);
-      return this.ctx.storage.transactionSync(() => {
+      const response = this.ctx.storage.transactionSync(() => {
         const incident = this.rows<IncidentRow>(
           'SELECT * FROM incidents WHERE id=?',
           String(body.incident),
@@ -451,6 +500,8 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         });
         return reply({ ok: true });
       });
+      if (response.ok) this.statusCache.invalidate();
+      return response;
     }
     return reply({ error: 'Not found' }, 404);
   }
@@ -484,7 +535,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
     const result: ProbeResult = claim.policy.paused
       ? { outcome: 'maintenance', status: null, latencyMs: 0 }
       : await probe(target, claim.policy, this.env.ORIGIN);
-    return this.ctx.storage.transactionSync(() => {
+    const committed = this.ctx.storage.transactionSync(() => {
       const job = this.rows<{ token: string; done: number }>(
         'SELECT token,done FROM jobs WHERE service=? AND slot=?',
         target.id,
@@ -556,8 +607,10 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       );
       return { service: target.id, result: result.outcome };
     });
+    this.statusCache.invalidate();
+    return committed;
   }
-  private readiness(targets: MonitorTarget[]) {
+  private readiness(targets: MonitorTarget[], now = this.now()) {
     const started = this.rows<{ at: number }>(
       "SELECT at FROM scheduler_events WHERE status='started' ORDER BY id DESC LIMIT 1",
     )[0];
@@ -565,7 +618,7 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       "SELECT at,slot FROM scheduler_events WHERE status='completed' ORDER BY id DESC LIMIT 1",
     )[0];
     return monitoringReadiness({
-      now: this.now(),
+      now,
       lastStartedAt: started?.at ?? null,
       lastCompletedAt: completed?.at ?? null,
       lastSlot: completed?.slot ?? null,
@@ -582,8 +635,12 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       }),
     });
   }
-  private snapshot(targets: MonitorTarget[], minutes: number) {
-    const now = this.now();
+  private snapshot(
+    targets: MonitorTarget[],
+    minutes: number,
+    now = this.now(),
+    budgetSources: BudgetAgeSource[] = [],
+  ) {
     const services = targets.map((target) => {
       const row = this.rows<ServiceRow>('SELECT * FROM services WHERE id=?', target.id)[0];
       const policy: MonitorPolicy = JSON.parse(row.policy);
@@ -631,6 +688,8 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       const p95 = stats.observed ? latencies[Math.ceil(stats.observed * 0.95) - 1] : null;
       const eligible = bounds.expected - stats.maintenance;
       const allowedBad = stats.observed * (1 - policy.availabilityTarget / 100);
+      const budget = this.budgets.materialize(target.id, row.revision, now);
+      budgetSources.push(budget.ageSource);
       return {
         id: target.id,
         name: target.name,
@@ -640,21 +699,9 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
         revision: row.revision,
         policy,
         latest,
-        status: policy.paused
-          ? 'maintenance'
-          : !latest ||
-              latest.observedAt === null ||
-              latest.revision !== row.revision ||
-              now - latest.observedAt > 180000 ||
-              latest.observedAt > now
-            ? 'unknown'
-            : state.incidentId
-              ? 'incident'
-              : latest.outcome === 'good'
-                ? 'healthy'
-                : 'degraded',
+        status: statusServiceAt({ policy, state, latest, revision: row.revision }, now),
         state,
-        budget: this.budgets.read(target.id, row.revision, now),
+        budget: budget.snapshot,
         metrics: {
           ...stats,
           expected: bounds.expected,
@@ -675,13 +722,13 @@ export class MonitorStore extends DurableObject<MonitorEnv> {
       };
     });
     return {
-      version: '3.6.0',
+      version: '3.7.0',
       now,
       window: minutes === 1440 ? '24h' : '7d',
       retentionDays: 30,
       cadenceSeconds: 60,
       services,
-      monitoring: this.readiness(targets),
+      monitoring: this.readiness(targets, now),
       scheduler: this.rows<SchedulerEventRow>(
         'SELECT at,slot,status,detail FROM scheduler_events ORDER BY id DESC LIMIT 20',
       ).map(({ at, slot, status, detail }) => ({

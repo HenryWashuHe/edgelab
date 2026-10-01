@@ -439,7 +439,7 @@ export default {
         ok: true,
         colo: colo(request),
         platform: 'Cloudflare Workers + Durable Objects',
-        version: '3.6.0',
+        version: '3.7.0',
         origin: 'service-binding',
       });
     if (url.pathname === '/api/ready') {
@@ -510,9 +510,7 @@ export default {
           return json({ error: 'JSON object required' }, 400);
       }
       const stub = env.MONITORS.get(env.MONITORS.idFromName('operations'));
-      const internal = new URL(
-        `https://monitor.internal/${action === 'export' ? 'status' : action}`,
-      );
+      const internal = new URL(`https://monitor.internal/${action}`);
       internal.searchParams.set('window', url.searchParams.get('window') === '7d' ? '7d' : '24h');
       if (incidentDetail && url.searchParams.has('before'))
         internal.searchParams.set('before', url.searchParams.get('before')!);

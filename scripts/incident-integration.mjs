@@ -97,6 +97,9 @@ try {
       null,
       'Removed service private note',
     );
+  // Fixture SQL bypasses production commit invalidation. Discard instance-local
+  // views before asserting the freshly seeded source through public status.
+  await mf.unsafeEvictDurableObject('gateway', 'MonitorStore', { name: 'operations' });
   const snapshot = (await call('status')).data;
   assert.equal(snapshot.incidents.length, 101);
   assert(snapshot.incidents.some((incident) => incident.id === oldOpenId));
