@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "edgelab-local-recording-source-manifest",
-  "recordedAt": "2026-10-01T00:44:26.577Z",
+  "recordedAt": "2026-10-01T00:45:36.725Z",
   "recipe": "node scripts/lab-recording.mjs",
   "sourceProjectVersion": "3.6.0",
   "observedGatewayVersion": "3.6.0",
@@ -10,11 +10,11 @@
     "path": "output/lab-recording-example.json",
     "bytes": 14248,
     "entries": 25,
-    "contentHash": "627fb87e8888cf106619f54228eebca6321111dad9de2721d830bf31902e74a8",
-    "fileSHA256": "48436c7f98715adb35181332c4abbeef20d9db884c837bb4aa2fb9b45e8df342",
+    "contentHash": "944fec9e50ab0358ef9643de097d503f8d30b9a57891ff2f9a935ba33f7d8226",
+    "fileSHA256": "b79b3ce8039520daae612ff4f1adb70c8f57ee4643f917627d06655e58d636df",
     "end": {
       "reason": "stopped",
-      "at": 1790815466561
+      "at": 1790815536720
     },
     "limits": {
       "entries": 256,
@@ -39,7 +39,7 @@
   },
   "sourceSHA256": {
     "package.json": "81a52ff318777b1d4e82d3530835951b7010528650128cdd42ed31812ec02b1b",
-    "scripts/lab-recording.mjs": "682b387f97d4350a5a33a0cfce84bf60439d38d784b504bb808f9b0e905ee6ac",
+    "scripts/lab-recording.mjs": "0d9a52905ceff5e58eb8b9595a97881e816b717ea1c43d27703cff39dee67a11",
     "tests/fixtures/lab-observer.ts": "18754e0de3f4923e2ba392b855514a4da7204132cca54d6fe99c6328f5793d7d",
     "worker/index.ts": "64908438ae1d69644394f59c5112dab3cfe3b5759f5f0462ae5149fc02e025a4",
     "worker/engine.ts": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",

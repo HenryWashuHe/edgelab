@@ -10,7 +10,7 @@ The included deployment monitors its actual public gateway and private catalog s
 
 The [storage incident case study](docs/CASE_STUDY.md) explains a real quota failure, the measured repair, and evidence-backed resume bullets.
 
-Candidate 3.6.0 adds bounded observer recording and offline inspection on `#replay`; deployment verification is still pending. The published 3.5.0 gateway remains the verified release. The bundled recording contains 25 frames from an isolated real workerd run, so reviewers can inspect coordination evidence even when live storage is unavailable. See the [recording guide](docs/LAB.md#record-and-inspect-an-observed-interval).
+Published 3.6.0 adds bounded observer recording and offline inspection on `#replay`. [Live verification](docs/evidence/releases/3.6.0-live-monitoring.json) on October 1 confirmed two new autonomous good minutes for each monitored service, healthy readiness, current budget evaluations and schemaVersion 4 privacy boundaries after the quota reset. The bundled recording contains 25 frames from an isolated real workerd run, so reviewers can inspect coordination evidence even when live storage is unavailable. See the [recording guide](docs/LAB.md#record-and-inspect-an-observed-interval).
 
 ## What is implemented
 
@@ -118,7 +118,7 @@ BASE_URL=http://localhost:8787 npm run benchmark
 
 CI runs the verification scripts on every push and PR, then starts both Workers and runs HTTP integration tests. Monitor tests use real SQLite/workerd and controlled service failures. They also invoke the actual scheduled handler. Synthetic timelines test paired-window signal thresholds and sampling gates; the budget runtime suite verifies durable evidence and read-only aging. The benchmark supports `ROUNDS=1..10`, tests 1/12/24/48 concurrent requests against a fresh lab per trial, and writes results under [docs/evidence](docs/evidence).
 
-Local 3.6.0 candidate checks pass 136 unit tests across 13 files, including strict recording import, immutable hashing, both size limits, revision gaps and receipt-clock regression. Keyboard and mobile replay checks make zero application API requests. Browser automation was denied permission to upload a file; import rejection is covered by unit tests, not claimed as a completed browser upload test. The actual recording recipe runs in CI and disables AI, remote metadata refresh and telemetry.
+The [3.6.0 CI run](https://github.com/HenryWashuHe/edgelab/actions/runs/36797743493) passes, including 136 unit tests across 13 files, strict recording import, immutable hashing, both size limits, revision gaps and receipt-clock regression. Local keyboard and mobile replay checks make zero application API requests. The actual recording recipe disables AI, remote metadata refresh and telemetry; its [final-source recheck](docs/evidence/releases/3.6.0-recording-recheck.json) confirms package, producer and actual gateway versions agree. Live browser capture/download, browser file import and the new production UI remain unverified; [validation evidence](docs/evidence/VALIDATION.md) separates those limits from the passing unit, runtime and live HTTP checks.
 
 [Benchmark methodology](docs/MEASUREMENT.md) distinguishes controlled burst admission from sustained throughput. Results are measurements of a specified environment, not Cloudflare-scale performance claims.
 

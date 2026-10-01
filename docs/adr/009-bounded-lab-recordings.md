@@ -1,6 +1,6 @@
 # Inspect a bounded interval of recorded observer evidence offline
 
-Status: accepted for the EdgeLab 3.6 release candidate. Local codec, actual Worker trace and offline browser checks pass. Production observation and autonomous monitoring recovery remain separate gates.
+Status: accepted in EdgeLab 3.6.0. Local codec, actual Worker traces and offline browser checks pass. A scoped production network snapshot and fresh autonomous monitoring are verified separately; browser capture/download and rendered production UI remain unverified.
 
 ## Problem
 
@@ -30,5 +30,5 @@ Previous/Next and a native keyboard-accessible scrubber select an entry without 
 
 - Pure tests cover strict shape/privacy rejection, malformed hash/version/dates, UTF-8 bytes, both limits, prefix preservation, immutable asynchronous hashing, revision/terminal ordering, gaps, legacy timestamps and receipt clock regression.
 - A reproducible actual local workerd recipe records a real network socket through pending/completed work, reset fencing and forced original-socket hibernation. Source/recipe/bundle hashes and the controlled environment are pinned separately. Equivalent reruns need not have identical timestamps or run UUIDs.
-- Browser checks establish direct offline entry, built-in sample validation, keyboard stepping, disclosure and actual mobile bounds with zero application API requests. File upload and isolated live-lab access were declined; they were not retried through another surface. Live browser capture/download, file chooser rejection and injected stale asynchronous UI actions remain unverified. Strict file rejection and immutable asynchronous export are covered by pure tests; the actual network recipe exports/imports a valid recorded interval. UI epoch guards are independently reviewed, not fault-injected browser evidence.
+- Browser checks establish direct offline entry, built-in sample validation, keyboard stepping, disclosure and actual mobile bounds with zero application API requests. File upload, isolated live-lab access and production browser access were declined; they were not retried through another surface. Live browser capture/download, file chooser rejection and injected stale asynchronous UI actions remain unverified. Strict file rejection and immutable asynchronous export are covered by pure tests; the actual network recipe exports/imports a valid recorded interval. UI epoch guards are independently reviewed, not fault-injected browser evidence.
 - The controlled example is labeled recorded test evidence. It establishes no successful production observation, natural hibernation timing, account capacity, native model execution or recovery from the current storage failure.

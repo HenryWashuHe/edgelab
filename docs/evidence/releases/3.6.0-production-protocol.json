@@ -1,0 +1,48 @@
+{
+  "verifiedAt": "2026-10-01T00:48:47.088Z",
+  "baseUrl": "https://edgelab-reliability.edgelab-henrywashuhe.workers.dev",
+  "version": "3.6.0",
+  "deploymentId": "fe4a90e7-67f6-4a93-a62f-e799bd6d570f",
+  "implementationCommit": "3b0851c3b2c3e8b4ad5892be9bfb933215de7dc0",
+  "verification": "Actual production same-origin network observer snapshot, strict codec export/import, committed cleanup receipt validation and deployed asset byte identity; not browser interaction.",
+  "observer": {
+    "kind": "snapshot",
+    "revision": 1,
+    "committedAt": 1790815726307,
+    "expiresAt": 1790902126307,
+    "entries": 1,
+    "bytes": 850,
+    "contentHash": "7e66f2df37ea800ee63472add344654cadb8c553b62c7f826a6ceb55c6c93c63",
+    "selectedProtocol": "edgelab-observer-v1"
+  },
+  "assets": {
+    "index-U03ZpKHp.js": {
+      "bytes": 448643,
+      "SHA256": "5ceda09cd36caa72d07f2b6f5498f55accac01ba403ae2113e87f54cb57bed02"
+    },
+    "index-nbEBCDDZ.css": {
+      "bytes": 66243,
+      "SHA256": "43d8d4c80c43ea95e58725cdf8345f161ffa3624c824123b067f18543edc3e49"
+    }
+  },
+  "cleanup": {
+    "publicCompletedRecordValidated": true,
+    "authenticatedPrivateRecordValidated": true,
+    "publicPrivateCountsExcluded": true,
+    "privateAuditContentsPublished": false
+  },
+  "requests": {
+    "disposableSessionStateGET": 1,
+    "observerUpgrade": 1,
+    "experimentConfigResetPOST": 0,
+    "manualSchedulerTicks": 0,
+    "nativeInferenceCalls": 0
+  },
+  "limitations": [
+    "One empty disposable run snapshot; does not prove production pending/settled transitions or natural hibernation/expiry timing.",
+    "The observer peer and recorder are Node, not browser capture/download; public browser access and file uploads were declined and not retried.",
+    "Asset hashes establish matching served bytes, not rendered production UI behavior.",
+    "Connection cleanup uses a500ms peer close timeout; natural TCP close timing and billing are not measured.",
+    "Cleanup receipt shape/privacy is verified; zero candidate counts are not evidence of production catch-up deletion or full account capacity."
+  ]
+}
