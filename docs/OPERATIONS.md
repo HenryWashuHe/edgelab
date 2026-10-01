@@ -2,7 +2,7 @@
 
 ## Deployment prerequisites
 
-Use Node 22.12+, a Cloudflare account with Workers and SQLite-backed Durable Objects, and Wrangler authentication. Clone the repository, run `npm ci`, then `npm run check`, `npm run test:lifecycle`, `npm run test:lab-observer`, `npm run test:monitor`, `npm run test:incident`, `npm run test:upgrade`, and `npm run test:budget`. GitHub CI runs the complete runtime suite.
+Use Node 22.12+, a Cloudflare account with Workers and SQLite-backed Durable Objects, and Wrangler authentication. Clone the repository, run `npm ci`, then `npm run check`, `npm run test:lifecycle`, `npm run test:lab-observer`, `npm run test:lab-recording`, `npm run test:monitor`, `npm run test:incident`, `npm run test:upgrade`, and `npm run test:budget`. GitHub CI runs the complete runtime suite.
 
 Configure both Worker names and the gateway ORIGIN service binding together. `MONITOR_TARGETS` is a JSON string of at most five targets in `wrangler.jsonc`. Each has a unique lowercase ID, name, HTTPS URL, transport (`origin` for the fixed private binding or `https`), and assertion (`ok-json` requires `{ "ok": true }`; `catalog-json` validates the catalog contract). No credentials, query strings, fragments, or custom ports are accepted. Only enroll endpoints you own or are authorized to monitor.
 
@@ -13,7 +13,7 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 ## Verify an actual release
 
 1. Confirm the published commit passes GitHub CI.
-2. For a v3.5.0 release, `GET /api/health` must report version 3.5.0. Compare the deployed revision with the release evidence; these instructions alone do not prove deployment.
+2. After deploying candidate v3.6.0, `GET /api/health` must report version 3.6.0. Compare the deployed revision with the release evidence. Deployment verification is pending; published 3.5.0 remains the verified release, and these instructions alone do not prove publication.
 3. `GET /api/ops/status` must list the expected target names. Public output must not contain the operator token, target URLs, or investigation notes.
 4. Allow cron propagation ([Cloudflare documents up to 15 minutes](https://developers.cloudflare.com/workers/configuration/cron-triggers/)). Verify each service receives observations in two distinct scheduled minutes without clicking a “run” button. Check `latest.slot`, the actual probe start `latest.observedAt`, and completion `latest.at`, not just the page's snapshot timestamp. Trigger propagation is not permission to backfill: an invocation whose scheduled minute has passed is recorded as `skipped-late` and makes no observation.
 5. The private catalog probe must validate actual JSON through its service binding; the gateway probe must reach the configured public HTTPS health endpoint.
@@ -32,6 +32,16 @@ Expect a bounded snapshot followed by ordered revisions, committed token balance
 Missing local session data requires an existing owner run. Upgrade failures can be opaque in browsers; generic unavailable or interrupted connections leave retained evidence clearly unconfirmed. Reconnect retrieves a snapshot without replaying a command. Watching an expired run cannot renew it. There are at most four viewers per object, and a fifth is rejected without displacing them.
 
 Warm handshakes and cold constructor/schema work consume resources separately from fanout. The controlled workload shows identical SQL and KV/alarm work with zero, one or four viewers; it does not establish production billing or natural TCP-close timing. The local network suite verifies received close frames with a bounded peer timeout. See [ADR 008](adr/008-live-lab-observer.md) and its raw evidence. A deployed quota failure verifies an unavailable boundary; successful live observation and fresh autonomous monitoring remain pending until storage actually recovers.
+
+## Recording and offline inspection
+
+Candidate 3.6.0 records the observer connection's validated snapshot and subsequent accepted frames in memory. Select **Stop recording**, then **Download recording**; Stop freezes the file's valid prefix while live viewing can continue. Limits are 256 entries and 192 KiB, with 1 KiB finalization headroom. Reaching a limit also freezes the prefix. Download before reconnecting, leaving or reloading. Capture and replay have no automatic browser or server persistence, and neither replays an uncertain owner command.
+
+Open `#replay` in the candidate build to import a downloaded JSON file or load the bundled controlled recording. The 25-frame example comes from real isolated workerd/SQLite and `worker/origin.ts`, with overlapping pending requests, settled results, a reset-fenced late completion, original-socket forced hibernation and circuit recovery. Its content hash is `ee884cdcefaedcd23c22eed275ec5088852beec2b6dd8ed323381d2cc908a082`; the [runtime manifest](evidence/releases/3.6.0-recording-runtime.json) records source/recipe/bundle hashes separately. Reproduce it with `npm run test:lab-recording`, now included in CI; the recipe uses no production/account/native AI calls and disposes its peers and runtime.
+
+Use Previous/Next or the native slider to inspect a frame. Replay makes zero application API requests or WebSocket messages, reads no capability and executes no experiment. It can therefore inspect bundled evidence separately from unavailable live storage. It shows historical recorded counters, at most twelve outcomes per run, revision gaps and the explicit capture end. Missing commits stay unknown. Server commit/frame clocks and recorder receipt clocks are distinct; receipt regression preserves array order and cannot establish network delay. A matching unsigned hash detects content changes, not authenticity, a whole-run backup or deterministic re-execution.
+
+Local candidate checks pass 136 unit tests across 13 files and keyboard/mobile replay with zero application API requests. Browser automation was denied file-upload permission; the attempt was not bypassed or retried. Import rejection is covered by unit tests, and successful browser upload verification is not claimed. Candidate deployment still requires the release checks above.
 
 ## Incident response
 
@@ -145,5 +155,7 @@ A 503 with code `monitor-storage-unavailable` means current monitoring cannot be
 The laboratory uses the same sanitized boundary with code `lab-storage-unavailable` and a separate short isolate cooldown. A failed request cannot confirm a stored experiment decision. Keep prior logs as historical evidence and reconnect with a read; do not automatically repeat an uncertain config, reset or experiment POST.
 
 Keep source checks and incidents. A rollback does not restore an exhausted shared allowance, and deleting history is not a quota refund. Browser automatic status reads back off using server response time; explicit refresh remains available. After the reset, require new autonomous observations and healthy readiness before declaring recovery. The release verifier does not invoke a manual tick. Do not upgrade billing as an automatic recovery action.
+
+The archived live boundary still reports quota503 and the next reset at October 1, 2026, 00:00 UTC: September 30 at 8pm Eastern Daylight Time. Passing that time does not prove recovery; check genuinely new scheduled observations and readiness. Native Workers AI calls remain zero, inference stays disabled and account entitlement remains unverified. Offline recording inspection is separate evidence, not a substitute for those gates.
 
 The seven-day check projection is derived data; cache invalidation, mutation repair and legacy migration preserve the original source. Indexed cleanup avoids repeated table scans. New indexes have an initial read/write cost. The isolated whole-monitor fixture measures the two-target deployment and the five-target configuration separately; other account traffic, fresh migrations, abnormal churn and resilience-lab usage consume additional allowance.

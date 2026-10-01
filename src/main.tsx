@@ -2,6 +2,8 @@ import { Operations } from './Operations';
 import { Architecture, Notes } from './Guide';
 import { RequestInspector } from './RequestInspector';
 import { LabObserver } from './LabObserver';
+import { LabReplay } from './LabReplay';
+import labRecordingExample from './data/lab-recording-example.json?raw';
 import { getMainLabSession, LAB_SESSION_KEY, readExistingLabSession } from './lab-session';
 import { asCsv, report, saveFile, percentile95 } from './reports';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -96,14 +98,16 @@ function App() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [stateConfirmed, setStateConfirmed] = useState(false);
   const [page, setPage] = useState(() =>
-    ['playground', 'observer', 'architecture', 'notes'].includes(location.hash.slice(1))
+    ['playground', 'observer', 'replay', 'architecture', 'notes'].includes(location.hash.slice(1))
       ? location.hash.slice(1)
       : 'operations',
   );
   useEffect(() => {
     const change = () =>
       setPage(
-        ['playground', 'observer', 'architecture', 'notes'].includes(location.hash.slice(1))
+        ['playground', 'observer', 'replay', 'architecture', 'notes'].includes(
+          location.hash.slice(1),
+        )
           ? location.hash.slice(1)
           : 'operations',
       );
@@ -416,7 +420,9 @@ function App() {
       ? Math.max(0, Math.ceil((s.config.cooldownMs - (serverNow - s.openedAt)) / 1000))
       : 0;
   return (
-    <div className={`app-shell${page === 'observer' ? ' observer-shell' : ''}`}>
+    <div
+      className={`app-shell${page === 'observer' || page === 'replay' ? ' observer-shell' : ''}`}
+    >
       <aside className="sidebar">
         <a
           href="#"
@@ -484,7 +490,7 @@ function App() {
             </a>
           </div>
           <div className="sidebar-footer">
-            <span className="tiny-dot" /> EdgeLab v3.5.0 <span>TS</span>
+            <span className="tiny-dot" /> EdgeLab v3.6.0 <span>TS</span>
           </div>
         </div>
       </aside>
@@ -499,9 +505,11 @@ function App() {
                   ? 'Reliability playground'
                   : page === 'observer'
                     ? 'Live lab observer'
-                    : page === 'architecture'
-                      ? 'Architecture'
-                      : 'Field notes'}
+                    : page === 'replay'
+                      ? 'Recorded lab evidence'
+                      : page === 'architecture'
+                        ? 'Architecture'
+                        : 'Field notes'}
             </span>
           </div>
           <div className="topbar-right">
@@ -513,15 +521,17 @@ function App() {
                 ? 'Persistent monitoring'
                 : page === 'observer'
                   ? 'Observer connection below'
-                  : page !== 'playground'
-                    ? 'Read-only field guide'
-                    : !stateConfirmed
-                      ? 'Lab state unconfirmed'
-                      : snapshot
-                        ? snapshot.colo === 'LOCAL'
-                          ? 'Local runtime'
-                          : `${snapshot.colo} · Edge connected`
-                        : 'Connecting'}
+                  : page === 'replay'
+                    ? 'Offline recorded evidence'
+                    : page !== 'playground'
+                      ? 'Read-only field guide'
+                      : !stateConfirmed
+                        ? 'Lab state unconfirmed'
+                        : snapshot
+                          ? snapshot.colo === 'LOCAL'
+                            ? 'Local runtime'
+                            : `${snapshot.colo} · Edge connected`
+                          : 'Connecting'}
             </span>
             <a
               href="https://developers.cloudflare.com/workers/"
@@ -546,9 +556,11 @@ function App() {
                     ? 'Break things. Build resilience.'
                     : page === 'observer'
                       ? 'Watch the same lab, live.'
-                      : page === 'architecture'
-                        ? 'Under the hood.'
-                        : 'Make the work count.'}
+                      : page === 'replay'
+                        ? 'Follow the recorded decisions.'
+                        : page === 'architecture'
+                          ? 'Under the hood.'
+                          : 'Make the work count.'}
               </h1>
               <p>
                 {page === 'operations'
@@ -557,9 +569,11 @@ function App() {
                     ? 'A hands-on lab for the systems that keep the Internet running.'
                     : page === 'observer'
                       ? 'Committed decisions from your synthetic lab, streamed to a second tab.'
-                      : page === 'architecture'
-                        ? 'Scheduled monitoring and isolated resilience experiments, with durable coordination.'
-                        : 'Operating evidence, reproducible failures, and engineering tradeoffs you can explain.'}
+                      : page === 'replay'
+                        ? 'Inspect a captured interval of lab commits, one frame at a time.'
+                        : page === 'architecture'
+                          ? 'Scheduled monitoring and isolated resilience experiments, with durable coordination.'
+                          : 'Operating evidence, reproducible failures, and engineering tradeoffs you can explain.'}
               </p>
             </div>
             {page === 'playground' && (
@@ -1183,6 +1197,8 @@ function App() {
             </>
           ) : page === 'observer' ? (
             <LabObserver />
+          ) : page === 'replay' ? (
+            <LabReplay exampleJson={labRecordingExample} />
           ) : page === 'architecture' ? (
             <Architecture />
           ) : (

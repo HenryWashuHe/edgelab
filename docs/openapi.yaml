@@ -1,10 +1,17 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.5.0
+  version: 3.6.0
   description: |
     Public monitoring read model and single-owner operator control plane.
     HTTP laboratory controls are documented in LAB.md; the observer upgrade and message schema are below.
+    This describes candidate 3.6.0; production deployment verification is pending.
+    Bounded browser recording and the offline #replay view add no API endpoint or socket command.
+    Recordings retain at most 256 entries and 196608 UTF-8 bytes in memory, with 1024 bytes reserved
+    for finalization. Stop freezes the valid prefix while live observation may continue; Download
+    exports it. Replay reads no capability, makes no application API requests or WebSocket messages,
+    persists nothing automatically and executes no experiment. Server and recorder clocks differ;
+    gaps stay unknown. The unsigned SHA-256 detects changes, not authenticity, a full backup or reexecution.
     No public probe or target-enrollment endpoint exists.
     All responses disable caching. Operations API browser Origins must match the API origin.
     Sampled-check budget signals are recorded by scheduled monitoring runs; public reads only age

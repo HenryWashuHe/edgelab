@@ -75,6 +75,14 @@ Version 3.5 adds a hibernating WebSocket observer to the existing resilience-lab
 
 The [runtime record](evidence/releases/3.5.0-lab-observer.json) verifies original network sockets through forced hibernation and 26 groups of ordering, isolation, quota, rollback and expiry behavior. Its fixed owner workload uses 28 SQL rows read and 16 written with zero, one or four viewers; handshakes and constructor work are measured separately. This is controlled local resource evidence, with no claim of natural production hibernation timing or successful live observation while account storage remains unavailable. [ADR 008](adr/008-live-lab-observer.md) records the contract and limits.
 
+## Preserve a coordination trace for offline review
+
+Candidate 3.6.0 adds bounded in-memory observer recording and `#replay`; deployment verification is pending. Stop freezes a valid captured prefix while live observation can continue, and Download exports at most 256 entries and 192 KiB. Import and stepping make zero application API requests or WebSocket messages, read no capability and execute no experiment. This gives reviewers inspectable evidence while a live storage outage prevents attaching to a run.
+
+The [bundled 25-frame capture](../src/data/lab-recording-example.json) comes from real isolated workerd, the production-exporting Durable Object/gateway fixture and the actual private origin Worker. It records concurrent pending admissions, settled results, reset fencing of a late response, original-socket forced hibernation, and circuit failure/recovery. The [separate runtime manifest](evidence/releases/3.6.0-recording-runtime.json) pins source, recipe and bundle hashes. Content hash `ee884cdcefaedcd23c22eed275ec5088852beec2b6dd8ed323381d2cc908a082` identifies this controlled recording; it is not production incident history or native AI output.
+
+Revision gaps remain unobserved, server and recorder clocks remain separate, and the selected prefix reconstructs at most twelve outcomes for its current run. No refill, intermediate decision or later outcome is invented. SHA-256 detects changes to an unsigned file; it cannot authenticate its source, establish causality, provide a whole-run backup or re-execute the experiment. Local candidate checks pass 136 unit tests across 13 files and keyboard/mobile offline inspection with zero application API requests. Browser file upload was denied by automation permissions, so import rejection is unit evidence rather than a completed browser upload test. [ADR 009](adr/009-bounded-lab-recordings.md) records those boundaries.
+
 ## A separate write limit remains
 
 The historical [3.3.2 whole-monitor fixture](evidence/releases/3.3.2-monitor-cost.json) rechecked three consecutive warm cron minutes against synthetic seven-day history. It includes trigger/index work, one check/job per target, and two scheduler events expiring each minute. Its read counts predate the retention queues; the 3.4.1 comparison above records their additional work.
@@ -94,9 +102,12 @@ The deployed [3.3.1 boundary check](evidence/releases/3.3.1-storage-boundary.jso
 
 The archived boundary check was taken at 07:11 UTC on September 30 and reported the next daily reset as October 1, 00:00 UTC. Recovery must be checked after that reset: observe genuinely new autonomous checks, verify their actual start minutes and policy revisions, confirm fresh scheduler completion and budget evaluations, and reconcile readiness, status, and export. Cached old evidence, a successful deployment, or a manual scheduler invocation cannot complete that verification. No production history was seeded, and no paid-plan change or native inference is part of the evidence here.
 
+That reset is September 30, 2026 at 8pm Eastern Daylight Time. Live storage still reports quota503 in the archived boundary evidence; a local offline replay cannot prove recovery. Native calls remain zero, inference is disabled and account entitlement is unverified.
+
 ## Resume bullets supported by this evidence
 
 - Built a hibernating WebSocket observer on Cloudflare Durable Objects with committed revisions, bounded privacy projections and deadline fencing; 26 actual workerd proof groups cover original-socket eviction recovery, ordering, rollback and expiry, with unchanged SQL work for one or four viewers in a controlled workload.
+- Captured and validated a 25-frame real local Worker coordination trace through concurrent admission, reset fencing and original-socket hibernation; added bounded offline inspection with zero application API calls or command execution.
 - Implemented a persisted seven-day Cloudflare Durable Objects check projection with source-change repair and eviction recovery; a controlled local workerd fixture measured one SQLite row per repeated projection read versus 4,321 for the original budget source scan, with source-parity tests.
 - Reworked incident-history queries to preserve all active open incidents and the latest 100 resolved incidents; a controlled local SQLite fixture reduced examined rows from 48,660 to 421 while returning the same 320 incidents.
 - Implemented persisted, reference-aware retention queues in Cloudflare Durable Objects; a controlled two-target cron fixture reduced reads from 3,354 to 94 with grown policy/note history, preserving source evidence and public summary hashes across cleanup and rollback tests.

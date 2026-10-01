@@ -10,6 +10,8 @@ The included deployment monitors its actual public gateway and private catalog s
 
 The [storage incident case study](docs/CASE_STUDY.md) explains a real quota failure, the measured repair, and evidence-backed resume bullets.
 
+Candidate 3.6.0 adds bounded observer recording and offline inspection on `#replay`; deployment verification is still pending. The published 3.5.0 gateway remains the verified release. The bundled recording contains 25 frames from an isolated real workerd run, so reviewers can inspect coordination evidence even when live storage is unavailable. See the [recording guide](docs/LAB.md#record-and-inspect-an-observed-interval).
+
 ## What is implemented
 
 - **Continuous checks:** one observation opportunity per current UTC minute per deployment-approved target; HTTP status, bounded JSON contract validation, latency objective, timeout, and 16 KB body limit. Redirects are not followed. Delayed schedules are skipped rather than backfilled.
@@ -23,6 +25,7 @@ The [storage incident case study](docs/CASE_STUDY.md) explains a real quota fail
 - **Evidence-grounded incident briefs:** an operator can request a bounded Workers AI investigation brief when inference is enabled. Frozen observations, policy history, limits and a SHA-256 hash supply deterministic facts; separately labeled AI hypotheses must cite relevant evidence. Durable request IDs prevent automatic redispatch after response loss or interruption.
 - **Public evidence explorer:** three pinned controlled scenarios expose frozen facts, citations, policy context and input limits without operator access. Verify a snapshot hash or compare an altered copy locally. Explanations are human-authored canned test responses; interactions make no application API or native AI calls.
 - **Engineering lab:** isolated per-session token buckets, circuit breakers, actual cached payloads, timeout experiments, traces, CSV/JSON export, and cancellable guided runs. A second tab observes committed changes through hibernating WebSockets without renewing the run's idle lease.
+- **Bounded recording and offline replay:** the observer captures one connection in memory, up to 256 entries and 192 KiB. Stop freezes the valid prefix while live observation continues; Download exports it with a content hash. Offline stepping validates recorded frames without API calls, socket messages, browser persistence or experiment execution.
 - **Evidence:** deterministic unit tests, real workerd/SQLite fault tests, local and live HTTP verification, and repeatable concurrency benchmarks with raw results.
 
 ## Quick start
@@ -63,6 +66,7 @@ flowchart LR
   M --- S[(Checks / jobs / incidents / policy versions / notes / scheduler / budget signals / audit)]
   E[Public controlled explorer] --> F[Static assets / frozen examples]
   E --> V[Local browser hash verification]
+  R[Offline lab replay] --> F
   G --> L[ReliabilityLab / per-session SQLite DO]
   O[Live lab observer / up to four tabs] <-->|Read-only WebSocket| G
   L --> P
@@ -94,6 +98,7 @@ No paid feature is required by the code. Usage depends on targets, probes, publi
 npm run check             # formatting, unit tests, TS/build, both deployment dry-runs
 npm run test:lifecycle    # actual lab eviction, expiry alarms, late completion fencing
 npm run test:lab-observer # live sockets, actual hibernation, committed ordering and cost parity
+npm run test:lab-recording # real origin/network trace, pending work, reset and hibernation
 npm run test:monitor      # actual monitor auth, incidents, concurrency, leases, retention
 npm run test:incident     # incident evidence, private notes, pagination, idempotency
 npm run test:upgrade      # migration and observation timing
@@ -112,6 +117,8 @@ BASE_URL=http://localhost:8787 npm run benchmark
 ```
 
 CI runs the verification scripts on every push and PR, then starts both Workers and runs HTTP integration tests. Monitor tests use real SQLite/workerd and controlled service failures. They also invoke the actual scheduled handler. Synthetic timelines test paired-window signal thresholds and sampling gates; the budget runtime suite verifies durable evidence and read-only aging. The benchmark supports `ROUNDS=1..10`, tests 1/12/24/48 concurrent requests against a fresh lab per trial, and writes results under [docs/evidence](docs/evidence).
+
+Local 3.6.0 candidate checks pass 136 unit tests across 13 files, including strict recording import, immutable hashing, both size limits, revision gaps and receipt-clock regression. Keyboard and mobile replay checks make zero application API requests. Browser automation was denied permission to upload a file; import rejection is covered by unit tests, not claimed as a completed browser upload test. The actual recording recipe runs in CI and disables AI, remote metadata refresh and telemetry.
 
 [Benchmark methodology](docs/MEASUREMENT.md) distinguishes controlled burst admission from sustained throughput. Results are measurements of a specified environment, not Cloudflare-scale performance claims.
 
@@ -174,27 +181,30 @@ These are coarse probe signals. At a 99.9% target, one bad check among 60 produc
 
 ## Project map
 
-| Area                                           | Files                                                               |
-| ---------------------------------------------- | ------------------------------------------------------------------- |
-| Monitoring state machine and validation        | `worker/monitor-domain.ts`                                          |
-| Timing and monitoring freshness                | `worker/monitor-readiness.ts`                                       |
-| Incident evidence and private notes            | `worker/incident-evidence.ts`                                       |
-| Retention queues and committed receipt types   | `worker/monitor-version-retention.ts`, `worker/metadata-cleanup.ts` |
-| Paired-window evaluation and persisted signals | `worker/burn-rate.ts`, `worker/budget-signals.ts`                   |
-| Bounded probes                                 | `worker/monitor-probe.ts`                                           |
-| SQLite coordinator and operator authentication | `worker/monitor.ts`                                                 |
-| Gateway, cron handler, laboratory coordinator  | `worker/index.ts`                                                   |
-| Resilience algorithms and origin service       | `worker/engine.ts`, `worker/origin*.ts`                             |
-| Operations UI                                  | `src/Operations.tsx`, `src/operations.css`                          |
-| Interactive lab and guides                     | `src/main.tsx`, `src/Guide.tsx`, `src/reports.ts`                   |
-| Runtime tests and benchmarks                   | `scripts/`, `tests/`                                                |
-| Deployment and CI                              | `wrangler*.jsonc`, `.github/workflows/ci.yml`                       |
+| Area                                           | Files                                                                    |
+| ---------------------------------------------- | ------------------------------------------------------------------------ |
+| Monitoring state machine and validation        | `worker/monitor-domain.ts`                                               |
+| Timing and monitoring freshness                | `worker/monitor-readiness.ts`                                            |
+| Incident evidence and private notes            | `worker/incident-evidence.ts`                                            |
+| Retention queues and committed receipt types   | `worker/monitor-version-retention.ts`, `worker/metadata-cleanup.ts`      |
+| Paired-window evaluation and persisted signals | `worker/burn-rate.ts`, `worker/budget-signals.ts`                        |
+| Bounded probes                                 | `worker/monitor-probe.ts`                                                |
+| SQLite coordinator and operator authentication | `worker/monitor.ts`                                                      |
+| Gateway, cron handler, laboratory coordinator  | `worker/index.ts`                                                        |
+| Resilience algorithms and origin service       | `worker/engine.ts`, `worker/origin*.ts`                                  |
+| Operations UI                                  | `src/Operations.tsx`, `src/operations.css`                               |
+| Interactive lab and guides                     | `src/main.tsx`, `src/Guide.tsx`, `src/reports.ts`                        |
+| Observer recording and offline inspection      | `src/lab-recording.ts`, `src/LabReplay.tsx`, `scripts/lab-recording.mjs` |
+| Runtime tests and benchmarks                   | `scripts/`, `tests/`                                                     |
+| Deployment and CI                              | `wrangler*.jsonc`, `.github/workflows/ci.yml`                            |
 
 ## Scope and limits
 
 This is a single-owner, small-service operations application with a deliberately bounded deployment model. It does not provide tenant billing, global independent probes, or external email/PagerDuty delivery. Incident notifications live in the dashboard. Monitoring shares the provider being monitored; an independent external monitor can inspect `/api/ready`. Readiness describes observation freshness, so fresh checks reporting upstream failure can still produce healthy monitoring readiness.
 
 Public incident lists include every open incident for active targets and the latest 100 resolved incidents for those targets. Open incidents and current policies persist. Checks, resolved incidents, audit events, scheduler diagnostics, and appended private notes have 30-day retention. Original acknowledgement notes follow their incident record's retention. Exports are bounded reports; collect them periodically if longer history is required.
+
+A lab recording preserves an observed interval, not a whole-run backup or a script to rerun commands. The initial snapshot can include earlier outcomes, and revision gaps remain unknown. Server commit/frame times and recorder receipt times use separate clocks; their difference is not measured network latency. A matching SHA-256 detects content changes but cannot authenticate the source. The [controlled recording](src/data/lab-recording-example.json) has content hash `ee884cdcefaedcd23c22eed275ec5088852beec2b6dd8ed323381d2cc908a082`; its [runtime provenance](docs/evidence/releases/3.6.0-recording-runtime.json) is separate from production recovery and native AI evidence.
 
 Each configured service retains one latest budget evaluation and one last firing record, including through a prolonged monitoring gap. Its captured policy metadata remains interpretable after 30-day checks and unreferenced source versions expire. Older warnings without context stay explicit. This is bounded diagnostic evidence, not a complete warning-event history. Removed services' old signal records are pruned after 30 days. A changed policy restarts window maturity; a new deployment cannot immediately claim three days of verified current-policy history.
 
@@ -210,3 +220,4 @@ Resume claims should describe implemented behavior:
 - Preserved incident lifecycle and investigation evidence across eviction, with authenticated idempotent note writes and explicit migration provenance.
 - Implemented versioned paired-window burn evaluation with coverage and policy-maturity gates, self-contained warning metadata, and retained evidence across monitoring gaps and source-history pruning.
 - Verified failure recovery, threshold boundaries, observation timing, authorization, and durable signal behavior through synthetic timelines and actual-runtime tests.
+- Captured real workerd coordination frames through concurrent admission, reset fencing and original-socket hibernation, then validated and inspected the bounded recording offline without executing commands.

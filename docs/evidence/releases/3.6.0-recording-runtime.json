@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-local-recording-source-manifest",
+  "recordedAt": "2026-09-30T10:39:12.199Z",
+  "recipe": "node scripts/lab-recording.mjs",
+  "sourceProjectVersion": "3.6.0",
+  "observedGatewayVersion": "3.6.0",
+  "recordingProducerVersion": "3.6.0",
+  "recording": {
+    "path": "output/lab-recording-example.json",
+    "bytes": 14246,
+    "entries": 25,
+    "contentHash": "ee884cdcefaedcd23c22eed275ec5088852beec2b6dd8ed323381d2cc908a082",
+    "fileSHA256": "d688b7bf4fd78a962def570bdabecff7ae6be2969b92881ee68b3c3d269ac2dd",
+    "end": {
+      "reason": "stopped",
+      "at": 1790764752183
+    },
+    "limits": {
+      "entries": 256,
+      "bytes": 196608,
+      "finalizationHeadroom": 1024
+    }
+  },
+  "runtime": {
+    "node": "v25.4.0",
+    "miniflare": "5.20260926.0-alpha",
+    "workerd": "1.20260926.1",
+    "compatibilityDate": "2026-09-01",
+    "origin": "Unchanged worker/origin.ts through an internal service binding",
+    "transport": "One real ws network peer against Miniflare.ready",
+    "storage": "Ephemeral actual workerd SQLite Durable Object",
+    "nativeInferenceCalls": 0,
+    "productionRequests": 0,
+    "accountCalls": 0,
+    "aiEnabled": false,
+    "remoteRequestCfRefresh": false,
+    "miniflareTelemetry": false
+  },
+  "sourceSHA256": {
+    "package.json": "81a52ff318777b1d4e82d3530835951b7010528650128cdd42ed31812ec02b1b",
+    "scripts/lab-recording.mjs": "f970c0eaaf89146e894a2751024b936c6717e8a3ce4466ad35a3e28da82e0478",
+    "tests/fixtures/lab-observer.ts": "18754e0de3f4923e2ba392b855514a4da7204132cca54d6fe99c6328f5793d7d",
+    "worker/index.ts": "64908438ae1d69644394f59c5112dab3cfe3b5759f5f0462ae5149fc02e025a4",
+    "worker/engine.ts": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+    "worker/lab-observer.ts": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+    "worker/origin-client.ts": "4db923944019dd24d3da2e19c1d54cac7247a2d5819db3016cde047374a91548",
+    "worker/origin.ts": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+    "src/lab-recording.ts": "206a8956f3a2fef987f75e1a271372f03f3f57923121392a2fde0896ceecff7e"
+  },
+  "bundleSHA256": {
+    "gateway": "bb58344c617ecf9d0a848e6d59bf4852a67d4cd39c064ffb01fa8c8a4abbc8cc",
+    "origin": "2c2f5c182b0b95b57f1c3818fa8f8c6acce2048c3aba7ae2a771b605a098e83c",
+    "recording": "ba2a4947abe215c1682f2aefd61f6aae517a2fd3be422ce570b662d119dcc5cc",
+    "protocol": "861fa02d4d71b0dcd30538014398af6db6a4cb949ee5712e4c45e56e4b864376"
+  },
+  "sourceStableDuringRun": true,
+  "assertions": [
+    "One actual network socket starts with the existing production run snapshot.",
+    "Two overlapping production-origin requests emit pending reservations and two settled successes.",
+    "Reset changes run identity; an actual late origin completion returns409 without a new-run event/update.",
+    "Forced hibernation restarts the real constructor and restores attachments; the original socket receives the next commit without reconnect.",
+    "The actual origin failure opens the circuit; an actual timed recovery probe closes it."
+  ],
+  "limitations": [
+    "A controlled local runtime trace, not a production incident, native AI result or customer traffic measurement.",
+    "Receipt times and run/event identities are real and vary each run; the fixed recipe is reproducible, not byte-identical across executions.",
+    "The production-exporting fixture adds read-only boot/attachment inspection and real storage instrumentation; no source seeding, deadline/clock manipulation or fault injection is used.",
+    "Hibernation is forced with the supported Miniflare unsafeEvictDurableObject testing API; this does not establish natural production hibernation timing.",
+    "The network peer uses a500ms close timeout. Recording capture stops before client cleanup; natural TCP teardown, billing and capacity are not measured.",
+    "The content hash identifies changes to the bounded recording. It is unsigned and does not authenticate its producer or prove causality."
+  ],
+  "pinnedExample": {
+    "path": "src/data/lab-recording-example.json",
+    "bytes": 23558,
+    "fileSHA256": "6694f04816374db3c2924e55e84e862855ef017d8d7cb667af1e2afae3177a34",
+    "contentHash": "ee884cdcefaedcd23c22eed275ec5088852beec2b6dd8ed323381d2cc908a082",
+    "format": "Pretty JSON; canonical content identity matches the compact recipe artifact."
+  }
+}

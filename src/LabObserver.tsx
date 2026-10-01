@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Activity, ArrowLeft, Radio, RotateCcw, Square } from 'lucide-react';
+import { Activity, ArrowDownToLine, ArrowLeft, Radio, RotateCcw, Square } from 'lucide-react';
 import {
   LAB_OBSERVER_CAPABILITY_PREFIX,
   LAB_OBSERVER_PROTOCOL,
@@ -12,6 +12,16 @@ import {
 } from '../worker/lab-observer';
 import type { Circuit, Outcome } from '../worker/engine';
 import { LAB_SESSION_KEY, readExistingLabSession } from './lab-session';
+import {
+  MAX_LAB_RECORDING_ENTRIES,
+  appendLabRecording,
+  beginLabRecording,
+  exportLabRecording,
+  finalizeLabRecording,
+  type LabRecording,
+  type LabRecordingEndReason,
+} from './lab-recording';
+import { saveFile } from './reports';
 import './lab-observer.css';
 
 type Connection =
@@ -82,6 +92,11 @@ export function LabObserver() {
   const [connection, setConnection] = useState<Connection>('connecting');
   const [view, setView] = useState<LabObserverDataFrame | null>(null);
   const [announcement, setAnnouncement] = useState('');
+  const [recording, setRecording] = useState<LabRecording | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportNotice, setExportNotice] = useState('');
+  const recordingRef = useRef<LabRecording | null>(null);
+  const exportingRef = useRef(false);
   const socketRef = useRef<WebSocket | null>(null);
   const epoch = useRef(0);
   const capability = useRef<string | null>(null);
@@ -93,8 +108,63 @@ export function LabObserver() {
     deadline.current = null;
   }
 
+  function finishRecording(reason: LabRecordingEndReason) {
+    const previous = recordingRef.current;
+    if (!previous || previous.end) return;
+    const next = finalizeLabRecording(previous, reason, Date.now());
+    recordingRef.current = next;
+    setRecording(next);
+  }
+
+  function recordFrame(frame: Parameters<typeof beginLabRecording>[0]) {
+    const previous = recordingRef.current;
+    if (previous?.end) return;
+    const next = previous
+      ? appendLabRecording(previous, frame, Date.now())
+      : beginLabRecording(frame, Date.now(), '3.6.0');
+    recordingRef.current = next;
+    setRecording(next);
+    if (next.end?.reason === 'frame-limit' || next.end?.reason === 'byte-limit')
+      setAnnouncement('Recording reached its limit. Live observation can continue.');
+  }
+
+  async function downloadRecording() {
+    const candidate = recordingRef.current;
+    if (!candidate?.end || exportingRef.current) return;
+    const currentEpoch = epoch.current;
+    exportingRef.current = true;
+    setExporting(true);
+    setExportNotice('');
+    try {
+      const { json } = await exportLabRecording(candidate);
+      if (epoch.current !== currentEpoch) return;
+      saveFile(json, 'application/json', `edgelab-recording-${candidate.startedAt}.json`);
+      setExportNotice('Recording download started. Inspect the file in the offline viewer.');
+    } catch {
+      if (epoch.current === currentEpoch)
+        setExportNotice('This recording could not be exported. No file was downloaded.');
+    } finally {
+      if (epoch.current === currentEpoch) {
+        exportingRef.current = false;
+        setExporting(false);
+      }
+    }
+  }
+
   function disconnect(next: Connection, notice = connectionNames[next]) {
+    finishRecording(
+      next === 'expired' || next === 'unavailable' || next === 'invalid-frame'
+        ? next
+        : next === 'session-changed'
+          ? 'interrupted'
+          : 'disconnected',
+    );
     epoch.current++;
+    const interruptedExport = exportingRef.current;
+    exportingRef.current = false;
+    setExporting(false);
+    if (interruptedExport)
+      setExportNotice('The connection changed before export finished. Download again.');
     clearDeadline();
     const socket = socketRef.current;
     socketRef.current = null;
@@ -105,6 +175,10 @@ export function LabObserver() {
 
   function connect() {
     disconnect('connecting');
+    recordingRef.current = null;
+    setRecording(null);
+    setExporting(false);
+    setExportNotice('');
     const existing = readExistingLabSession();
     if (existing.status !== 'available') {
       setConnection(existing.status);
@@ -144,11 +218,16 @@ export function LabObserver() {
         typeof message.data === 'string' && message.data.length <= MAX_LAB_OBSERVER_FRAME_BYTES
           ? parseLabObserverFrame(message.data)
           : null;
-      if (!frame || (!receivedSnapshot && frame.kind === 'update')) {
+      if (
+        !frame ||
+        (!receivedSnapshot && frame.kind === 'update') ||
+        (receivedSnapshot && frame.kind === 'snapshot')
+      ) {
         disconnect('invalid-frame');
         return;
       }
       if (!('state' in frame)) {
+        if (recordingRef.current) recordFrame(frame);
         disconnect(frame.kind);
         return;
       }
@@ -162,6 +241,7 @@ export function LabObserver() {
         frame.revision <= previous.revision
       )
         return;
+      recordFrame(frame);
       const newRun = !!previous && previous.runId !== frame.runId;
       const next = {
         ...frame,
@@ -204,7 +284,11 @@ export function LabObserver() {
     };
     window.addEventListener('storage', changed);
     return () => {
+      const previous = recordingRef.current;
+      if (previous && !previous.end)
+        recordingRef.current = finalizeLabRecording(previous, 'interrupted', Date.now());
       epoch.current++;
+      exportingRef.current = false;
       clearDeadline();
       socketRef.current?.close(1000, 'Observer view closed');
       socketRef.current = null;
@@ -251,6 +335,43 @@ export function LabObserver() {
           </button>
         </div>
       </div>
+      <section className="observer-recording" aria-labelledby="observer-recording-title">
+        <div>
+          <h2 id="observer-recording-title">Record this observed interval</h2>
+          <p>
+            {recording
+              ? `${recording.entries.length} / ${MAX_LAB_RECORDING_ENTRIES} entries · ${recording.end ? `Stopped: ${recording.end.reason}` : 'Recording in memory'}`
+              : 'Recording begins with a validated snapshot.'}
+          </p>
+          <small>
+            At most 192 KiB. Download before reconnecting, leaving or reloading. Gaps stay unknown;
+            the file is recorded evidence, not a complete backup.
+          </small>
+        </div>
+        <div className="observer-actions">
+          <button
+            className="button"
+            disabled={!recording || !!recording.end}
+            onClick={() => {
+              finishRecording('stopped');
+              setAnnouncement('Recording stopped. Live observation can continue.');
+            }}
+          >
+            <Square size={12} /> Stop recording
+          </button>
+          <button
+            className="button"
+            disabled={!recording?.end || exporting}
+            onClick={downloadRecording}
+          >
+            <ArrowDownToLine size={14} /> {exporting ? 'Preparing file…' : 'Download recording'}
+          </button>
+          <a href="#replay">Inspect a recording</a>
+        </div>
+        <p className="observer-recording-notice" role="status" aria-live="polite">
+          {exportNotice}
+        </p>
+      </section>
       {view && state ? (
         <>
           <div className="observer-provenance">
@@ -273,7 +394,7 @@ export function LabObserver() {
               )}
             </span>
             <span>
-              Snapshot received from server time{' '}
+              Frame time · server clock{' '}
               <time dateTime={new Date(view.now).toISOString()}>{utc(view.now)}</time>
             </span>
           </div>

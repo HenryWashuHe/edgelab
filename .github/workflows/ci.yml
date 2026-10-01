@@ -18,6 +18,7 @@ jobs:
       - run: npm run check
       - run: npm run test:lifecycle
       - run: npm run test:lab-observer
+      - run: npm run test:lab-recording
       - run: npm run test:monitor
       - run: npm run test:incident
       - run: npm run test:upgrade

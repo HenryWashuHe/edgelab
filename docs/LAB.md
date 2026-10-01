@@ -12,6 +12,8 @@ Version 2 adds actual cached payloads, configurable timeouts, automatic idle cle
 
 Version 3.5 adds a live observer in a second tab. It streams committed token reservations, circuit changes, pending requests and the latest twelve outcomes through the Durable Object's Hibernation WebSocket API. Watching sends no experiment commands and does not renew the run's idle deadline.
 
+Candidate 3.6.0 adds in-memory observer recording and an offline `#replay` view. The code and local evidence are available; production deployment verification is pending. Published 3.5.0 remains the verified release.
+
 Storage failures return JSON503 with code `lab-storage-unavailable`, a sanitized reason and a known UTC reset time when available. The browser marks current state unconfirmed, pauses experiments, and retains cached logs as historical evidence. Reconnect performs one state read and never repeats an uncertain request, reset or configuration write. With no loaded snapshot, metrics and history remain unknown.
 
 ## Run locally
@@ -37,6 +39,16 @@ Open http://localhost:8787 and select **Run guided demo**. Wrangler starts both 
 6. **Inspect a response:** click a request time. Compare the revision and generatedAt fields of a fresh and cached response. Request IDs, retry hints, cache age, and origin attempts are recorded.
 7. **Export JSON / CSV:** JSON includes configuration and all-run counters. CSV includes chronological event rows. Both export the latest 180 events; the table shows 30 matching events and the chart shows 60.
 8. **Observe another tab:** select **Open live observer** beside the guided demo. Keep the main lab open and send a burst, change the origin, or reset. The observer shows actual committed token balances without simulating refill. Disconnect preserves clearly cached evidence; reconnect obtains a new snapshot without replaying a command. The tabs must share browser storage. Opening the observer alone cannot create a run.
+
+## Record and inspect an observed interval
+
+The observer starts a recording with its validated initial snapshot and appends accepted frames for that connection in memory. Select **Stop recording**, then **Download recording**. Stop freezes the captured prefix while live observation can continue. Download before reconnecting, leaving the view or reloading; no recording is kept in localStorage, sessionStorage or a server database. Limits are 256 entries and 192 KiB of finalized UTF-8 JSON, with 1 KiB reserved for final metadata. Reaching a limit freezes the valid prefix instead of dropping its first snapshot.
+
+Open `#replay` in the candidate build and select **Load controlled runtime recording**, or choose a previously downloaded file. The bundled 25-frame example comes from the actual local gateway, SQLite Durable Object and private origin Worker. It includes pending admissions, settled successes, reset fencing, original-socket forced hibernation, failure and recovery. Its content hash is `ee884cdcefaedcd23c22eed275ec5088852beec2b6dd8ed323381d2cc908a082`; inspect the [recording](../src/data/lab-recording-example.json) and [separate runtime manifest](evidence/releases/3.6.0-recording-runtime.json).
+
+Previous/Next and the keyboard-accessible slider inspect recorded entries only. Replay makes no application API requests or WebSocket messages, reads no lab capability, stores nothing in browser persistence and executes no experiment. It has no timed playback or simulated refill. Revision jumps show unobserved commits; missing state and outcomes are never reconstructed. Reset changes the run and clears the earlier run's displayed events. A terminal entry retains the last observed figures as historical evidence.
+
+Server commit time, server frame time and recorder receipt time remain distinct. Receipt-clock regression does not reorder the file, and cross-clock differences cannot measure network delay. A stopped recording says nothing about later activity. The content hash detects changed content; it is unsigned and establishes neither authenticity nor Cloudflare origin. This is an observed interval, not a whole-run backup or deterministic re-execution.
 
 ## Architecture
 
@@ -70,6 +82,7 @@ npm run build            # strict TypeScript + production frontend bundle
 npm run check            # formatting, tests, build, deployment dry-runs
 npm run test:lifecycle   # actual eviction, idle alarms, and post-expiry recovery
 npm run test:lab-observer # actual sockets, hibernation, ordering, rollback and storage measurements
+npm run test:lab-recording # real origin and network recording, strict export/import and provenance
 ```
 
 With `npm run dev` running in another terminal:
@@ -77,6 +90,8 @@ With `npm run dev` running in another terminal:
 ```sh
 npm run test:integration
 ```
+
+Local 3.6.0 candidate checks pass 136 unit tests across 13 files. Recording tests cover strict privacy/shape rejection, malformed imports, hashing, UTF-8 bounds, entry and byte limits, frozen-prefix preservation, terminals, revision gaps and separate receipt clocks. Keyboard/mobile replay checks make zero application API requests. Browser file-upload automation was denied permission; the attempt was not bypassed or retried, and import rejection is verified by unit tests. These checks do not prove production observation or native AI execution.
 
 Integration checks execute real HTTP requests against both local Workers and the SQLite-backed Durable Object: real payload caching, upstream timeout, concurrent admission, outage/fallback/recovery, isolated sessions, validation, reset fencing, and log retention. They use a new random session, never the browser's session. To test a deployed instance you own, explicitly set `BASE_URL`.
 
@@ -109,6 +124,8 @@ HTTP lab controls require a UUID v4 `X-Lab-ID` header. Keep it out of public scr
 
 The observer handshake requires a same-origin `Origin`, `Upgrade: websocket`, no query parameters and exactly two offered subprotocols in order: `edgelab-observer-v1`, then `edgelab-cap.<UUID-v4>`. The server selects only the version protocol. The UUID still grants access to the HTTP controls; this interface is not a separate read-only authorization role. Frames omit cached payloads, request IDs, raw messages and the capability. Browser upgrade failures are opaque, so an unavailable connection cannot identify a quota failure or a fifth observer. Known expiry is shown only from a validated terminal frame or close code. The [API contract](openapi.yaml) records the upgrade and frame schemas.
 
+Recording and `#replay` add no API endpoint or observer command. Import, hashing and stepping operate locally on the bounded file.
+
 ```sh
 LAB_ID=$(node -e 'console.log(crypto.randomUUID())')
 curl -H "X-Lab-ID: $LAB_ID" -X POST http://localhost:8787/api/request
@@ -127,12 +144,15 @@ worker/origin-client.ts   validated service call with bounded timeout
 worker/lab-observer.ts    bounded committed-state and WebSocket protocol projection
 src/main.tsx             interactive dashboard and cancellable experiments
 src/LabObserver.tsx       second-tab observation and guarded manual reconnect
+src/lab-recording.ts      bounded immutable recording codec and offline inspection
+src/LabReplay.tsx         local import, hash validation and keyboard frame selection
 src/RequestInspector.tsx accessible request details dialog
 src/reports.ts           report statistics and CSV/JSON export
 src/Guide.tsx             architecture and interview walkthrough
 src/style.css            responsive interface
 scripts/integration.mjs  HTTP tests against the actual local runtime
 scripts/lifecycle.mjs    actual workerd eviction and alarm tests
+scripts/lab-recording.mjs real local origin/network capture and sanitized provenance
 tests/                   state machine, origin client, and report tests
 docs/ENGINEERING.md       design decisions and interview preparation
 wrangler*.jsonc          gateway and private origin configurations

@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-recording-browser-qa",
+  "candidateVersion": "3.6.0",
+  "archivedAt": "2026-09-30T14:01:09.437277+00:00",
+  "environment": {
+    "gateway": "Actual local workerd / SQLite behind isolated preview port8798",
+    "nativeInferenceCalls": 0,
+    "productionExperimentRequests": 0,
+    "backendSourceStableSincePreviewStartup": true,
+    "frontendAssetsServedFromBuildDirectory": true
+  },
+  "sourceSHA256": {
+    "worker/index.ts": "64908438ae1d69644394f59c5112dab3cfe3b5759f5f0462ae5149fc02e025a4",
+    "worker/engine.ts": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+    "worker/lab-observer.ts": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+    "src/main.tsx": "4f8b153ca50ce6f9063e4f4a0b0ec5112d3f20299febf56cbe0714913d6bc80b",
+    "src/LabObserver.tsx": "197daf56e68605586b48bd1a891e0b0c3d41a4bf7138f0d6090d4ddcc874f720",
+    "src/lab-session.ts": "fda5a9c5ee0303dfbf5330fd8583d47ed364ad29efb2cedce3dc8c8c6afb857e",
+    "src/lab-observer.css": "d6723ef8643c680e08ece713f0786ca140eb4a3f23e3f983b493431c6d47c8d4",
+    "src/lab-recording.ts": "206a8956f3a2fef987f75e1a271372f03f3f57923121392a2fde0896ceecff7e",
+    "src/LabReplay.tsx": "89e81dc670eac4f37dee2274bf79c7027169625b19302706cf30239d31414e2b",
+    "src/lab-replay.css": "3ad62600f120b7394a9ddb30fd225f276c24233e6e7dcfa222b12714c0dd4cfc",
+    "src/data/lab-recording-example.json": "6694f04816374db3c2924e55e84e862855ef017d8d7cb667af1e2afae3177a34"
+  },
+  "previewGatewayBundleSHA256": "85bad45ed29559b1d544ecb3a43159a2aea254d35ed87f94269d07082f7fbe0a",
+  "assetSHA256": {
+    "index-BxT3v4vr.js": "f79e49de9136528062b0582d2dd5aa6cdcf48f632d840304c0a2ef19a7f025ce",
+    "index-nbEBCDDZ.css": "43d8d4c80c43ea95e58725cdf8345f161ffa3624c824123b067f18543edc3e49"
+  },
+  "desktop": {
+    "verifiedAt": "2026-09-30T13:55:04.112Z",
+    "missingSessionConfirmed": true,
+    "bounds": {
+      "client": 1265,
+      "scroll": 1265
+    },
+    "apiRequests": [],
+    "logs": []
+  },
+  "mobile": {
+    "verifiedAt": "2026-09-30T13:55:36.252Z",
+    "bounds": {
+      "client": 375,
+      "scroll": 375
+    },
+    "logs": []
+  },
+  "assertions": [
+    "Direct offline route and Load controlled sample completed without application API requests.",
+    "Keyboard Home and six ArrowRight actions exposed frame7 with two actual pending requests; End/Previous exposed frame24 half-open with one pending request.",
+    "Final desktop capture uses recorder-clock terminology and frame24; document client/scroll widths1265/1265.",
+    "Final 390px viewport capture shows frame25 with two settled origin outcomes and zero pending requests; document client/scroll widths375/375 (vertical scrollbar).",
+    "Expanded provenance keeps the entire content hash within document bounds.",
+    "Missing-session observer displayed No shared lab session without creating or querying a source run.",
+    "Final captures report no browser warning/error logs."
+  ],
+  "captures": [
+    {
+      "path": "output/edgelab-replay-desktop-v3.6.0.png",
+      "bytes": 187333,
+      "SHA256": "669f85159ecac6d5ce5abe0b926e901b1661d3ee4c7f266eb40162c55a2ab83f",
+      "availability": "Local ignored output; not a checked-in binary."
+    },
+    {
+      "path": "output/edgelab-replay-mobile-v3.6.0.png",
+      "bytes": 159721,
+      "SHA256": "fe1b7a3134297091090ce96ce485fca01cd8b23c273457e899a192f378d546c0",
+      "availability": "Local ignored output; not a checked-in binary."
+    }
+  ],
+  "limitations": [
+    "Only the normal built-in example import was exercised in a browser; native file uploads were explicitly declined and were not retried or worked around.",
+    "Browser access to the isolated live-lab owner page was explicitly declined; live browser capture/download and interrupted exports remain unverified.",
+    "Strict malformed/private/hash/oversize rejection, both capture limits and immutable async hashing are unit-test evidence, not file chooser browser evidence.",
+    "Stale import/export epoch guards were independently reviewed but were not browser fault-injected.",
+    "These are controlled local captures, not production observation or autonomous monitoring recovery.",
+    "Source startup manifest predates final UI clock-label edits; this record hashes the actual final served frontend and unchanged backend sources.",
+    "The final observer export-busy ref correction was independently reviewed and passed136 unit tests/build after these offline captures; it is not additional live recording/download browser evidence."
+  ]
+}
