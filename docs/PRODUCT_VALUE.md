@@ -59,6 +59,8 @@ A useful experiment must exercise the actual producer and consumer boundaries, s
 
 ## Next scope and decision gate
 
+The [developer workflow pilot](WORKFLOW_PILOT.md) provides a session protocol that records the baseline before the trial, a copyable worksheet and explicit result classifications. Its counter worked example adds no numeric answer beyond the existing getter; possible sharing convenience is evaluated separately. Unsupported applications stay in the denominator instead of being replaced with a counter demo. Public source assessments and controlled rehearsals are not external sessions. No developer sessions or voluntary reuse have been demonstrated.
+
 The [standalone inspector checkpoint](evidence/counter-inspector/README.md) removes the repository/npm prerequisite for a recipient who already has Node: one copied file can inspect either pinned counter profile. Nine actual subprocess test groups verify execution outside the checkout, renamed/symlinked entrypoints, bounded strict input failures and unchanged fixture files. This is distribution portability, not measured setup time, external adoption or a debugging advantage over existing tooling. Capture remains app-specific.
 
 1. Use the counter checkpoint to assess adapter/setup effort, then investigate a meaningful failure in a real independent application if a developer's recent debugging problem warrants it. Compare existing logs/native traces with the minimum evidence adapter needed. Do not build a general SDK first.

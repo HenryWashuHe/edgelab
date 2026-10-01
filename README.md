@@ -20,7 +20,7 @@ Current verified release: **3.12.3** · [CI](https://github.com/HenryWashuHe/edg
 
 The public gateway monitors its actual HTTPS health endpoint and a private catalog Worker through a service binding. A Cron Trigger drives monitoring independently of browsers. The catalog uses controlled example data; this is an independent engineering project with real deployment observations.
 
-The [product value assessment](docs/PRODUCT_VALUE.md) compares existing tools and narrows future scope to validating one developer debugging workflow. External adoption and an unmet market need remain unproven.
+The [product value assessment](docs/PRODUCT_VALUE.md) compares existing tools and narrows future scope to validating one developer debugging workflow. A [pilot protocol and worksheet](docs/WORKFLOW_PILOT.md) compares existing answers, any added evidence and voluntary reuse; external adoption and an unmet market need remain unproven.
 
 A separate [local counter portability experiment](examples/counter-evidence/README.md) applies bounded evidence capture to unchanged Cloudflare example code. A metered fixture and a smaller wrapper using the existing read RPC each pass two actual response-loss cases, route parity and forced eviction; a memory-only control fails persistence. The smaller wrapper adds zero Durable Object methods or classes and declares its gateway observation clock separately. [Frozen proof](docs/evidence/counter-portability/rpc/manifest.json) and 22 codec tests preserve both profiles' boundaries. It adds no deployed feature and establishes no customer adoption.
 
