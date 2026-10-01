@@ -26,7 +26,7 @@ Version 3.12.1 adds the [unique-name rule](014-unique-evidence-json.md): archive
 
 Import and step inspection use a separate `#replay` route. Direct entry cannot connect a socket, fetch an application API, read or create a capability, persist a file or execute recorded commands. Check `File.size` before reading; stale asynchronous imports cannot replace a newer selection or update an unmounted view. Error messages do not echo rejected file contents.
 
-Previous/Next and a native keyboard-accessible scrubber select an entry without automatic playback timers. Show the recorded token balance, pending/settled counts, circuit, revision and timestamps. Reconstruct only the captured prefix's latest twelve events; run changes clear earlier-run event identity. Gaps and the interval's end reason remain visible. No interpolation, inferred refill, fresh monitoring label or confident all-clear is added.
+Previous/Next and a native keyboard-accessible scrubber select an entry without automatic playback timers. Show the recorded token balance, unsettled/recorded outcome counts, circuit, revision and timestamps. Unsettled means an evaluated request without a recorded outcome; the request may already have finished. Reconstruct only the captured prefix's latest twelve events; run changes clear earlier-run event identity. Gaps and the interval's end reason remain visible. No interpolation, inferred refill, fresh monitoring label or confident all-clear is added.
 
 ## Verification gates
 
