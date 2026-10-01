@@ -5,11 +5,14 @@ info:
   description: |
     Public monitoring read model and single-owner operator control plane.
     HTTP laboratory controls are documented in LAB.md; the observer upgrade and message schema are below.
-    This describes release candidate 3.10.0, preserving the additive 3.7.0 view contract.
+    This describes deployed release 3.10.0, preserving the additive 3.7.0 view contract.
     Native owner/observer admission runs before lab object lookup; refusal has no engine outcome or source event.
     Scoped local verification is recorded in docs/evidence/VALIDATION.md and
     docs/evidence/releases/3.9.0-lab-admission.json. Historical 3.9.0 CI/live evidence remains in
-    docs/evidence/releases/3.9.0-live-monitoring.json; 3.10.0 publication and fresh live checks are pending.
+    docs/evidence/releases/3.9.0-live-monitoring.json. Current 3.10.0 CI passes for source commit
+    a55bbe8750ac6d3e225d80aaeeee4143da702dee; fresh live verification is recorded in
+    docs/evidence/releases/3.10.0-live-monitoring.json. The compatibility recipe archive is
+    docs/evidence/releases/3.10.0-benchmark-compatibility.json.
     Exact production thresholds, SQL/CPU/billing and rendered browser validation are not claimed.
     Historical 3.6.0 recording, 3.7.0 status-cache and 3.8.0 live evidence remain distinct.
     Bounded browser recording and the offline #replay view add no API endpoint or socket command.
