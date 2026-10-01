@@ -137,15 +137,15 @@ Refusals show zero lab lookup/storage work in those controlled requests, not fre
 
 ## Client section build measurements
 
-The 3.11.0 candidate compares actual emitted entry-plus-section JavaScript and stylesheet closures, including every recursive static dependency, with the pinned 3.10.0 implementation. Each file is compressed independently under the same local runtime and equivalent dependency content. Project version fields may differ; dependency changes invalidate comparison. These are descriptive build bytes, not browser timing, production transfer compression, CPU, billing or account capacity. Complete asset verification checks deferred files as well as initial HTML references. See [ADR 012](adr/012-demand-loaded-sections.md).
+The 3.11.0 release compares actual emitted entry-plus-section JavaScript and stylesheet closures, including every recursive static dependency, with the pinned 3.10.0 implementation. Each file is compressed independently under the same local runtime and equivalent dependency content. Project version fields may differ; dependency changes invalidate comparison. These are descriptive build bytes, not browser timing, production transfer compression, CPU, billing or account capacity. Complete asset verification checks deferred files as well as initial HTML references. See [ADR 012](adr/012-demand-loaded-sections.md).
 
 The [final-source 3.11.0 client archive](evidence/releases/3.11.0-client-build.json) reproduces published baseline asset bytes and verifies all 16 current output files. Its complete first-section gzip JavaScript totals are:
 
-| Section      | Baseline bytes | Candidate bytes | Reduction |
-| ------------ | -------------: | --------------: | --------: |
-| Operations   |        132,474 |         106,531 |    19.58% |
-| Replay       |        132,474 |          95,398 |    27.99% |
-| Observer     |        132,474 |          91,348 |    31.04% |
-| Shared Guide |        132,474 |         100,558 |    24.09% |
+| Section      | Baseline bytes | Release bytes | Reduction |
+| ------------ | -------------: | ------------: | --------: |
+| Operations   |        132,474 |       106,531 |    19.58% |
+| Replay       |        132,474 |        95,398 |    27.99% |
+| Observer     |        132,474 |        91,348 |    31.04% |
+| Shared Guide |        132,474 |       100,558 |    24.09% |
 
 These include the entry, selected section and all recursive static dependencies, not the entry alone. Separate first-section stylesheet totals are 14,409→12,459 gzip bytes for Operations and 14,409→8,811 for replay. Visiting multiple sections can require their additional chunks; total application code has not been eliminated. Current and baseline sources and exact compiler configuration stay stable, dependency content matches except the two declared project-version fields, and the temporary historical snapshot is disposed. The raw lock hashes, normalization boundary, one approved check-script addition and source/output hashes remain in the archive.

@@ -2,6 +2,18 @@
 
 EdgeLab v3 also includes persistent service monitoring and incident response. See the [operator runbook](OPERATIONS.md), [monitor architecture decision](adr/001-monitor-coordination.md), and [measurement guide](MEASUREMENT.md). This document focuses on the isolated experimental gateway.
 
+## Start with the recorded two-minute tour
+
+Open [replay](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#replay) and choose **Load built-in recording**. No operator login or local setup is needed. The historical 25-frame capture comes from an isolated real workerd gateway, SQLite Durable Object and private origin Worker. Selecting frames sends no application API requests or WebSocket messages and executes no lab commands; downloading the static app is separate.
+
+- 0:00: Describe the problem: requests can remain in flight while a coordinator changes state.
+- 0:20: Choose **Two pending requests**. Frame 7 records two evaluated requests and no settled outcomes. Its labeled comparison is frame 9, where both are recorded as origin successes.
+- 0:50: Choose **A new run**. Frame 15 has a changed run identity and cleared totals. Compare it with frame 14, which belongs to the earlier run and has one pending request.
+- 1:20: Choose **A half-open attempt**. Frame 24 records one pending recovery attempt after an origin error. Its comparison, frame 25, records one origin success and a closed circuit.
+- 1:45: Separate selected observations from comparison frames and unknown intermediate work. The run change is visible in the recording; late completion HTTP 409 and original-socket forced hibernation are assertions in the [separate runtime manifest](evidence/releases/3.6.0-recording-runtime.json). An unsigned hash detects content changes, not authenticity.
+
+The [reviewer guide](REVIEWER_GUIDE.md) connects this tour to the storage incident, measured repairs and source files. [Validation](evidence/VALIDATION.md) records current verification limits; this walkthrough does not claim a rendered production-browser check.
+
 ## Why this project fits the supplied internship role
 
 The role emphasizes identifying familiar Internet problems, shipping independently, and learning Cloudflare's platform. Retry amplification and uncontrolled recovery are concrete reliability problems. This project demonstrates stateful coordination, failure handling, frontend controls, testing, and clear communication of limits. No project guarantees hiring priority; the useful signal is whether you understand and can improve what you built.
@@ -96,7 +108,9 @@ The owner HTTP controls, including state refresh, renew the persisted 24-hour de
 
 The timeout bounds how long the gateway awaits the origin; cancellation does not guarantee already-started upstream work stops. State updates after timeout use the timeout result and cannot later be replaced by a late successful response.
 
-## Two-minute demo
+## Optional local owner-lab demo
+
+Use the [local quick start](../README.md#quick-start) before this sequence. These controls send owner commands and change the local lab; they are separate from the read-only recording tour above. Keep the exercise on the local gateway rather than using it as a production load test.
 
 - 0:00: Describe retry amplification during an outage.
 - 0:20: Reset; run a 24-request burst. Show admitted and HTTP 429 outcomes.

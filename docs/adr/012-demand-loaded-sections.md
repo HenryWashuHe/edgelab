@@ -1,6 +1,6 @@
 # ADR 012: Load dashboard sections when selected
 
-Status: accepted for the 3.11.0 candidate; publication and rendered interaction verification are pending.
+Status: accepted and deployed in 3.11.0. Complete CI, actual build-graph comparison and live asset/monitoring checks pass; rendered interaction verification remains unverified.
 
 ## Context
 

@@ -5,11 +5,13 @@ info:
   description: |
     Public monitoring read model and single-owner operator control plane.
     HTTP laboratory controls are documented in LAB.md; the observer upgrade and message schema are below.
-    This describes release candidate 3.11.0, preserving the additive 3.7.0 view contract.
+    This describes deployed release 3.11.0, preserving the additive 3.7.0 view contract.
     Demand-loaded sections add no API endpoint or socket command; static chunk downloads are expected.
     3.11.0 local check passes 239 unit tests, eight asset-verifier fault tests, TypeScript, build and
     deployment dry-runs. Its actual client build record is docs/evidence/releases/3.11.0-client-build.json.
-    Complete CI/publication/live checks are pending, and browser load behavior is unverified.
+    Complete CI passes for implementation d224983d6242b7621f7c8af1811bf39f75315c5a. Fresh live checks
+    are recorded in docs/evidence/releases/3.11.0-live-monitoring.json, including all 16 asset bytes,
+    MIME and cache revalidation. Browser load behavior and timings remain unverified.
     Native owner/observer admission runs before lab object lookup; refusal has no engine outcome or source event.
     Scoped local verification is recorded in docs/evidence/VALIDATION.md and
     docs/evidence/releases/3.9.0-lab-admission.json. Historical 3.9.0 CI/live evidence remains in
