@@ -1,6 +1,24 @@
 import { readFile } from 'node:fs/promises';
-const base = process.env.BASE_URL || 'http://localhost:8787';
-const file = base.includes('localhost') ? '.dev.vars' : '.env.operator';
+import { isIP } from 'node:net';
+const target = new URL(process.env.BASE_URL || 'http://localhost:8787');
+if (
+  !['http:', 'https:'].includes(target.protocol) ||
+  target.username ||
+  target.password ||
+  target.pathname !== '/' ||
+  target.search ||
+  target.hash
+)
+  throw new Error(
+    'BASE_URL must be an HTTP(S) origin without credentials, path, query or fragment',
+  );
+const base = target.origin;
+const hostname = target.hostname.replace(/\.$/, '');
+const local =
+  hostname === 'localhost' ||
+  (isIP(hostname) === 4 && hostname.startsWith('127.')) ||
+  hostname === '[::1]';
+const file = local ? '.dev.vars' : '.env.operator';
 const token =
   process.env.OPERATOR_TOKEN || (await readFile(file, 'utf8')).match(/^OPERATOR_TOKEN=(.+)$/m)?.[1];
 if (!token) throw new Error('Run operator:setup first');
