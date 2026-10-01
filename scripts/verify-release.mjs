@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFile, mkdir, writeFile, copyFile } from 'node:fs/promises';
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import WebSocket from 'ws';
+import { verifyBuiltAssets } from './asset-verification.mjs';
 const base = process.env.BASE_URL;
 if (!base?.startsWith('https://')) throw new Error('Set BASE_URL to your deployed HTTPS gateway');
 const token = (await readFile('.env.operator', 'utf8')).match(/^OPERATOR_TOKEN=(.+)$/m)?.[1];
@@ -16,7 +17,7 @@ const request = async (path, { method = 'GET', headers = {}, body } = {}) => {
 };
 const get = (path, headers = {}) => request(path, { headers });
 const assertStatusRead = (data) => {
-  assert.equal(data.version, '3.10.0');
+  assert.equal(data.version, '3.11.0');
   const read = data.read;
   assert(read && ['storage', 'memory'].includes(read.source));
   assert.deepEqual(Object.keys(read).sort(), [
@@ -36,28 +37,12 @@ const assertStatusRead = (data) => {
   assert(!JSON.stringify(data).includes('budgetSources'));
 };
 const health = await get('/api/health');
-assert.equal(health.data.version, '3.10.0');
+assert.equal(health.data.version, '3.11.0');
 const projectVersion = JSON.parse(await readFile('package.json', 'utf8')).version;
 assert.equal(health.data.version, projectVersion, 'Deployed/package version agreement');
-const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
-const localHTML = await readFile('dist/index.html');
-const assetPaths = [
-  '/',
-  ...new Set(localHTML.toString('utf8').match(/\/assets\/[^"']+\.(?:js|css)/g) ?? []),
-];
-assert(assetPaths.some((path) => path.endsWith('.js')));
-assert(assetPaths.some((path) => path.endsWith('.css')));
-const deployedAssets = [];
-for (const path of assetPaths) {
-  const local = path === '/' ? localHTML : await readFile(`dist${path}`);
-  const response = await fetch(base + path, { signal: AbortSignal.timeout(15000) });
-  assert.equal(response.status, 200, `Deployed asset ${path}`);
-  const served = new Uint8Array(await response.arrayBuffer());
-  assert.equal(hash(served), hash(local), `Deployed/build bytes ${path}`);
-  deployedAssets.push({ path, bytes: served.byteLength, sha256: hash(served) });
-}
+const deployedAssets = await verifyBuiltAssets(base);
 console.log(
-  'PASS deployed/package version and byte-identical production assets; rendering not verified',
+  'PASS deployed/package version and all production asset bytes, MIME and revalidation; rendering not verified',
 );
 assert.equal((await get('/api/ops/audit')).response.status, 401);
 assert.equal(

@@ -1,6 +1,6 @@
 {
   "name": "edgelab",
-  "version": "3.10.0",
+  "version": "3.11.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
     "test:integration": "node scripts/integration.mjs",
-    "check": "npm run format:check && npm test && npm run build && wrangler deploy --dry-run -c wrangler.origin.jsonc --outdir output/origin && wrangler deploy --dry-run -c wrangler.jsonc --outdir output/worker",
+    "check": "npm run format:check && npm test && npm run test:assets-unit && npm run build && wrangler deploy --dry-run -c wrangler.origin.jsonc --outdir output/origin && wrangler deploy --dry-run -c wrangler.jsonc --outdir output/worker",
     "deploy": "npm run build && wrangler deploy -c wrangler.origin.jsonc && wrangler deploy -c wrangler.jsonc",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -35,7 +35,10 @@
     "test:lab-storm": "node scripts/lab-storm.mjs",
     "test:status-evidence": "node scripts/status-evidence.mjs --check",
     "test:lab-admission": "node scripts/lab-admission.mjs",
-    "test:benchmark-compatibility": "node scripts/benchmark-compatibility.mjs"
+    "test:benchmark-compatibility": "node scripts/benchmark-compatibility.mjs",
+    "test:assets-unit": "node --test scripts/asset-verification.test.mjs",
+    "test:assets": "node scripts/verify-assets.mjs",
+    "test:client-build": "node scripts/client-build.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.48.0",

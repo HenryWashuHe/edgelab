@@ -1,15 +1,19 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.10.0
+  version: 3.11.0
   description: |
     Public monitoring read model and single-owner operator control plane.
     HTTP laboratory controls are documented in LAB.md; the observer upgrade and message schema are below.
-    This describes deployed release 3.10.0, preserving the additive 3.7.0 view contract.
+    This describes release candidate 3.11.0, preserving the additive 3.7.0 view contract.
+    Demand-loaded sections add no API endpoint or socket command; static chunk downloads are expected.
+    3.11.0 local check passes 239 unit tests, eight asset-verifier fault tests, TypeScript, build and
+    deployment dry-runs. Its actual client build record is docs/evidence/releases/3.11.0-client-build.json.
+    Complete CI/publication/live checks are pending, and browser load behavior is unverified.
     Native owner/observer admission runs before lab object lookup; refusal has no engine outcome or source event.
     Scoped local verification is recorded in docs/evidence/VALIDATION.md and
     docs/evidence/releases/3.9.0-lab-admission.json. Historical 3.9.0 CI/live evidence remains in
-    docs/evidence/releases/3.9.0-live-monitoring.json. Current 3.10.0 CI passes for source commit
+    docs/evidence/releases/3.9.0-live-monitoring.json. Historical 3.10.0 CI passes for source commit
     a55bbe8750ac6d3e225d80aaeeee4143da702dee; fresh live verification is recorded in
     docs/evidence/releases/3.10.0-live-monitoring.json. The compatibility recipe archive is
     docs/evidence/releases/3.10.0-benchmark-compatibility.json.

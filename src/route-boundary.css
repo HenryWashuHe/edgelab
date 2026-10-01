@@ -1,0 +1,79 @@
+.route-state {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: #657482;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.route-state h2 {
+  margin: 0 0 10px;
+  color: #26323f;
+  font-size: 18px;
+}
+.route-state p {
+  max-width: 65ch;
+  margin: 0 0 14px;
+}
+.examples-entry {
+  margin: 0 0 18px;
+  font-size: 12px;
+}
+.ops-doc-link {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-weight: 600;
+  color: #bf643e;
+  margin-top: 24px;
+}
+.examples-entry .ops-doc-link {
+  margin-top: 0;
+}
+.lab-heading-actions {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.lab-observer-entry {
+  max-width: 250px;
+  min-width: 0;
+}
+.lab-heading-actions .button {
+  max-width: 100%;
+  white-space: normal;
+}
+.lab-observer-entry small {
+  display: block;
+  color: #687582;
+  line-height: 1.6;
+  margin-top: 7px;
+}
+@media (max-width: 700px) {
+  .lab-heading-actions {
+    margin-top: 16px;
+  }
+  .lab-heading-actions .button {
+    margin-top: 0;
+  }
+  .lab-observer-entry {
+    max-width: 100%;
+  }
+}
+@media (max-width: 380px) {
+  .observer-shell .sidebar {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-inline: 12px;
+  }
+  .observer-shell .topbar {
+    height: auto;
+    min-height: 48px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-block: 10px;
+  }
+}

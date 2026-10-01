@@ -65,3 +65,7 @@ Architecture bundles only an allowlisted projection of the pinned 3.7.0 status-c
 ## Curated replay provenance in 3.10.0
 
 Milestones require a strict validated recording, trusted built-in loading action, pinned 3.6.0 content identity and matching captured states. A file's own metadata/hash cannot grant curated provenance; identical uploads remain generic, and unknown bundled examples receive no controlled-runtime label. Selected and comparison facts are separate recorded frames. Existing epochs clear derived curation on replacement/Clear/unmount, and no bookmark dispatches a command or accesses a capability. Unsigned hashes do not authenticate source; the separate pinned runtime manifest supports assertions such as reset fencing and hibernation that frames alone cannot prove. Thirteen pure tests and source review pass; rendered browser interaction remains unverified.
+
+## Section isolation and asset identity in 3.11.0
+
+Deferred loaders import static modules only. Keyed route boundaries preserve existing mount-scoped credential/read, observer socket/capture and replay import cleanup; the shell stores no new private state. A generic error panel displays no exception and offers only explicit reload/navigation, with no automatic command replay. All built assets must match local bytes and MIME and require revalidation. Source and HTTP checks do not verify rendered lifecycle behavior; see [ADR 012](adr/012-demand-loaded-sections.md).

@@ -1,9 +1,6 @@
-import { Operations } from './Operations';
-import { Architecture, Notes } from './Guide';
 import { RequestInspector } from './RequestInspector';
-import { LabObserver } from './LabObserver';
-import { LabReplay } from './LabReplay';
-import labRecordingExample from './data/lab-recording-example.json?raw';
+import { RouteBoundary } from './RouteBoundary';
+import { navigateToPage, pageLabels, parsePageHash, type AppPage } from './routes';
 import { getMainLabSession, LAB_SESSION_KEY, readExistingLabSession } from './lab-session';
 import {
   classifyLabFailure,
@@ -13,7 +10,7 @@ import {
   type LabFailure,
 } from './lab-request-control';
 import { asCsv, report, saveFile, percentile95 } from './reports';
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { lazy, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Activity,
@@ -41,6 +38,21 @@ import {
 } from 'lucide-react';
 import type { Config, LabEvent, Outcome, Snapshot } from '../worker/engine';
 import './style.css';
+import './route-boundary.css';
+
+const Operations = lazy(() =>
+  import('./Operations').then((module) => ({ default: module.Operations })),
+);
+const LabObserver = lazy(() =>
+  import('./LabObserver').then((module) => ({ default: module.LabObserver })),
+);
+const ReplayRoute = lazy(() =>
+  import('./ReplayRoute').then((module) => ({ default: module.ReplayRoute })),
+);
+const Architecture = lazy(() =>
+  import('./Guide').then((module) => ({ default: module.Architecture })),
+);
+const Notes = lazy(() => import('./Guide').then((module) => ({ default: module.Notes })));
 
 const colors: Record<Outcome, string> = {
   origin: '#25a67b',
@@ -102,23 +114,15 @@ async function api<T = Record<string, unknown>>(path: string, body?: unknown) {
 function App() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [stateConfirmed, setStateConfirmed] = useState(false);
-  const [page, setPage] = useState(() =>
-    ['playground', 'observer', 'replay', 'architecture', 'notes'].includes(location.hash.slice(1))
-      ? location.hash.slice(1)
-      : 'operations',
-  );
+  const [page, setPage] = useState<AppPage>(() => parsePageHash(location.hash));
   useEffect(() => {
-    const change = () =>
-      setPage(
-        ['playground', 'observer', 'replay', 'architecture', 'notes'].includes(
-          location.hash.slice(1),
-        )
-          ? location.hash.slice(1)
-          : 'operations',
-      );
+    const change = () => setPage(parsePageHash(location.hash));
     window.addEventListener('hashchange', change);
     return () => window.removeEventListener('hashchange', change);
   }, []);
+  function navigate(page: AppPage) {
+    navigateToPage(page, location, setPage);
+  }
   const [selectedEvent, setSelectedEvent] = useState<LabEvent | null>(null);
   const [labSession, setLabSession] = useState<string | null>(null);
   const [sessionSharing, setSessionSharing] = useState<
@@ -435,11 +439,11 @@ function App() {
     >
       <aside className="sidebar">
         <a
-          href="#"
+          href="#playground"
           className="brand"
           onClick={(e) => {
             e.preventDefault();
-            setPage('playground');
+            navigate('playground');
           }}
         >
           <span className="brand-mark">
@@ -458,19 +462,18 @@ function App() {
         </div>
         <div className="nav-label">WORKSPACE</div>
         <nav>
-          {[
-            ['operations', Activity, 'Operations'],
-            ['playground', FlaskConical, 'Resilience lab'],
-            ['architecture', Layers, 'Architecture'],
-            ['notes', BookOpen, 'Field notes'],
-          ].map(([id, Icon, label]) => (
+          {(
+            [
+              ['operations', Activity, 'Operations'],
+              ['playground', FlaskConical, 'Resilience lab'],
+              ['architecture', Layers, 'Architecture'],
+              ['notes', BookOpen, 'Field notes'],
+            ] as const
+          ).map(([id, Icon, label]) => (
             <button
               key={String(id)}
               className={`nav-item ${page === id ? 'active' : ''}`}
-              onClick={() => {
-                setPage(String(id));
-                location.hash = String(id);
-              }}
+              onClick={() => navigate(id)}
             >
               <Icon size={18} />
               {String(label)}
@@ -500,7 +503,7 @@ function App() {
             </a>
           </div>
           <div className="sidebar-footer">
-            <span className="tiny-dot" /> EdgeLab v3.10.0 <span>TS</span>
+            <span className="tiny-dot" /> EdgeLab v3.11.0 <span>TS</span>
           </div>
         </div>
       </aside>
@@ -637,9 +640,7 @@ function App() {
               </button>
             </div>
           )}
-          {page === 'operations' ? (
-            <Operations />
-          ) : page === 'playground' ? (
+          {page === 'playground' ? (
             <>
               <div className="lab-intro">
                 <span className="intro-label">
@@ -1194,7 +1195,7 @@ function App() {
                       <FlaskConical size={15} /> LAB NOTE
                     </span>
                     <p aria-live="polite">{notice}</p>
-                    <button onClick={() => setPage('architecture')}>
+                    <button onClick={() => navigate('architecture')}>
                       Understand the architecture <ArrowUpRight size={14} />
                     </button>
                   </div>
@@ -1205,14 +1206,20 @@ function App() {
                 </aside>
               </div>
             </>
-          ) : page === 'observer' ? (
-            <LabObserver />
-          ) : page === 'replay' ? (
-            <LabReplay exampleJson={labRecordingExample} />
-          ) : page === 'architecture' ? (
-            <Architecture />
           ) : (
-            <Notes />
+            <RouteBoundary key={page} label={pageLabels[page]}>
+              {page === 'operations' ? (
+                <Operations />
+              ) : page === 'observer' ? (
+                <LabObserver />
+              ) : page === 'replay' ? (
+                <ReplayRoute />
+              ) : page === 'architecture' ? (
+                <Architecture />
+              ) : (
+                <Notes />
+              )}
+            </RouteBoundary>
           )}
           <footer className="page-footer">
             <span>Built to explore a better Internet.</span>

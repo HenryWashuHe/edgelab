@@ -196,3 +196,7 @@ A strong follow-up is to implement one extension yourself, publish an experiment
 - [New SQLite namespace migration](https://developers.cloudflare.com/changelog/post/2026-07-09-restrict-new-kv-backed-namespaces/)
 
 The dev tooling pins a patched Undici release through npm overrides to avoid the advisory affecting Wrangler's transitive dependency. The production Worker does not bundle Undici.
+
+## Loading the recording section in 3.11.0
+
+The replay section and its unchanged historical sample load on selection. Static JavaScript and stylesheet requests are expected; replay selection and recording controls add no application API request, socket or capability access. The built-in recording still requires an explicit load and strict validation, and identical uploads remain generic. A section failure offers navigation or explicit reload; reload discards a page-held recording and does not execute an experiment. Rendered loading, failure and lifecycle behavior remain unverified.
