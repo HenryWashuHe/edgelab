@@ -121,7 +121,7 @@ export function LabObserver() {
     if (previous?.end) return;
     const next = previous
       ? appendLabRecording(previous, frame, Date.now())
-      : beginLabRecording(frame, Date.now(), '3.12.2');
+      : beginLabRecording(frame, Date.now(), '3.12.3');
     recordingRef.current = next;
     setRecording(next);
     if (next.end?.reason === 'frame-limit' || next.end?.reason === 'byte-limit')
@@ -420,7 +420,7 @@ export function LabObserver() {
               <small>Balance at commit; refill is not simulated.</small>
             </div>
             <div>
-              <dt>Settled requests</dt>
+              <dt>Recorded outcomes</dt>
               <dd>
                 {settled} <span>/ {state.total}</span>
               </dd>
@@ -433,7 +433,7 @@ export function LabObserver() {
               <small>{state.originCalls} origin attempts in this run</small>
             </div>
           </dl>
-          <dl className="observer-counts" aria-label="Settled outcomes in this run">
+          <dl className="observer-counts" aria-label="Recorded outcomes in this run">
             {(Object.keys(outcomeNames) as Outcome[]).map((outcome) => (
               <div key={outcome}>
                 <dt>{outcomeNames[outcome]}</dt>
@@ -444,7 +444,7 @@ export function LabObserver() {
           <section className="observer-events" aria-labelledby="observer-events-title">
             <div className="observer-events-heading">
               <h2 id="observer-events-title">
-                <Activity size={16} /> Latest recorded outcomes
+                <Activity size={16} /> Outcome rows in this view
               </h2>
               <span>Up to {LAB_OBSERVER_SNAPSHOT_EVENTS} · newest first</span>
             </div>
@@ -472,7 +472,7 @@ export function LabObserver() {
               </ol>
             ) : (
               <p className="observer-empty">
-                No settled requests are recorded in this run. Send traffic from the main lab.
+                No outcome rows are present in this view. Send traffic from the main lab.
               </p>
             )}
           </section>

@@ -388,7 +388,7 @@ export function LabReplay({ exampleJson }: { exampleJson?: string } = {}) {
               <small>Recorded balance; no refill is simulated.</small>
             </div>
             <div>
-              <dt>Settled / evaluated</dt>
+              <dt>Recorded / evaluated</dt>
               <dd>
                 {settled} <span>/ {state.total}</span>
               </dd>
@@ -400,7 +400,7 @@ export function LabReplay({ exampleJson }: { exampleJson?: string } = {}) {
               <small>Evaluated requests without a recorded outcome; some may have finished.</small>
             </div>
           </dl>
-          <dl className="replay-counts" aria-label="Recorded settled outcomes">
+          <dl className="replay-counts" aria-label="Recorded outcomes in this run">
             {(Object.keys(outcomes) as Outcome[]).map((outcome) => (
               <div key={outcome}>
                 <dt>{outcomes[outcome]}</dt>
@@ -410,8 +410,8 @@ export function LabReplay({ exampleJson }: { exampleJson?: string } = {}) {
           </dl>
           <section className="replay-events" aria-labelledby={eventsId}>
             <div className="replay-events-heading">
-              <h3 id={eventsId}>Outcomes through this frame</h3>
-              <span>Latest {step.events.length} retained · newest first</span>
+              <h3 id={eventsId}>Outcome rows for this run</h3>
+              <span>{step.events.length} shown · newest first</span>
             </div>
             {step.events.length ? (
               <ol>
@@ -437,7 +437,7 @@ export function LabReplay({ exampleJson }: { exampleJson?: string } = {}) {
               </ol>
             ) : (
               <p className="replay-empty">
-                No settled outcome rows are present in this captured prefix.
+                No outcome rows for the selected run are present in this captured prefix.
               </p>
             )}
             <p className="replay-events-note">
