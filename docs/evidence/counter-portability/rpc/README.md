@@ -17,3 +17,5 @@ All four artifacts pass strict import and inspection in a network-blocked Node s
 | [rpc-after-loss.json](rpc-after-loss.json)   |   913 | `35a61ae5fc94d0d40ab0e74463050f60c38123c8526032a8d8dcf56984f7461f` |
 
 File hashes above describe original bytes. Each artifact also contains its distinct unsigned hash of canonical validated contents. Reproduction commands and privacy limits are in the [experiment guide](../../../../examples/counter-evidence/README.md).
+
+Implementation `13d10724e22a5e17c21ed00a927c83286c0d07da` passes [complete Linux CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36905783792), including the four-runtime recipe, 22 counter codec tests, all application runtime regressions and actual local HTTP asset verification. Local checks also pass 295 application tests across 24 files, eight asset fault tests, TypeScript/build and both deployment dry-runs. All 16 rebuilt client assets match the frozen deployed 3.12.1 release; no production deployment was performed for this checkpoint.
