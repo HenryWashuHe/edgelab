@@ -13,7 +13,7 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 ## Verify an actual release
 
 1. Confirm the published commit passes GitHub CI.
-2. For release v3.7.0, `GET /api/health` must report version 3.7.0. Compare the deployed revision with the release evidence; these instructions alone do not prove publication.
+2. For release v3.8.0, `GET /api/health` must report version 3.8.0. Compare the deployed revision with the release evidence; these instructions alone do not prove publication.
 3. `GET /api/ops/status` must list the expected target names. Public output must not contain the operator token, target URLs, or investigation notes.
 4. Allow cron propagation ([Cloudflare documents up to 15 minutes](https://developers.cloudflare.com/workers/configuration/cron-triggers/)). Verify each service receives observations in two distinct scheduled minutes without clicking a “run” button. Check `latest.slot`, the actual probe start `latest.observedAt`, and completion `latest.at`, not just the page's snapshot timestamp. Trigger propagation is not permission to backfill: an invocation whose scheduled minute has passed is recorded as `skipped-late` and makes no observation.
 5. The private catalog probe must validate actual JSON through its service binding; the gateway probe must reach the configured public HTTPS health endpoint.
@@ -24,6 +24,12 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 10. Run the bounded benchmark if performance evidence is being updated. Save raw results and their environment; do not mix local and live observations.
 
 The published 3.6.0 gateway deployment is `fe4a90e7-67f6-4a93-a62f-e799bd6d570f`, with the private origin unchanged. [CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36797743493) passes for source commit `3b0851c3b2c3e8b4ad5892be9bfb933215de7dc0`. The [live verification record](evidence/releases/3.6.0-live-monitoring.json) at 2026-10-01 00:46:21 UTC confirms the expected version, two new autonomous good minutes per service, healthy readiness, current budget evaluations and schemaVersion 4 privacy boundaries.
+
+## Current 3.8.0 release
+
+Gateway `1defd512-1403-4e77-aee2-2d0caa9adefe` uses source commit `08fae9921f7d783b584c5757cf31ca9071e68d38`; the [full CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36803822857) passes 162 unit tests and runtime regressions. [Live HTTP verification](evidence/releases/3.8.0-live-monitoring.json) at October 1, 02:07:52 UTC confirms byte-identical deployed assets, two new autonomous good minutes per service, healthy readiness, current budgets and authentication/privacy boundaries.
+
+Architecture now presents the original 3.7.0 status-cache measurements through a static allowlisted projection. Selector changes make no application API calls and do not benchmark the deployment. Its source version, commit, hash and runtime remain historical. `npm run test:status-evidence` verifies that projection; `npm run test:lab-storm` profiles bounded actual lab work in ephemeral local objects without account or production calls. Source/build/unit validation passes; rendered browser behavior and production cost remain unverified.
 
 ## Interpret 3.7.0 view timing
 

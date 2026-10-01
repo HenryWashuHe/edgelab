@@ -5,9 +5,9 @@ info:
   description: |
     Public monitoring read model and single-owner operator control plane.
     HTTP laboratory controls are documented in LAB.md; the observer upgrade and message schema are below.
-    This describes release 3.8.0; its API preserves the additive 3.7.0 view contract. Scoped verification is recorded in docs/evidence/VALIDATION.md,
-    the final-source controlled runtime archive in docs/evidence/releases/3.7.0-status-cache.json,
-    and live HTTP provenance/monitoring/privacy checks in docs/evidence/releases/3.7.0-live-monitoring.json.
+    This describes deployed 3.8.0; its API preserves the additive 3.7.0 view contract. Scoped verification is recorded in docs/evidence/VALIDATION.md,
+    the pinned historical status-cache archive in docs/evidence/releases/3.7.0-status-cache.json,
+    and current live HTTP provenance/monitoring/privacy checks in docs/evidence/releases/3.8.0-live-monitoring.json.
     Implementation CI passes; production SQL/CPU/billing measurements and rendered browser
     validation are not claimed. Historical 3.6.0 recording and recovery evidence remain distinct.
     Bounded browser recording and the offline #replay view add no API endpoint or socket command.
