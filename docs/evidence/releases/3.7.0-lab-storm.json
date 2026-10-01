@@ -1,0 +1,884 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-local-lab-workload-cost",
+  "measuredAt": "2026-10-01T01:55:32.021Z",
+  "recipe": "node scripts/lab-storm.mjs",
+  "sourceProjectVersion": "3.7.0",
+  "observedGatewayVersion": "3.7.0",
+  "environment": {
+    "node": "v25.4.0",
+    "miniflare": "5.20260926.0-alpha",
+    "workerd": "1.20260926.1",
+    "esbuild": "0.28.1",
+    "compatibilityDate": "2026-09-01",
+    "transport": "Actual production gateway via Miniflare.dispatchFetch and real private origin Worker service binding",
+    "storage": "Ephemeral native workerd SQLite Durable Objects",
+    "accountCalls": 0,
+    "productionRequests": 0,
+    "nativeInferenceCalls": 0,
+    "remoteRequestCfRefresh": false,
+    "telemetry": false
+  },
+  "sourceSHA256": {
+    "package-lock.json": "09252a782a904dd52259f964ec5cd74565b9676de644a4ad5055b10199ebd190",
+    "package.json": "a94b201a46b375c771a7769def6e51e67ae46f12cb128cafb914b7d011a23ccc",
+    "scripts/lab-storm.mjs": "17a516d1f428375809c25e4612088f6e24784f12b099506c5259c7e0e270fb21",
+    "tests/fixtures/lab-storm.ts": "84142a50975b9d888704d46e4959a75ebc1ec8bdb1c9100d29703b63e568c5a8",
+    "worker/budget-signals.ts": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15",
+    "worker/burn-rate.ts": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c",
+    "worker/engine.ts": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+    "worker/incident-brief-ai.ts": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b",
+    "worker/incident-brief-domain.ts": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1",
+    "worker/incident-briefs.ts": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d",
+    "worker/incident-evidence.ts": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2",
+    "worker/index.ts": "12b215bc330615dd44fe2cc2f9f791d6454c563d457b1dc4247fab327cd53561",
+    "worker/lab-observer.ts": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+    "worker/metadata-cleanup.ts": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee",
+    "worker/monitor-check-cache.ts": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1",
+    "worker/monitor-domain.ts": "15ed1d9218b5c0baeea4061f20077ded6350d02c6b3bb71b2906fc595f16a003",
+    "worker/monitor-forwarder.ts": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e",
+    "worker/monitor-probe.ts": "e06fa750a0a9888b74d32e03848fe966edbe67ae331c73d303d6c4046a87f034",
+    "worker/monitor-readiness.ts": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c",
+    "worker/monitor-version-retention.ts": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455",
+    "worker/monitor.ts": "289f97402ee3b676f3857c25f93363baa1f848713a855869d8c3faf9313f4488",
+    "worker/origin-client.ts": "4db923944019dd24d3da2e19c1d54cac7247a2d5819db3016cde047374a91548",
+    "worker/origin.ts": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+    "worker/status-view-cache.ts": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158"
+  },
+  "provenance": {
+    "inputsCapturedBeforeBuildAt": "2026-10-01T01:55:32.013Z",
+    "inputGraphs": {
+      "gateway": [
+        "tests/fixtures/lab-storm.ts",
+        "worker/budget-signals.ts",
+        "worker/burn-rate.ts",
+        "worker/engine.ts",
+        "worker/incident-brief-ai.ts",
+        "worker/incident-brief-domain.ts",
+        "worker/incident-briefs.ts",
+        "worker/incident-evidence.ts",
+        "worker/index.ts",
+        "worker/lab-observer.ts",
+        "worker/metadata-cleanup.ts",
+        "worker/monitor-check-cache.ts",
+        "worker/monitor-domain.ts",
+        "worker/monitor-forwarder.ts",
+        "worker/monitor-probe.ts",
+        "worker/monitor-readiness.ts",
+        "worker/monitor-version-retention.ts",
+        "worker/monitor.ts",
+        "worker/origin-client.ts",
+        "worker/origin.ts",
+        "worker/status-view-cache.ts"
+      ],
+      "origin": ["worker/origin.ts"]
+    },
+    "additionalInputs": ["scripts/lab-storm.mjs", "package.json", "package-lock.json"],
+    "metafileSHA256": {
+      "gateway": "3f160753f1526bad926263e93badd0e7d27dfada1bdeb7e3ec258d3babd8476f",
+      "origin": "92c189c704b1f74d7c13bbea1cc0a4fea6055525a84b311575b17ed3c2a45ee0"
+    },
+    "boundary": "Complete project-local esbuild inputs for both tested Worker bundles, plus recipe and package files. Installed library binaries are described by versions and lockfile, not independently hashed; deployed resources and account state are outside this evidence."
+  },
+  "bundleSHA256": {
+    "gateway": "05aedad054094187580fbebadc48a46cd760fd5e4dadb71eed9ca2817fb948e8",
+    "origin": "2c2f5c182b0b95b57f1c3818fa8f8c6acce2048c3aba7ae2a771b605a098e83c"
+  },
+  "workload": {
+    "maximumObjects": 8,
+    "freshObjectFanout": 6,
+    "sameRunBurstRequests": 24,
+    "repeatedEmptyStateReads": 24,
+    "circuitDeniedRequests": 8,
+    "retentionRequests": 208,
+    "repeatedRetainedStateReads": 8,
+    "eventRetentionLimit": 180
+  },
+  "assertions": [
+    "Constructor/read-only controls do not enroll; the first real owner GET commits state and idle lease",
+    "Twenty-four existing owner GETs perform their measured real storage/lease work without origin calls",
+    "Concurrent same-run burst reconciles every stored outcome and delegated origin call within capacity/refill bounds",
+    "Valid denied requests avoid origin work while their source decisions and lease renewals still incur measured storage work",
+    "Two hundred eight bounded decisions retain exactly 180 distinct events while preserving all-run counters",
+    "Eight mature owner reads return 180 retained events and preserve decisions with zero origin calls",
+    "Six actual fresh capabilities create six independent empty runs; every namespace lookup and dispatch delegates to workerd",
+    "Actual eviction recreates the constructor without changing full persisted source; the next real owner read preserves counters"
+  ],
+  "samples": [
+    {
+      "scenario": "cold-constructor",
+      "objectCount": 1,
+      "ownerRequests": 0,
+      "sql": {
+        "attemptedStatements": 4,
+        "statements": 4,
+        "failedStatements": 0,
+        "rowsRead": 5,
+        "rowsWritten": 9,
+        "failedCursorCost": null
+      },
+      "operations": {
+        "kvGet": 0,
+        "kvPut": 0,
+        "kvDelete": 0,
+        "kvList": 0,
+        "storageGet": 0,
+        "storagePut": 0,
+        "storageDelete": 0,
+        "storageList": 0,
+        "storageDeleteAll": 0,
+        "alarmGet": 0,
+        "alarmSet": 0,
+        "alarmDelete": 0,
+        "transactionSync": 0,
+        "transactionSyncFailed": 0
+      },
+      "nativeInvocations": {
+        "originFetch": 0,
+        "originCompleted": 0,
+        "originFailed": 0,
+        "originInFlight": 0
+      },
+      "diagnostics": {
+        "scope": "cumulative-local-controls-only",
+        "sql": {
+          "attemptedStatements": 0,
+          "statements": 0,
+          "failedStatements": 0,
+          "rowsRead": 0,
+          "rowsWritten": 0,
+          "failedCursorCost": null
+        },
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0,
+          "transactionSync": 0,
+          "transactionSyncFailed": 0
+        }
+      }
+    },
+    {
+      "scenario": "first-owner-state-enrollment",
+      "objectCount": 1,
+      "ownerRequests": 1,
+      "gateway": {
+        "gatewayRequests": 1,
+        "namespaceIdFromName": 1,
+        "namespaceGet": 1,
+        "namespaceGetByName": 0,
+        "stubFetch": 1,
+        "stubCompleted": 1,
+        "stubFailed": 0,
+        "stubInFlight": 0
+      },
+      "sql": {
+        "attemptedStatements": 6,
+        "statements": 6,
+        "failedStatements": 0,
+        "rowsRead": 4,
+        "rowsWritten": 1,
+        "failedCursorCost": null
+      },
+      "operations": {
+        "kvGet": 2,
+        "kvPut": 1,
+        "kvDelete": 0,
+        "kvList": 0,
+        "storageGet": 0,
+        "storagePut": 0,
+        "storageDelete": 0,
+        "storageList": 0,
+        "storageDeleteAll": 0,
+        "alarmGet": 0,
+        "alarmSet": 1,
+        "alarmDelete": 0,
+        "transactionSync": 1,
+        "transactionSyncFailed": 0
+      },
+      "nativeInvocations": {
+        "originFetch": 0,
+        "originCompleted": 0,
+        "originFailed": 0,
+        "originInFlight": 0
+      },
+      "diagnostics": {
+        "scope": "cumulative-local-controls-only",
+        "sql": {
+          "attemptedStatements": 2,
+          "statements": 2,
+          "failedStatements": 0,
+          "rowsRead": 2,
+          "rowsWritten": 0,
+          "failedCursorCost": null
+        },
+        "operations": {
+          "kvGet": 1,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 1,
+          "alarmSet": 0,
+          "alarmDelete": 0,
+          "transactionSync": 0,
+          "transactionSyncFailed": 0
+        }
+      }
+    },
+    {
+      "scenario": "repeated-existing-empty-state-gets",
+      "objectCount": 1,
+      "ownerRequests": 24,
+      "gateway": {
+        "gatewayRequests": 24,
+        "namespaceIdFromName": 24,
+        "namespaceGet": 24,
+        "namespaceGetByName": 0,
+        "stubFetch": 24,
+        "stubCompleted": 24,
+        "stubFailed": 0,
+        "stubInFlight": 0
+      },
+      "sql": {
+        "attemptedStatements": 144,
+        "statements": 144,
+        "failedStatements": 0,
+        "rowsRead": 96,
+        "rowsWritten": 24,
+        "failedCursorCost": null
+      },
+      "operations": {
+        "kvGet": 48,
+        "kvPut": 24,
+        "kvDelete": 0,
+        "kvList": 0,
+        "storageGet": 0,
+        "storagePut": 0,
+        "storageDelete": 0,
+        "storageList": 0,
+        "storageDeleteAll": 0,
+        "alarmGet": 0,
+        "alarmSet": 24,
+        "alarmDelete": 0,
+        "transactionSync": 24,
+        "transactionSyncFailed": 0
+      },
+      "nativeInvocations": {
+        "originFetch": 0,
+        "originCompleted": 0,
+        "originFailed": 0,
+        "originInFlight": 0
+      },
+      "diagnostics": {
+        "scope": "cumulative-local-controls-only",
+        "sql": {
+          "attemptedStatements": 6,
+          "statements": 6,
+          "failedStatements": 0,
+          "rowsRead": 6,
+          "rowsWritten": 0,
+          "failedCursorCost": null
+        },
+        "operations": {
+          "kvGet": 3,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 3,
+          "alarmSet": 0,
+          "alarmDelete": 0,
+          "transactionSync": 0,
+          "transactionSyncFailed": 0
+        }
+      },
+      "countersUnchanged": true
+    },
+    {
+      "scenario": "same-run-concurrent-burst",
+      "objectCount": 1,
+      "ownerRequests": 24,
+      "initialCapacity": 12,
+      "refillPerSecond": 1,
+      "configuredOriginDelayMs": 20,
+      "elapsedLocalMs": 46.95,
+      "responses": {
+        "counts": {
+          "origin": 12,
+          "stale": 0,
+          "limited": 12,
+          "blocked": 0,
+          "error": 0
+        },
+        "statuses": {
+          "200": 12,
+          "429": 12,
+          "502": 0,
+          "503": 0,
+          "504": 0
+        }
+      },
+      "gateway": {
+        "gatewayRequests": 24,
+        "namespaceIdFromName": 24,
+        "namespaceGet": 24,
+        "namespaceGetByName": 0,
+        "stubFetch": 24,
+        "stubCompleted": 24,
+        "stubFailed": 0,
+        "stubInFlight": 0
+      },
+      "sql": {
+        "attemptedStatements": 216,
+        "statements": 216,
+        "failedStatements": 0,
+        "rowsRead": 216,
+        "rowsWritten": 108,
+        "failedCursorCost": null
+      },
+      "operations": {
+        "kvGet": 60,
+        "kvPut": 24,
+        "kvDelete": 0,
+        "kvList": 0,
+        "storageGet": 0,
+        "storagePut": 0,
+        "storageDelete": 0,
+        "storageList": 0,
+        "storageDeleteAll": 0,
+        "alarmGet": 0,
+        "alarmSet": 24,
+        "alarmDelete": 0,
+        "transactionSync": 60,
+        "transactionSyncFailed": 0
+      },
+      "nativeInvocations": {
+        "originFetch": 12,
+        "originCompleted": 12,
+        "originFailed": 0,
+        "originInFlight": 0
+      },
+      "diagnostics": {
+        "scope": "cumulative-local-controls-only",
+        "sql": {
+          "attemptedStatements": 10,
+          "statements": 10,
+          "failedStatements": 0,
+          "rowsRead": 33,
+          "rowsWritten": 0,
+          "failedCursorCost": null
+        },
+        "operations": {
+          "kvGet": 5,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 5,
+          "alarmSet": 0,
+          "alarmDelete": 0,
+          "transactionSync": 0,
+          "transactionSyncFailed": 0
+        }
+      },
+      "countersReconciled": true
+    },
+    {
+      "scenario": "denied-valid-requests-no-origin",
+      "objectCount": 1,
+      "ownerRequests": 8,
+      "responses": {
+        "counts": {
+          "origin": 0,
+          "stale": 0,
+          "limited": 0,
+          "blocked": 8,
+          "error": 0
+        },
+        "statuses": {
+          "200": 0,
+          "429": 0,
+          "502": 0,
+          "503": 8,
+          "504": 0
+        }
+      },
+      "gateway": {
+        "gatewayRequests": 8,
+        "namespaceIdFromName": 8,
+        "namespaceGet": 8,
+        "namespaceGetByName": 0,
+        "stubFetch": 8,
+        "stubCompleted": 8,
+        "stubFailed": 0,
+        "stubInFlight": 0
+      },
+      "sql": {
+        "attemptedStatements": 64,
+        "statements": 64,
+        "failedStatements": 0,
+        "rowsRead": 64,
+        "rowsWritten": 32,
+        "failedCursorCost": null
+      },
+      "operations": {
+        "kvGet": 16,
+        "kvPut": 8,
+        "kvDelete": 0,
+        "kvList": 0,
+        "storageGet": 0,
+        "storagePut": 0,
+        "storageDelete": 0,
+        "storageList": 0,
+        "storageDeleteAll": 0,
+        "alarmGet": 0,
+        "alarmSet": 8,
+        "alarmDelete": 0,
+        "transactionSync": 16,
+        "transactionSyncFailed": 0
+      },
+      "nativeInvocations": {
+        "originFetch": 0,
+        "originCompleted": 0,
+        "originFailed": 0,
+        "originInFlight": 0
+      },
+      "diagnostics": {
+        "scope": "cumulative-local-controls-only",
+        "sql": {
+          "attemptedStatements": 4,
+          "statements": 4,
+          "failedStatements": 0,
+          "rowsRead": 12,
+          "rowsWritten": 0,
+          "failedCursorCost": null
+        },
+        "operations": {
+          "kvGet": 2,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 2,
+          "alarmSet": 0,
+          "alarmDelete": 0,
+          "transactionSync": 0,
+          "transactionSyncFailed": 0
+        }
+      },
+      "countersReconciled": true
+    },
+    {
+      "scenario": "bounded-event-retention",
+      "objectCount": 1,
+      "ownerRequests": 208,
+      "retainedEvents": 180,
+      "allRunTotal": 217,
+      "responses": {
+        "counts": {
+          "origin": 0,
+          "stale": 0,
+          "limited": 205,
+          "blocked": 3,
+          "error": 0
+        },
+        "statuses": {
+          "200": 0,
+          "429": 205,
+          "502": 0,
+          "503": 3,
+          "504": 0
+        }
+      },
+      "gateway": {
+        "gatewayRequests": 208,
+        "namespaceIdFromName": 208,
+        "namespaceGet": 208,
+        "namespaceGetByName": 0,
+        "stubFetch": 208,
+        "stubCompleted": 208,
+        "stubFailed": 0,
+        "stubInFlight": 0
+      },
+      "sql": {
+        "attemptedStatements": 1664,
+        "statements": 1664,
+        "failedStatements": 0,
+        "rowsRead": 1738,
+        "rowsWritten": 869,
+        "failedCursorCost": null
+      },
+      "operations": {
+        "kvGet": 416,
+        "kvPut": 208,
+        "kvDelete": 0,
+        "kvList": 0,
+        "storageGet": 0,
+        "storagePut": 0,
+        "storageDelete": 0,
+        "storageList": 0,
+        "storageDeleteAll": 0,
+        "alarmGet": 0,
+        "alarmSet": 208,
+        "alarmDelete": 0,
+        "transactionSync": 416,
+        "transactionSyncFailed": 0
+      },
+      "nativeInvocations": {
+        "originFetch": 0,
+        "originCompleted": 0,
+        "originFailed": 0,
+        "originInFlight": 0
+      },
+      "diagnostics": {
+        "scope": "cumulative-local-controls-only",
+        "sql": {
+          "attemptedStatements": 6,
+          "statements": 6,
+          "failedStatements": 0,
+          "rowsRead": 193,
+          "rowsWritten": 0,
+          "failedCursorCost": null
+        },
+        "operations": {
+          "kvGet": 3,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 3,
+          "alarmSet": 0,
+          "alarmDelete": 0,
+          "transactionSync": 0,
+          "transactionSyncFailed": 0
+        }
+      },
+      "countersReconciled": true
+    },
+    {
+      "scenario": "repeated-retained-state-gets",
+      "objectCount": 1,
+      "ownerRequests": 8,
+      "retainedEventsPerResponse": 180,
+      "gateway": {
+        "gatewayRequests": 8,
+        "namespaceIdFromName": 8,
+        "namespaceGet": 8,
+        "namespaceGetByName": 0,
+        "stubFetch": 8,
+        "stubCompleted": 8,
+        "stubFailed": 0,
+        "stubInFlight": 0
+      },
+      "sql": {
+        "attemptedStatements": 48,
+        "statements": 48,
+        "failedStatements": 0,
+        "rowsRead": 1464,
+        "rowsWritten": 8,
+        "failedCursorCost": null
+      },
+      "operations": {
+        "kvGet": 16,
+        "kvPut": 8,
+        "kvDelete": 0,
+        "kvList": 0,
+        "storageGet": 0,
+        "storagePut": 0,
+        "storageDelete": 0,
+        "storageList": 0,
+        "storageDeleteAll": 0,
+        "alarmGet": 0,
+        "alarmSet": 8,
+        "alarmDelete": 0,
+        "transactionSync": 8,
+        "transactionSyncFailed": 0
+      },
+      "nativeInvocations": {
+        "originFetch": 0,
+        "originCompleted": 0,
+        "originFailed": 0,
+        "originInFlight": 0
+      },
+      "diagnostics": {
+        "scope": "cumulative-local-controls-only",
+        "sql": {
+          "attemptedStatements": 8,
+          "statements": 8,
+          "failedStatements": 0,
+          "rowsRead": 374,
+          "rowsWritten": 0,
+          "failedCursorCost": null
+        },
+        "operations": {
+          "kvGet": 4,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 4,
+          "alarmSet": 0,
+          "alarmDelete": 0,
+          "transactionSync": 0,
+          "transactionSyncFailed": 0
+        }
+      },
+      "countersUnchanged": true
+    },
+    {
+      "scenario": "bounded-fresh-object-fanout",
+      "objectCount": 6,
+      "ownerRequests": 6,
+      "gateway": {
+        "gatewayRequests": 6,
+        "namespaceIdFromName": 6,
+        "namespaceGet": 6,
+        "namespaceGetByName": 0,
+        "stubFetch": 6,
+        "stubCompleted": 6,
+        "stubFailed": 0,
+        "stubInFlight": 0
+      },
+      "sql": {
+        "attemptedStatements": 60,
+        "statements": 60,
+        "failedStatements": 0,
+        "rowsRead": 54,
+        "rowsWritten": 60,
+        "failedCursorCost": null
+      },
+      "operations": {
+        "kvGet": 12,
+        "kvPut": 6,
+        "kvDelete": 0,
+        "kvList": 0,
+        "storageGet": 0,
+        "storagePut": 0,
+        "storageDelete": 0,
+        "storageList": 0,
+        "storageDeleteAll": 0,
+        "alarmGet": 0,
+        "alarmSet": 6,
+        "alarmDelete": 0,
+        "transactionSync": 6,
+        "transactionSyncFailed": 0
+      },
+      "nativeInvocations": {
+        "originFetch": 0,
+        "originCompleted": 0,
+        "originFailed": 0,
+        "originInFlight": 0
+      },
+      "diagnostics": {
+        "scope": "cumulative-local-controls-only",
+        "sql": {
+          "attemptedStatements": 12,
+          "statements": 12,
+          "failedStatements": 0,
+          "rowsRead": 12,
+          "rowsWritten": 0,
+          "failedCursorCost": null
+        },
+        "operations": {
+          "kvGet": 6,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 6,
+          "alarmSet": 0,
+          "alarmDelete": 0,
+          "transactionSync": 0,
+          "transactionSyncFailed": 0
+        }
+      },
+      "emptyIndependentRuns": true,
+      "includesConstructorAndEnrollment": true
+    },
+    {
+      "scenario": "eviction-constructor",
+      "objectCount": 1,
+      "ownerRequests": 0,
+      "sql": {
+        "attemptedStatements": 4,
+        "statements": 4,
+        "failedStatements": 0,
+        "rowsRead": 1,
+        "rowsWritten": 1,
+        "failedCursorCost": null
+      },
+      "operations": {
+        "kvGet": 0,
+        "kvPut": 0,
+        "kvDelete": 0,
+        "kvList": 0,
+        "storageGet": 0,
+        "storagePut": 0,
+        "storageDelete": 0,
+        "storageList": 0,
+        "storageDeleteAll": 0,
+        "alarmGet": 0,
+        "alarmSet": 0,
+        "alarmDelete": 0,
+        "transactionSync": 0,
+        "transactionSyncFailed": 0
+      },
+      "nativeInvocations": {
+        "originFetch": 0,
+        "originCompleted": 0,
+        "originFailed": 0,
+        "originInFlight": 0
+      },
+      "diagnostics": {
+        "scope": "cumulative-local-controls-only",
+        "sql": {
+          "attemptedStatements": 0,
+          "statements": 0,
+          "failedStatements": 0,
+          "rowsRead": 0,
+          "rowsWritten": 0,
+          "failedCursorCost": null
+        },
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0,
+          "transactionSync": 0,
+          "transactionSyncFailed": 0
+        }
+      },
+      "fullSourceParity": true
+    },
+    {
+      "scenario": "first-owner-get-after-eviction",
+      "objectCount": 1,
+      "ownerRequests": 1,
+      "gateway": {
+        "gatewayRequests": 1,
+        "namespaceIdFromName": 1,
+        "namespaceGet": 1,
+        "namespaceGetByName": 0,
+        "stubFetch": 1,
+        "stubCompleted": 1,
+        "stubFailed": 0,
+        "stubInFlight": 0
+      },
+      "sql": {
+        "attemptedStatements": 6,
+        "statements": 6,
+        "failedStatements": 0,
+        "rowsRead": 27,
+        "rowsWritten": 1,
+        "failedCursorCost": null
+      },
+      "operations": {
+        "kvGet": 2,
+        "kvPut": 1,
+        "kvDelete": 0,
+        "kvList": 0,
+        "storageGet": 0,
+        "storagePut": 0,
+        "storageDelete": 0,
+        "storageList": 0,
+        "storageDeleteAll": 0,
+        "alarmGet": 0,
+        "alarmSet": 1,
+        "alarmDelete": 0,
+        "transactionSync": 1,
+        "transactionSyncFailed": 0
+      },
+      "nativeInvocations": {
+        "originFetch": 0,
+        "originCompleted": 0,
+        "originFailed": 0,
+        "originInFlight": 0
+      },
+      "diagnostics": {
+        "scope": "cumulative-local-controls-only",
+        "sql": {
+          "attemptedStatements": 2,
+          "statements": 2,
+          "failedStatements": 0,
+          "rowsRead": 25,
+          "rowsWritten": 0,
+          "failedCursorCost": null
+        },
+        "operations": {
+          "kvGet": 1,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 1,
+          "alarmSet": 0,
+          "alarmDelete": 0,
+          "transactionSync": 0,
+          "transactionSyncFailed": 0
+        }
+      },
+      "countersPreserved": true
+    }
+  ],
+  "limitations": [
+    "A bounded local workload, not customer traffic, sustained throughput, a denial-of-service test or a prediction of account capacity.",
+    "SQL counts come from fully consumed native cursors, including triggers. Native failed attempts have no cursor cost; API invocations are separate from billed SQL rows.",
+    "KV, alarm, synchronous transaction, namespace lookup and stub dispatch counts are actual delegated API invocations, not physical operation, CPU or billing measurements.",
+    "Fixture inspections use original native methods and separate diagnostic counters outside measured owner workloads. They do not seed state, replace clocks or bypass source SQL.",
+    "Origin fetch completion means its native service call resolved, including a controlled non-200 response; stored HTTP outcomes establish success or failure.",
+    "Real wall time/refill can alter admitted counts. Requests are bounded and reconciliation uses actual responses and authoritative stored counters.",
+    "Eviction uses the supported local testing API. Source parity after constructor recreation does not prove production eviction timing or backup recovery.",
+    "No capability, object/run/event/request identifier, payload, raw SQL text, target URL or private snapshot is included in this report."
+  ],
+  "sourceStableDuringRun": true
+}
