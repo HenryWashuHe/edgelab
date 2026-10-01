@@ -18,7 +18,7 @@
     "benchmark": "node scripts/benchmark.mjs",
     "operator:setup": "node scripts/operator-setup.mjs",
     "operator": "node scripts/operator.mjs",
-    "test:operator": "node --test scripts/operator.test.mjs",
+    "test:operator": "node --test scripts/operator.test.mjs scripts/operator-setup.test.mjs",
     "test:incident": "node scripts/incident-integration.mjs",
     "test:upgrade": "node scripts/monitor-upgrade.mjs",
     "test:budget": "node scripts/budget-integration.mjs",

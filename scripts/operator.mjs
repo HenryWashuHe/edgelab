@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { isIP } from 'node:net';
+import { operatorAssignment } from './operator-env.mjs';
 const target = new URL(process.env.BASE_URL || 'http://localhost:8787');
 if (
   !['http:', 'https:'].includes(target.protocol) ||
@@ -19,8 +20,7 @@ const local =
   (isIP(hostname) === 4 && hostname.startsWith('127.')) ||
   hostname === '[::1]';
 const file = local ? '.dev.vars' : '.env.operator';
-const token =
-  process.env.OPERATOR_TOKEN || (await readFile(file, 'utf8')).match(/^OPERATOR_TOKEN=(.+)$/m)?.[1];
+const token = process.env.OPERATOR_TOKEN || operatorAssignment(await readFile(file, 'utf8'))?.value;
 if (!token) throw new Error('Run operator:setup first');
 const [command = 'audit', service, arg] = process.argv.slice(2);
 const fetchJson = async (path, body) => {

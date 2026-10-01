@@ -32,6 +32,9 @@ globalThis.fetch = async (url, options) => {
 `,
   );
   return {
+    writeLocal(content) {
+      return writeFile(join(directory, '.dev.vars'), content);
+    },
     async invoke(base, { token, native = false } = {}) {
       const env = { ...process.env, OPERATOR_TEST_CAPTURE: capture };
       delete env.BASE_URL;
@@ -108,6 +111,37 @@ test('explicit OPERATOR_TOKEN overrides both credential files without reading ei
     await f.invoke(base, { token: 'synthetic-explicit-token' });
     assert.equal((await f.request()).headers.Authorization, 'Bearer synthetic-explicit-token');
   }
+});
+
+test('CLI selects the real dotenv assignment outside unrelated multiline quoted values', async (t) => {
+  const f = await fixture(t);
+  for (const quote of ['"', "'", '`']) {
+    await f.writeLocal(
+      `OTHER=${quote}first\nOPERATOR_TOKEN=synthetic-embedded-token\nlast${quote}\nexport OPERATOR_TOKEN="${localToken}" # real assignment\n`,
+    );
+    await f.invoke(undefined);
+    assert.equal((await f.request()).headers.Authorization, `Bearer ${localToken}`);
+  }
+});
+
+test('CLI refuses true duplicate dotenv assignments before requesting operator data', async (t) => {
+  const f = await fixture(t);
+  await f.writeLocal(`OPERATOR_TOKEN=${localToken}\nexport OPERATOR_TOKEN='${remoteToken}'\n`);
+  await assert.rejects(f.invoke(undefined), (error) => {
+    assert.match(error.stderr, /Multiple OPERATOR_TOKEN assignments/);
+    return true;
+  });
+  await f.noRequest();
+});
+
+test('token-looking text inside an unrelated value does not provide operator access', async (t) => {
+  const f = await fixture(t);
+  await f.writeLocal('OTHER="first\nOPERATOR_TOKEN=synthetic-embedded-token\nlast"\n');
+  await assert.rejects(f.invoke(undefined), (error) => {
+    assert.match(error.stderr, /Run operator:setup first/);
+    return true;
+  });
+  await f.noRequest();
 });
 
 test('non-origin targets fail before credential lookup or any request', async (t) => {
