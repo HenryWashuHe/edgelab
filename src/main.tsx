@@ -5,6 +5,13 @@ import { LabObserver } from './LabObserver';
 import { LabReplay } from './LabReplay';
 import labRecordingExample from './data/lab-recording-example.json?raw';
 import { getMainLabSession, LAB_SESSION_KEY, readExistingLabSession } from './lab-session';
+import {
+  classifyLabFailure,
+  isLabHttpFailure,
+  labAdmissionFailureMessage,
+  settleLabBatch,
+  type LabFailure,
+} from './lab-request-control';
 import { asCsv, report, saveFile, percentile95 } from './reports';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -65,13 +72,6 @@ const pause = (ms: number, signal?: AbortSignal) =>
     }, ms);
     signal?.addEventListener('abort', stop, { once: true });
   });
-type LabFailure = {
-  error?: string;
-  outcome?: string;
-  code?: string;
-  reason?: string;
-  retryAtUTC?: string | null;
-};
 const LAB_UNCONFIRMED_NOTICE =
   'Experiments are paused until lab state can be read. A previous write may have completed; reconnect before deciding whether to repeat it.';
 class LabRequestError extends Error {
@@ -79,7 +79,11 @@ class LabRequestError extends Error {
     readonly payload: LabFailure,
     readonly status: number,
   ) {
-    super(payload.error || `Request failed (${status})`);
+    super(
+      typeof payload?.error === 'string' && payload.error
+        ? payload.error
+        : `Request failed (${status})`,
+    );
   }
 }
 type OwnerPageTask = { epoch: number };
@@ -91,7 +95,8 @@ async function api<T = Record<string, unknown>>(path: string, body?: unknown) {
     signal: AbortSignal.timeout(15000),
   });
   const data = (await response.json()) as T & LabFailure;
-  if (!response.ok && !data.outcome) throw new LabRequestError(data, response.status);
+  if (isLabHttpFailure(path, response.status, data))
+    throw new LabRequestError(data, response.status);
   return { data, colo: response.headers.get('X-Edge-Colo') ?? 'LOCAL' };
 }
 function App() {
@@ -162,22 +167,27 @@ function App() {
     stopController.current?.abort();
     setStateConfirmed(false);
     const payload = e instanceof LabRequestError ? e.payload : null;
+    const admission = e instanceof LabRequestError ? classifyLabFailure(e.status, payload) : null;
     const resetAt = Date.parse(payload?.retryAtUTC ?? '');
     const knownDailyLimit =
       payload?.code === 'lab-storage-unavailable' &&
       ['daily-read-limit', 'daily-write-limit'].includes(payload.reason ?? '');
     setError(
-      `${
-        payload?.code === 'lab-storage-unavailable'
-          ? 'Lab storage is unavailable.'
-          : (e as Error).message
-      } Current lab state cannot be confirmed. ${
-        snapshot ? 'Cached results are shown.' : 'No lab snapshot has loaded.'
-      }${
-        knownDailyLimit
-          ? ` A daily storage limit was reached.${Number.isFinite(resetAt) ? ` The server reports a quota reset at ${new Date(resetAt).toUTCString()}.` : ''}`
-          : ''
-      } Reconnect reads state only; it does not repeat a request, reset, or configuration change.`,
+      admission
+        ? labAdmissionFailureMessage(admission, Boolean(snapshot))
+        : `${
+            payload?.code === 'lab-storage-unavailable'
+              ? 'Lab storage is unavailable.'
+              : e instanceof Error
+                ? e.message
+                : 'The lab request did not produce a confirmed result.'
+          } Current lab state cannot be confirmed. ${
+            snapshot ? 'Cached results are shown.' : 'No lab snapshot has loaded.'
+          }${
+            knownDailyLimit
+              ? ` A daily storage limit was reached.${Number.isFinite(resetAt) ? ` The server reports a quota reset at ${new Date(resetAt).toUTCString()}.` : ''}`
+              : ''
+          } Reconnect reads state only; it does not repeat a request, reset, or configuration change.`,
     );
     setNotice(LAB_UNCONFIRMED_NOTICE);
   }
@@ -244,7 +254,7 @@ function App() {
       await refresh(task);
     } catch (e) {
       if (!currentTask(task)) return;
-      if ((e as Error).name === 'AbortError')
+      if (e instanceof Error && e.name === 'AbortError')
         setNotice((previous) =>
           previous === LAB_UNCONFIRMED_NOTICE
             ? previous
@@ -291,7 +301,7 @@ function App() {
       setNotice(
         'Sending 24 concurrent requests. Watch the shared token bucket enforce one budget.',
       );
-      await Promise.all(Array.from({ length: 24 }, () => send(task)));
+      await settleLabBatch(Array.from({ length: 24 }, () => send(task)));
       checkTask(task);
       setNotice('Burst complete. Rejected requests return HTTP 429 with a Retry-After header.');
     });
@@ -490,7 +500,7 @@ function App() {
             </a>
           </div>
           <div className="sidebar-footer">
-            <span className="tiny-dot" /> EdgeLab v3.8.0 <span>TS</span>
+            <span className="tiny-dot" /> EdgeLab v3.9.0 <span>TS</span>
           </div>
         </div>
       </aside>
@@ -761,7 +771,7 @@ function App() {
                           <ShieldCheck size={23} />
                         </span>
                         <b>Edge guard</b>
-                        <small>Cloudflare Worker</small>
+                        <small>Native admission</small>
                       </div>
                       <div className={`connector ${busy ? 'flowing' : ''}`}>
                         <span>COORDINATE</span>
@@ -772,7 +782,7 @@ function App() {
                           <Database size={23} />
                         </span>
                         <b>Durable Object</b>
-                        <small>State + SQLite</small>
+                        <small>Bucket + circuit</small>
                       </div>
                       <div className={`connector ${s?.circuit === 'open' ? 'broken' : ''}`}>
                         <span>{s?.circuit === 'open' ? 'BYPASSED' : 'PROTECT'}</span>
@@ -798,7 +808,7 @@ function App() {
                     </div>
                     <div className="flow-caption">
                       <span className="tiny-dot" />
-                      <span>Two Workers · isolated state · controlled catalog data</span>
+                      <span>Edge admission lanes · per-lab token bucket</span>
                       <span className="mono">{snapshot?.colo ?? '…'}</span>
                     </div>
                   </section>

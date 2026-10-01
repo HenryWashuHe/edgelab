@@ -1,15 +1,16 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.8.0
+  version: 3.9.0
   description: |
     Public monitoring read model and single-owner operator control plane.
     HTTP laboratory controls are documented in LAB.md; the observer upgrade and message schema are below.
-    This describes deployed 3.8.0; its API preserves the additive 3.7.0 view contract. Scoped verification is recorded in docs/evidence/VALIDATION.md,
-    the pinned historical status-cache archive in docs/evidence/releases/3.7.0-status-cache.json,
-    and current live HTTP provenance/monitoring/privacy checks in docs/evidence/releases/3.8.0-live-monitoring.json.
-    Implementation CI passes; production SQL/CPU/billing measurements and rendered browser
-    validation are not claimed. Historical 3.6.0 recording and recovery evidence remain distinct.
+    This describes release candidate 3.9.0, preserving the additive 3.7.0 view contract.
+    Native owner/observer admission runs before lab object lookup; refusal has no engine outcome or source event.
+    Scoped local verification is recorded in docs/evidence/VALIDATION.md and
+    docs/evidence/releases/3.9.0-lab-admission.json. Publication and fresh live verification are pending.
+    Exact production thresholds, SQL/CPU/billing and rendered browser validation are not claimed.
+    Historical 3.6.0 recording, 3.7.0 status-cache and 3.8.0 live evidence remain distinct.
     Bounded browser recording and the offline #replay view add no API endpoint or socket command.
     Recordings retain at most 256 entries and 196608 UTF-8 bytes in memory, with 1024 bytes reserved
     for finalization. Stop freezes the valid prefix while live observation may continue; Download
@@ -56,6 +57,10 @@ paths:
         allowlisted and bounded to 16384 encoded bytes. Tokens are committed, not estimated refill.
         Legacy metadata is revision zero with null committedAt in a snapshot only. New writes have
         positive revisions and an actual commit timestamp. Reset changes runId and advances revision.
+        After handshake validation, a separate location-scoped native observer admission lane runs
+        before any lab namespace lookup. A gateway admission refusal contains no frame or source event
+        and cannot renew the lease. Native policies are approximate; fixed Retry-After60 advice is not
+        an exact counter reset or assurance of acceptance. Owner routes use a separate lane.
         No commands, application heartbeat or polling timer exist. Every incoming application message
         closes the socket: 1008 for read-only violation, 1009 above the byte bound. Known idle expiry
         sends an expired terminal frame and closes 4001. Handled storage failures attempt a sanitized
@@ -118,18 +123,30 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
         '429':
-          description: Four observers already attached; existing clients are not displaced.
+          description: Native admission refused before lab lookup, or four observers already attached. Existing clients are not displaced. Only native refusal supplies fixed Retry-After60 advice.
+          headers:
+            Retry-After:
+              description: Present on native admission refusal only; fixed backoff advice, not an exact reset time.
+              schema: { type: string, const: '60' }
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Error'
+                  - $ref: '#/components/schemas/LabAdmissionFailure'
         '503':
-          description: Deadline unavailable, projection invalid or storage unavailable. Current state is unconfirmed.
+          description: Native admission unavailable before lab lookup, or deadline/projection/storage unavailable after dispatch. Current state is unconfirmed.
+          headers:
+            Retry-After:
+              description: Present on native admission and sanitized storage failures; deadline or projection errors may omit it. Fixed backoff advice.
+              schema: { type: string, const: '60' }
           content:
             application/json:
               schema:
                 anyOf:
                   - $ref: '#/components/schemas/Error'
                   - $ref: '#/components/schemas/LabStorageUnavailable'
+                  - $ref: '#/components/schemas/LabAdmissionFailure'
   /api/ready:
     get:
       summary: Read-only readiness of autonomous monitoring
@@ -583,6 +600,18 @@ components:
       minimum: 0
       maximum: 8640000000000000
       description: Safe renderable Unix milliseconds; never supplied by the browser.
+    LabAdmissionFailure:
+      type: object
+      additionalProperties: false
+      required: [error, code, retryAfterSeconds]
+      description: |
+        HTTP429 limited or HTTP503 unavailable; returned before any lab namespace lookup.
+        This request was not forwarded. Earlier or sibling requests may have committed.
+        No engine outcome, event, request ID or source state is fabricated. Retry advice is not a reset deadline.
+      properties:
+        error: { type: string, minLength: 1 }
+        code: { type: string, enum: [lab-admission-limited, lab-admission-unavailable] }
+        retryAfterSeconds: { type: integer, const: 60 }
     LabStorageUnavailable:
       type: object
       additionalProperties: false

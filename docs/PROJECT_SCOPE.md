@@ -1,4 +1,8 @@
-# EdgeLab v3.8: reliability operations and inspectable runtime evidence
+# EdgeLab v3.9: reliability operations and admission before object work
+
+Release candidate 3.9.0 addresses measured lab storage amplification. Deployment enables independent native owner and observer admission lanes; validated HTTP envelope or handshake refusals return before any `LABS` lookup. One aggregate key per namespace spans rotating UUIDs, with nominal owner 120/minute and observer 20/minute policies. These are permissive location-scoped controls, not identity, fairness or a global budget. The frontend retains its busy state until all dispatched burst requests settle and never replays writes after an uncertain response.
+
+Local formatting, 212 unit tests across 19 files, TypeScript, build and both deployment dry-runs pass. The [actual runtime proof](evidence/releases/3.9.0-lab-admission.json) passes 12 groups and 19 samples with stable complete tested build inputs, zero lab work on refusal, preserved prior source, independent observer admission, engine outcome separation and an actual scheduled probe while both lanes are exhausted. CI/publication and fresh live verification are pending. Browser rendering, production SQL/CPU/billing, exact production thresholds and native inference remain unverified.
 
 Goal: evolve the interactive resilience lab into a complete, self-hostable reliability application with an operating service, durable history, an operator workflow, and reproducible evidence.
 

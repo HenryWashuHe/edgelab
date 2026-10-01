@@ -13,19 +13,27 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 ## Verify an actual release
 
 1. Confirm the published commit passes GitHub CI.
-2. For release v3.8.0, `GET /api/health` must report version 3.8.0. Compare the deployed revision with the release evidence; these instructions alone do not prove publication.
+2. For release v3.9.0, `GET /api/health` must report version 3.9.0. Compare the deployed revision with the release evidence; these instructions alone do not prove publication.
 3. `GET /api/ops/status` must list the expected target names. Public output must not contain the operator token, target URLs, or investigation notes.
 4. Allow cron propagation ([Cloudflare documents up to 15 minutes](https://developers.cloudflare.com/workers/configuration/cron-triggers/)). Verify each service receives observations in two distinct scheduled minutes without clicking a “run” button. Check `latest.slot`, the actual probe start `latest.observedAt`, and completion `latest.at`, not just the page's snapshot timestamp. Trigger propagation is not permission to backfill: an invocation whose scheduled minute has passed is recorded as `skipped-late` and makes no observation.
 5. The private catalog probe must validate actual JSON through its service binding; the gateway probe must reach the configured public HTTPS health endpoint.
 6. Public policy/audit requests must return 401. `npm run operator -- audit` with the right deployment token must work.
-7. Run `BASE_URL=https://YOUR-WORKER.workers.dev npm run test:integration`. These create isolated lab sessions and do not modify monitor policies.
+7. The release verifier checks one fresh empty owner run and one observer handshake without experiment/config/reset POSTs. Acceptance is interpreted together with the reviewed enabled binding configuration. Exact production thresholds remain untested; use the bounded local `npm run test:lab-admission` for enforcement and namespace-work proofs.
 8. `GET /api/ready` must return HTTP 200 and `monitoring.status: "healthy"`. Starting, partial, and stalled states return 503. Inspect the persisted last-started, last-completed, and last-completed-slot fields and the latest 20 scheduler events in public status. Requests to the page or readiness endpoint cannot refresh them.
 9. Confirm `GET /api/ops/export` reports `schemaVersion: 4`, excludes private notes, distinguishes unverified migrated checks from verified observations, and adds each service's `budget` evidence. Its evaluation must be computed by a scheduled run; repeated public reads must not renew `computedAt`.
-10. Run the bounded benchmark if performance evidence is being updated. Save raw results and their environment; do not mix local and live observations.
+10. Run origin-policy benchmarks locally with the explicit development admission bypass. Save raw results and their environment. An outer admission refusal aborts the benchmark without a partial report or automatic replay; historical live measurements do not prove the current admission policy.
 
 The published 3.6.0 gateway deployment is `fe4a90e7-67f6-4a93-a62f-e799bd6d570f`, with the private origin unchanged. [CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36797743493) passes for source commit `3b0851c3b2c3e8b4ad5892be9bfb933215de7dc0`. The [live verification record](evidence/releases/3.6.0-live-monitoring.json) at 2026-10-01 00:46:21 UTC confirms the expected version, two new autonomous good minutes per service, healthy readiness, current budget evaluations and schemaVersion 4 privacy boundaries.
 
-## Current 3.8.0 release
+## 3.9.0 release candidate
+
+The [local admission archive](evidence/releases/3.9.0-lab-admission.json) passes 12 groups/19 samples against the actual gateway, native local limiter, lab SQLite and private origin. Local build/check passes 212 tests/19 files. Implementation CI, gateway publication and fresh live verification are pending. The private origin requires no change.
+
+Keep `LAB_ADMISSION_ENABLED: "true"` and both native bindings together. Owner and observer namespaces must differ; namespace/key reuse shares counters across Workers, so choose distinct namespace IDs for independent deployments. `wrangler.jsonc` declares nominal 120/60 and 20/60 policies. Missing/failing bindings with the flag enabled fail closed; malformed flag values also fail closed. Unset or exact `false` deliberately bypasses the guard for legacy fixtures/local experiments. A deliberate deployment rollback may disable the flag while restoring a prior configuration; do not treat bypass acceptance as proof of native invocation.
+
+Admission refusals affect only lab routes. Reconnect manually after the fixed 60-second advice, confirm authoritative state and review any write before submitting it again. Prior or sibling writes may have committed. Monitoring, authenticated operations, health and readiness bypass the lanes. Native limits are approximate and location-scoped; this rollout changes no account plan and makes no account-capacity or billing guarantee. See [ADR 011](adr/011-pre-object-lab-admission.md).
+
+## Historical 3.8.0 release
 
 Gateway `1defd512-1403-4e77-aee2-2d0caa9adefe` uses source commit `08fae9921f7d783b584c5757cf31ca9071e68d38`; the [full CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36803822857) passes 162 unit tests and runtime regressions. [Live HTTP verification](evidence/releases/3.8.0-live-monitoring.json) at October 1, 02:07:52 UTC confirms byte-identical deployed assets, two new autonomous good minutes per service, healthy readiness, current budgets and authentication/privacy boundaries.
 

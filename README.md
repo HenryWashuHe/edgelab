@@ -1,5 +1,7 @@
 # EdgeLab
 
+Release candidate **3.9.0** adds separate native owner/observer admission lanes before any lab Durable Object lookup. The [local runtime proof](docs/evidence/releases/3.9.0-lab-admission.json) passes 12 groups and 19 samples: limited or unavailable lanes perform no lab namespace, SQL, lease, alarm or origin work, while scheduled monitoring remains independent. The frontend waits for every dispatched burst request to settle and distinguishes an unforwarded admission refusal from a committed engine decision. Publication and fresh live verification are pending; rendered browser behavior and production resource cost remain unverified.
+
 [**Live operations dashboard**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev) · [**Explore controlled incident briefs**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#notes) · [CI](https://github.com/HenryWashuHe/edgelab/actions) · [Operator runbook](docs/OPERATIONS.md) · [API contract](docs/openapi.yaml)
 
 **A self-hostable reliability workspace on Cloudflare.** Monitor services continuously, investigate durable incidents, measure good-check objectives and coverage, and reproduce resilience failures in an isolated engineering lab.
@@ -54,7 +56,7 @@ curl 'http://localhost:8787/cdn-cgi/local/scheduled?cron=*+*+*+*+*'
 
 Local Wrangler does not automatically simulate the production cron. The included HTTPS monitor points at the public deployment; edit `MONITOR_TARGETS` for your own deployment. The private catalog monitor uses the local binding. Tests use isolated fixtures without depending on public services.
 
-The development command uses `wrangler dev --local` and forces AI generation off, so it starts without Cloudflare authentication or a remote AI proxy. Workers AI has no local model simulation; the offline brief evaluator uses explicit canned responses. [Local binding behavior](https://developers.cloudflare.com/workers/local-development/)
+The development command uses `wrangler dev --local`, forces AI generation off and explicitly disables the outer lab admission lanes for reproducible origin-policy experiments, so it starts without Cloudflare authentication or a remote AI proxy. Workers AI has no local model simulation; the offline brief evaluator uses explicit canned responses. [Local binding behavior](https://developers.cloudflare.com/workers/local-development/)
 
 Frontend edits require `npm run build` followed by refresh. Worker code reloads automatically. Do not run multiple dev servers against the same persistence directory; use `--persist-to /tmp/edgelab-isolated` for another checkout.
 
@@ -73,7 +75,8 @@ flowchart LR
   E[Public controlled explorer] --> F[Static assets / frozen examples]
   E --> V[Local browser hash verification]
   R[Offline lab replay] --> F
-  G --> L[ReliabilityLab / per-session SQLite DO]
+  G --> Q[Native owner / observer admission lanes]
+  Q --> L[ReliabilityLab / per-session SQLite DO]
   O[Live lab observer / up to four tabs] <-->|Read-only WebSocket| G
   L --> P
 ```
@@ -96,7 +99,7 @@ Deploy creates the private origin first, then the gateway and additive SQLite mi
 
 The cron is `* * * * *` in UTC. [Cloudflare documents](https://developers.cloudflare.com/workers/configuration/cron-triggers/) trigger changes taking up to 15 minutes to propagate. This is separate from a delayed invocation: EdgeLab accepts only the current scheduled minute and skips older ones. Verify `/api/ops/status` contains fresh observations in at least two distinct scheduled minutes and `/api/ready` returns 200. The runbook covers verification, stopping probes, target changes, troubleshooting, secret rotation, rollback, and retention.
 
-No paid feature is required by the code. Usage depends on targets, probes, public reads, and lab traffic. Limits are finite and account-wide; inspect [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) and [Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/). For restricted deployments, put Cloudflare Access in front of the gateway. The intentionally public lab is not a perimeter abuse control.
+Inference is disabled by default. Deployment declares native Workers RateLimit bindings; verify their availability in your account. Usage depends on targets, probes, public reads, and lab traffic. Limits are finite and account-wide; inspect [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) and [Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/). For restricted deployments, put Cloudflare Access in front of the gateway. The per-run origin bucket is an experiment. Separate location-scoped lab admission reduces object dispatches, but reserves no global or account allowance. See [the admission decision](docs/adr/011-pre-object-lab-admission.md).
 
 ## Verify and reproduce
 
@@ -120,12 +123,13 @@ npm run test:monitor-cost # whole-cron read/write measurements in isolated SQLit
 npm run test:status-cache # bounded public reuse, real SQLite faults and measured warm reads
 npm run test:status-evidence # exact projection from the pinned historical artifact
 npm run test:lab-storm    # bounded real lab storage/lease/origin work; no remote URL accepted
+npm run test:lab-admission # real native admission lanes before lab lookup; no remote URL accepted
 # With the local server running:
 npm run test:integration  # lab HTTP behavior and isolation
 BASE_URL=http://localhost:8787 npm run benchmark
 ```
 
-CI runs the verification scripts on every push and PR, then starts both Workers and runs HTTP integration tests. Monitor tests use real SQLite/workerd and controlled service failures. They also invoke the actual scheduled handler. Synthetic timelines test paired-window signal thresholds and sampling gates; the budget runtime suite verifies durable evidence and read-only aging. The benchmark supports `ROUNDS=1..10`, tests 1/12/24/48 concurrent requests against a fresh lab per trial, and writes results under [docs/evidence](docs/evidence).
+CI runs the verification scripts on every push and PR, then starts both Workers and runs HTTP integration tests. Monitor tests use real SQLite/workerd and controlled service failures. They also invoke the actual scheduled handler. Synthetic timelines test paired-window signal thresholds and sampling gates; the budget runtime suite verifies durable evidence and read-only aging. The origin-policy benchmark requires the local development admission bypass; it aborts without saving a partial report on an outer admission refusal. It supports `ROUNDS=1..10`, tests 1/12/24/48 concurrent requests against a fresh lab per trial, and writes results under [docs/evidence](docs/evidence).
 
 The [3.6.0 CI run](https://github.com/HenryWashuHe/edgelab/actions/runs/36797743493) passes, including 136 unit tests across 13 files, strict recording import, immutable hashing, both size limits, revision gaps and receipt-clock regression. Local keyboard and mobile replay checks make zero application API requests. The actual recording recipe disables AI, remote metadata refresh and telemetry; its [final-source recheck](docs/evidence/releases/3.6.0-recording-recheck.json) confirms package, producer and actual gateway versions agree. Live browser capture/download, browser file import and the new production UI remain unverified; [validation evidence](docs/evidence/VALIDATION.md) separates those limits from the passing unit, runtime and live HTTP checks.
 

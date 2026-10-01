@@ -31,11 +31,20 @@ export function Architecture() {
           </p>
           <hr />
           <div className="eyebrow">LABORATORY / THE REQUEST PATH</div>
-          <h2>Stateless at the edge. Consistent at the coordinator.</h2>
+          <h2>Admission at the edge. Coordination at the lab.</h2>
           <p>
-            The Worker validates the request and routes the lab's opaque session ID to one Durable
-            Object. That object owns admission, circuit state, the last successful catalog response,
-            and a bounded SQLite event log.
+            After checking the route, Origin and lab capability, the Worker checks native admission
+            before looking up a lab. Owner HTTP calls—state reads, requests, and controls—use a
+            120-per-60-second policy; observer upgrades use a separate 20-per-60-second policy.
+            These approximate policies are shared across labs at each Cloudflare location, without a
+            global cap or per-user allocation.
+          </p>
+          <p>
+            Admitted calls route the lab's opaque session ID to one Durable Object. That object owns
+            the per-lab token bucket for origin protection, circuit state, last successful catalog
+            response, and bounded SQLite event log. A gateway refusal does not create a lab decision
+            or renew its idle deadline. Observer connections stream committed state without calling
+            the origin.
           </p>
           <div className="architecture-strip">
             <span>
@@ -46,6 +55,7 @@ export function Architecture() {
             <span>
               <Cloud />
               Worker
+              <br />+ admission
             </span>
             <ArrowRight />
             <span>
@@ -67,14 +77,14 @@ export function Architecture() {
           </p>
           <hr />
           <div className="eyebrow">02 / WHY A DURABLE OBJECT?</div>
-          <h2>One budget, even under concurrent traffic.</h2>
+          <h2>One lab budget, even under concurrent traffic.</h2>
           <p>
-            A per-Worker in-memory bucket would split the budget across isolates. An eventually
-            consistent store can admit too many concurrent requests. A Durable Object coordinates
-            each lab's state; synchronous SQLite transactions persist each admission before the
-            handler awaits origin work.
+            A per-Worker in-memory origin bucket would split the budget across isolates. An
+            eventually consistent store can admit too many concurrent requests. A Durable Object
+            coordinates each lab's state; synchronous SQLite transactions persist each admission
+            before the handler awaits origin work.
           </p>
-          <pre>{`Client → validate session → Durable Object\n  1. Refill and reserve a token\n  2. Check circuit / reserve recovery probe\n  3. Persist admission synchronously\n  4. Call origin Worker with timeout\n  5. Record result + circuit transition atomically`}</pre>
+          <pre>{`Client → validate → native owner admission → Durable Object\n  1. Refill and reserve a lab token\n  2. Check circuit / reserve recovery probe\n  3. Persist the lab decision or permit synchronously\n  4. Call origin Worker with timeout\n  5. Record result + circuit transition atomically`}</pre>
           <hr />
           <div className="eyebrow">03 / THE SUBTLE PART</div>
           <h2>Recovery is a concurrency problem.</h2>
@@ -93,11 +103,11 @@ export function Architecture() {
           <div className="eyebrow">04 / NOTHING LIVES FOREVER</div>
           <h2>Expiry is part of correctness.</h2>
           <p>
-            Lab control calls and state reads renew the lab’s 24-hour idle deadline. Observer
-            connections and frames do not renew it. An alarm checks the latest deadline before
-            deleting storage. A completion arriving after deletion cannot recreate the old run.
-            Local runtime tests exercise actual alarms and eviction, including cached payload
-            persistence.
+            Lab control calls and state reads that reach the coordinator renew its 24-hour idle
+            deadline. Observer connections and frames do not renew it. An alarm checks the latest
+            deadline before deleting storage. A completion arriving after deletion cannot recreate
+            the old run. Local runtime tests exercise actual alarms and eviction, including cached
+            payload persistence.
           </p>
         </section>
         <aside className="doc-side">
@@ -118,8 +128,8 @@ export function Architecture() {
               </li>
               <li>A public deployment needs account-level abuse controls and quota monitoring.</li>
               <li>
-                An alarm clears lab state after 24 hours without a control or state request.
-                Observation does not renew that deadline.
+                An alarm clears lab state after 24 hours without a control or state request reaching
+                the coordinator. Observation does not renew that deadline.
               </li>
             </ul>
           </div>
@@ -159,8 +169,10 @@ export function Notes() {
             <li>
               <b>Run a burst.</b>
               <p>
-                Send 24 concurrent requests and show the shared token budget. Explain HTTP 429 and
-                why rejected traffic gets Retry-After.
+                Send 24 concurrent requests and show the lab's token budget for origin protection. A
+                recorded rate-limit decision is distinct from a gateway admission refusal, which
+                never enters the lab log. Retry-After advises when to try again; it does not
+                guarantee admission.
               </p>
             </li>
             <li>

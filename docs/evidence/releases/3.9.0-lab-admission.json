@@ -1,0 +1,1314 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-lab-admission-runtime-evidence",
+  "integration": "Actual production gateway and Lab import; local fixture instrumentation only",
+  "measuredAt": "2026-10-01T02:15:12.871Z",
+  "sourceProjectVersion": "3.9.0",
+  "observedGatewayVersion": "3.9.0",
+  "observedMonitorVersion": "3.9.0",
+  "environment": {
+    "node": "v25.4.0",
+    "esbuild": "0.28.1",
+    "miniflare": "5.20260926.0-alpha",
+    "workerd": "1.20260926.1",
+    "compatibilityDate": "2026-09-01",
+    "remoteCalls": 0,
+    "productionCalls": 0,
+    "nativeInferenceCalls": 0
+  },
+  "sourceSHA256": {
+    "package-lock.json": "ccacfc7bddee0c502ffeb3192f7afa4f35042cd87cee64d789325dbdf636600b",
+    "package.json": "82acb9b71416262ef9f89dbb7b5fef58f31c2880d32e54fdc67e955ea23a41fc",
+    "scripts/lab-admission.mjs": "6396d5f838717470c66c69890e8c9640b6166fa3e1f4551ec9fe803cf4f55a6e",
+    "tests/fixtures/lab-admission.ts": "d0f318900eadfb4d523a008df3339a6a2ef9e3c54ed9de6bc2876834b92e29f6",
+    "worker/budget-signals.ts": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15",
+    "worker/burn-rate.ts": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c",
+    "worker/engine.ts": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+    "worker/incident-brief-ai.ts": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b",
+    "worker/incident-brief-domain.ts": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1",
+    "worker/incident-briefs.ts": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d",
+    "worker/incident-evidence.ts": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2",
+    "worker/index.ts": "056d8efe58ee9707bd2cc5f70db0e1e3948dfeb008248c7bc3b8cd1c9623cea0",
+    "worker/lab-admission.ts": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc",
+    "worker/lab-observer.ts": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+    "worker/metadata-cleanup.ts": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee",
+    "worker/monitor-check-cache.ts": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1",
+    "worker/monitor-domain.ts": "15ed1d9218b5c0baeea4061f20077ded6350d02c6b3bb71b2906fc595f16a003",
+    "worker/monitor-forwarder.ts": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e",
+    "worker/monitor-probe.ts": "e06fa750a0a9888b74d32e03848fe966edbe67ae331c73d303d6c4046a87f034",
+    "worker/monitor-readiness.ts": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c",
+    "worker/monitor-version-retention.ts": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455",
+    "worker/monitor.ts": "fb5e271796ed2ef717e87dc6a70317a48e60516775b4f33f8e5581b0e260ef79",
+    "worker/origin-client.ts": "4db923944019dd24d3da2e19c1d54cac7247a2d5819db3016cde047374a91548",
+    "worker/origin.ts": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+    "worker/status-view-cache.ts": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158",
+    "wrangler.jsonc": "a9199a006d53cb1b4b33547c9ffcf79672891b37d10985442f89c763694cab30"
+  },
+  "provenance": {
+    "inputsCapturedBeforeBuildAt": "2026-10-01T02:15:12.864Z",
+    "inputGraphs": {
+      "gateway": [
+        "tests/fixtures/lab-admission.ts",
+        "worker/budget-signals.ts",
+        "worker/burn-rate.ts",
+        "worker/engine.ts",
+        "worker/incident-brief-ai.ts",
+        "worker/incident-brief-domain.ts",
+        "worker/incident-briefs.ts",
+        "worker/incident-evidence.ts",
+        "worker/index.ts",
+        "worker/lab-admission.ts",
+        "worker/lab-observer.ts",
+        "worker/metadata-cleanup.ts",
+        "worker/monitor-check-cache.ts",
+        "worker/monitor-domain.ts",
+        "worker/monitor-forwarder.ts",
+        "worker/monitor-probe.ts",
+        "worker/monitor-readiness.ts",
+        "worker/monitor-version-retention.ts",
+        "worker/monitor.ts",
+        "worker/origin-client.ts",
+        "worker/origin.ts",
+        "worker/status-view-cache.ts"
+      ],
+      "origin": ["worker/origin.ts"]
+    },
+    "additionalInputs": [
+      "scripts/lab-admission.mjs",
+      "package.json",
+      "package-lock.json",
+      "wrangler.jsonc"
+    ],
+    "metafileSHA256": {
+      "gateway": "693089e830ab848b2d82e4e34e1d1751629d6d93b3a1105b6baf81d8908b51e9",
+      "origin": "d4a498c76ea4fc62d69cc01c91bdc006bcd273c606914d73f777d589b817d9f1"
+    },
+    "boundary": "Complete project-local input hashes for both actual Worker builds, plus recipe/package/lock and intended deployment configuration. wrangler.jsonc is hashed but not applied to the smaller local limiter cohorts. Installed library binaries are described by versions and lockfile, not independently hashed. Native limiter internals and deployed/account state are outside Lab measurement."
+  },
+  "bundleSHA256": {
+    "gateway": "391e1a7a760a8d9ed315b4c98d7ba4ed761541be18f362a1d436e5faa280ed87",
+    "origin": "2c2f5c182b0b95b57f1c3818fa8f8c6acce2048c3aba7ae2a771b605a098e83c"
+  },
+  "workload": {
+    "maximumCapabilities": 16,
+    "maximumEnrolledLabs": 4,
+    "nativeProfiles": [
+      {
+        "ownerLimit": 3,
+        "observerLimit": 1,
+        "periodSeconds": 60
+      },
+      {
+        "ownerLimit": 8,
+        "observerLimit": 1,
+        "periodSeconds": 60
+      }
+    ],
+    "distinctLaneNamespaces": true,
+    "validationRequests": 10,
+    "refusedFreshOwnerCapabilities": 4,
+    "refusedExistingOwnerRequests": 4,
+    "refusedObserverHandshakes": 2
+  },
+  "assertions": [
+    "Existing route/origin/UUID/method/body/protocol validation consumes neither limiter calls nor LABS work",
+    "Native successful owner admission dispatches the real Lab and controlled origin, with source/response counter reconciliation",
+    "Native refusals on fresh capabilities and an existing run do zero LABS work and do not renew the known lease",
+    "Separate native observer lane upgrades once without lease renewal and refuses subsequent handshakes before LABS lookup",
+    "Both lanes fail closed and sanitize controlled missing, throwing and malformed bindings without LABS work",
+    "Malformed enabled configuration fails closed before invoking either binding or opening a Lab",
+    "Health/status/export/ready bypass both Lab lanes and retain actual monitor semantics even with malformed Lab configuration",
+    "All unauthenticated operator write routes return authorization failure without invoking a Lab limiter or Lab object",
+    "Actual scheduled handler probes the real origin and persists a fresh completed check while bypassing exhausted owner/observer Lab lanes",
+    "An actual engine 429 passes successful native admission and remains a stored decision with reconciled origin/event counters",
+    "Undefined and exact false preserve legacy dispatch; an enabled missing binding never silently bypasses",
+    "Health bypasses both Lab lanes and reports the unmodified source release version"
+  ],
+  "samples": [
+    {
+      "scenario": "pre-admission-validation",
+      "requests": 10,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 10,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "native-owner-success",
+      "requests": 3,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 3,
+          "namespaceIdFromName": 3,
+          "namespaceGet": 3,
+          "namespaceGetByName": 0,
+          "stubFetch": 3,
+          "stubCompleted": 3,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 1,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 24,
+            "statements": 24,
+            "failedStatements": 0,
+            "rowsRead": 21,
+            "rowsWritten": 14,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 7,
+            "kvPut": 3,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 3,
+            "alarmDelete": 0,
+            "transactionSync": 6,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 1,
+            "originCompleted": 1,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 3,
+          "observer": 0
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "native-owner-refusal",
+      "freshCapabilities": 4,
+      "existingRunRequests": 4,
+      "requests": 8,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 8,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 8,
+          "observer": 0
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      },
+      "knownSourceAndLeaseUnchanged": true
+    },
+    {
+      "scenario": "native-observer-success",
+      "requests": 1,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 1,
+          "namespaceIdFromName": 1,
+          "namespaceGet": 1,
+          "namespaceGetByName": 0,
+          "stubFetch": 1,
+          "stubCompleted": 1,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 2,
+            "statements": 2,
+            "failedStatements": 0,
+            "rowsRead": 2,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 1,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 1
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "native-observer-refusal",
+      "requests": 2,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 2,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 2
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "controlled-owner-missing",
+      "requests": 1,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 1,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "controlled-owner-throw",
+      "requests": 1,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 1,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 1,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "controlled-owner-malformed",
+      "requests": 1,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 1,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 1,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "controlled-observer-missing",
+      "requests": 1,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 1,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "controlled-observer-throw",
+      "requests": 1,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 1,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 1,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "controlled-observer-malformed",
+      "requests": 1,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 1,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 1,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "malformed-enabled-setting",
+      "requests": 1,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 1,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "non-lab-monitoring-routes",
+      "requests": 4,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 4,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      },
+      "measurementBoundary": "Lab only; actual MonitorStore SQL/storage is excluded",
+      "actualMonitorTargets": 1
+    },
+    {
+      "scenario": "unauthenticated-operator-write-exclusion",
+      "requests": 4,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 4,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "actual-scheduled-handler-exclusion",
+      "requests": 3,
+      "localScheduledEvents": 1,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 3,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 1,
+          "originCompleted": 1,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      },
+      "actualStoredObservations": 1,
+      "probeOutcome": "good",
+      "monitoringReadiness": "healthy",
+      "measurementBoundary": "Lab only; actual MonitorStore SQL/storage and monitor binding probe are separate"
+    },
+    {
+      "scenario": "engine-429-remains-persisted",
+      "requests": 4,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 4,
+          "namespaceIdFromName": 4,
+          "namespaceGet": 4,
+          "namespaceGetByName": 0,
+          "stubFetch": 4,
+          "stubCompleted": 4,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 1,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 32,
+            "statements": 32,
+            "failedStatements": 0,
+            "rowsRead": 29,
+            "rowsWritten": 18,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 9,
+            "kvPut": 4,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 4,
+            "alarmDelete": 0,
+            "transactionSync": 8,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 1,
+            "originCompleted": 1,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 4,
+          "observer": 0
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      },
+      "settledDecisions": 2,
+      "originDecisions": 1,
+      "limitedDecisions": 1,
+      "retainedEvents": 2
+    },
+    {
+      "scenario": "explicit-legacy-undefined",
+      "requests": 1,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 1,
+          "namespaceIdFromName": 1,
+          "namespaceGet": 1,
+          "namespaceGetByName": 0,
+          "stubFetch": 1,
+          "stubCompleted": 1,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 1,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 8,
+            "statements": 8,
+            "failedStatements": 0,
+            "rowsRead": 7,
+            "rowsWritten": 7,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 2,
+            "kvPut": 1,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 1,
+            "alarmDelete": 0,
+            "transactionSync": 1,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "explicit-legacy-false",
+      "requests": 1,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 1,
+          "namespaceIdFromName": 1,
+          "namespaceGet": 1,
+          "namespaceGetByName": 0,
+          "stubFetch": 1,
+          "stubCompleted": 1,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 1,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 8,
+            "statements": 8,
+            "failedStatements": 0,
+            "rowsRead": 7,
+            "rowsWritten": 7,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 2,
+            "kvPut": 1,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 1,
+            "alarmDelete": 0,
+            "transactionSync": 1,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    },
+    {
+      "scenario": "health-outside-lab-lanes",
+      "requests": 1,
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 1,
+          "namespaceIdFromName": 0,
+          "namespaceGet": 0,
+          "namespaceGetByName": 0,
+          "stubFetch": 0,
+          "stubCompleted": 0,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 0,
+        "lab": {
+          "sql": {
+            "attemptedStatements": 0,
+            "statements": 0,
+            "failedStatements": 0,
+            "rowsRead": 0,
+            "rowsWritten": 0,
+            "failedCursorCost": null
+          },
+          "operations": {
+            "kvGet": 0,
+            "kvPut": 0,
+            "kvDelete": 0,
+            "kvList": 0,
+            "storageGet": 0,
+            "storagePut": 0,
+            "storageDelete": 0,
+            "storageList": 0,
+            "storageDeleteAll": 0,
+            "alarmGet": 0,
+            "alarmSet": 0,
+            "alarmDelete": 0,
+            "transactionSync": 0,
+            "transactionSyncFailed": 0
+          },
+          "nativeInvocations": {
+            "originFetch": 0,
+            "originCompleted": 0,
+            "originFailed": 0,
+            "originInFlight": 0
+          },
+          "labFetchesInFlight": 0
+        },
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        },
+        "controlledFaultCalls": 0,
+        "monitorProbeInvocations": {
+          "originFetch": 0,
+          "originCompleted": 0,
+          "originFailed": 0,
+          "originInFlight": 0
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Native local RateLimit binding is Miniflare's installed SQLite-backed runtime implementation; production uses permissive eventually consistent per-location counters. Exact local thresholds do not prove exact production limits.",
+    "Zero-work rejection means zero delegated LABS namespace/stub/constructor/source-SQL/KV/alarm/origin work. Limiter internal SQLite overhead, gateway execution and rejected Worker requests are excluded, not free.",
+    "Constructor and aggregate source meters are isolated local worker-instance observations. Zero namespace/stub delegation independently establishes that denied fresh capabilities were not opened by this gateway.",
+    "No denied fresh capability is inspected: doing so would construct its Lab. Known-object source hashes/deadlines are compared only through separately metered diagnostic controls.",
+    "Both lanes have distinct fixture namespace IDs and the same static key within each binding; changing a capability never chooses a new bucket.",
+    "Monitoring routes and scheduled-handler probes use actual MonitorStore/origin code. Their SQL/storage work is outside Lab meters; separately reported monitor probe calls and stored observations prove work occurred.",
+    "The scheduled case invokes the unchanged handler through a narrow local event control with Date.now(), not a deployed Cron Trigger or a reconstructed outcome.",
+    "No account, billing, global budget, CPU, customer traffic, production entitlement, browser behavior or distributed overshoot claim is made."
+  ],
+  "sourceStableDuringRun": true,
+  "ephemeralRuntimesDisposed": true
+}

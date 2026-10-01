@@ -109,22 +109,32 @@ npm run deploy
 
 The deploy first creates the private `edgelab-origin` Worker, then the public `edgelab-reliability` gateway and its SQLite-backed Durable Object namespace. Wrangler prints your workers.dev URL. The repository includes the initial `new_sqlite_classes` migration and needs no manual database provisioning. If either Worker name already belongs to another project, update both config files and the ORIGIN service binding before deploying. A new Cloudflare account also needs a workers.dev subdomain; Wrangler or the Workers dashboard can register one.
 
-Cloudflare supports SQLite-backed Durable Objects on the Workers Free plan, subject to current account limits. Check [Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/) and [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) before sustained traffic. No paid service is required by the code.
+Cloudflare supports SQLite-backed Durable Objects on the Workers Free plan, subject to current account limits. Check [Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/) and [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) before sustained traffic. The gateway also declares native Workers RateLimit bindings; verify availability in the deployment account. Inference remains disabled by default.
 
-A public anonymous lab can be abused to create sessions and consume your account quota. The lab's adjustable bucket is an experiment, **not** a perimeter abuse control. For broad public access, add a separate admission boundary (such as Cloudflare Access for private demos, or session issuance with abuse controls). Idle cleanup limits retained session data but does not prevent users from creating new sessions. Do not put sensitive data in a lab. Knowing its UUID grants access; there are no user accounts.
+A public anonymous lab can create sessions and consume quota. Version 3.9.0 adds a coarse native admission guard before lab object lookup, with separate owner and observer lanes. The adjustable per-run bucket still protects origin work only. For private demos use Cloudflare Access; broad public access also needs capability issuance and an appropriate abuse policy. Idle cleanup limits retained session data but does not prevent users from creating new sessions. Do not put sensitive data in a lab. Knowing its UUID grants access; there are no user accounts.
+
+## Admission before object work
+
+Deployment sets `LAB_ADMISSION_ENABLED` to the exact string `true`, with independent `LAB_OWNER_LIMITER` (120/60 seconds) and `LAB_OBSERVER_LIMITER` (20/60 seconds) namespaces. The fixed aggregate key spans all UUIDs and owner routes. Cloudflare's [native counters are location-scoped and permissive](https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/); policies are approximate, allow shared-lane contention and do not reserve a global or daily account allowance. The normal local development command explicitly sets the flag to `false` for origin-policy reproduction. `npm run test:lab-admission` separately tests enabled native lanes in isolated local runtimes.
+
+A refused lane returns HTTP 429 with `code: "lab-admission-limited"`; an enabled missing, failing or malformed binding/configuration returns HTTP 503 with `code: "lab-admission-unavailable"`. The exact JSON keys are `error`, `code` and `retryAfterSeconds: 60`, with `Retry-After: 60` and `Cache-Control: no-store`. Sixty seconds is fixed backoff advice, not a reset deadline or assurance of later acceptance. These responses contain no engine `outcome`, request ID or state and create no lab event. Existing method, capability, Origin and body-size guards run first; configuration JSON/value validation still occurs inside the object after admission.
+
+A confirmed refusal means only that request was not forwarded. Earlier or sibling requests may already have committed. The owner UI stops automatic refresh, marks current state unconfirmed and offers a manual state reconnect without replaying a write. A burst stays busy until every already-dispatched request settles, including after one fails. Browser WebSocket upgrade failures remain opaque; they cannot identify a particular HTTP admission code. Health, assets, operations, readiness, exports and scheduled monitoring bypass these lanes. [ADR 011](adr/011-pre-object-lab-admission.md) records the boundary and tradeoffs.
 
 ## API
 
 HTTP lab controls require a UUID v4 `X-Lab-ID` header. Keep it out of public screenshots or URLs if you want your demo session private. Same-origin browser requests and non-browser clients with the capability are accepted. All API responses disable caching.
 
-| Endpoint       | Method      | Behavior                                                                |
-| -------------- | ----------- | ----------------------------------------------------------------------- |
-| `/api/health`  | GET         | Worker health and actual edge colo, or `LOCAL`                          |
-| `/api/state`   | GET         | State snapshot and latest 180 completed events                          |
-| `/api/request` | POST        | Run one protected request; returns 200, 429, 502, 503, or 504           |
-| `/api/config`  | POST        | Apply bounded configuration fields                                      |
-| `/api/reset`   | POST        | Clear lab history and restore defaults; in-flight old work returns 409  |
-| `/api/observe` | GET upgrade | Attach to an existing run; read-only committed frames, no lease renewal |
+| Endpoint       | Method      | Behavior                                                                  |
+| -------------- | ----------- | ------------------------------------------------------------------------- |
+| `/api/health`  | GET         | Worker health and actual edge colo, or `LOCAL`                            |
+| `/api/state`   | GET         | State snapshot and latest 180 completed events                            |
+| `/api/request` | POST        | Run one protected request; engine decisions or an outer admission refusal |
+| `/api/config`  | POST        | Apply bounded configuration fields                                        |
+| `/api/reset`   | POST        | Clear lab history and restore defaults; in-flight old work returns 409    |
+| `/api/observe` | GET upgrade | Attach to an existing run; read-only committed frames, no lease renewal   |
+
+All four owner controls and observer upgrades can return the admission 429/503 above before object lookup. A per-run engine 429 is a separate committed outcome.
 
 The observer handshake requires a same-origin `Origin`, `Upgrade: websocket`, no query parameters and exactly two offered subprotocols in order: `edgelab-observer-v1`, then `edgelab-cap.<UUID-v4>`. The server selects only the version protocol. The UUID still grants access to the HTTP controls; this interface is not a separate read-only authorization role. Frames omit cached payloads, request IDs, raw messages and the capability. Browser upgrade failures are opaque, so an unavailable connection cannot identify a quota failure or a fifth observer. Known expiry is shown only from a validated terminal frame or close code. The [API contract](openapi.yaml) records the upgrade and frame schemas.
 

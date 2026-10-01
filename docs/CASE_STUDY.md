@@ -133,6 +133,12 @@ The [3.8.0 lab workload record](evidence/releases/3.8.0-lab-storm.json) separate
 
 Gateway deployment `1defd512-1403-4e77-aee2-2d0caa9adefe` uses implementation commit `08fae9921f7d783b584c5757cf31ca9071e68d38`. The [full CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36803822857) passes 162 unit tests and runtime regressions. [Live HTTP verification](evidence/releases/3.8.0-live-monitoring.json) at October 1, 02:07:52 UTC confirms deployed asset identity, two new autonomous good minutes per service, readiness and privacy/provenance boundaries. Rendered browser behavior remains unverified.
 
+## Version 3.9.0: refuse traffic before lab storage
+
+The prior measured origin denials still performed SQLite and lease work. A new native admission layer runs before any lab namespace lookup, with independent owner/observer policies and aggregate keys spanning rotating UUIDs. The [local 12-group/19-sample proof](evidence/releases/3.9.0-lab-admission.json) records zero lab namespace, SQL, KV/alarm or origin work for refusals and preserves earlier durable state. The actual scheduled handler still probes and persists evidence with both lanes exhausted. Limiter overhead is outside the lab meter, and local results cannot establish production cost or an exact global budget.
+
+The frontend distinguishes an outer refusal from a persisted engine decision, retains uncertain source state and waits for all dispatched burst promises to settle before unlocking. It offers manual state confirmation without automatic write replay. Local checks pass 212 unit tests/19 files; implementation CI, deployment and fresh live verification are pending. [ADR 011](adr/011-pre-object-lab-admission.md) explains the consistency and fairness limits.
+
 ## Resume bullets supported by this evidence
 
 - Built a hibernating WebSocket observer on Cloudflare Durable Objects with committed revisions, bounded privacy projections and deadline fencing; 26 actual workerd proof groups cover original-socket eviction recovery, ordering, rollback and expiry, with unchanged SQL work for one or four viewers in a controlled workload.
@@ -141,3 +147,5 @@ Gateway deployment `1defd512-1403-4e77-aee2-2d0caa9adefe` uses implementation co
 - Reworked incident-history queries to preserve all active open incidents and the latest 100 resolved incidents; a controlled local SQLite fixture reduced examined rows from 48,660 to 421 while returning the same 320 incidents.
 - Implemented persisted, reference-aware retention queues in Cloudflare Durable Objects; a controlled two-target cron fixture reduced reads from 3,354 to 94 with grown policy/note history, preserving source evidence and public summary hashes across cleanup and rollback tests.
 - Shipped bounded public-view reuse on Cloudflare Durable Objects with explicit provenance and authoritative bypasses; local workerd tests measured zero SQL/KV/alarm operations across 100 concurrent and 100 sequential warm requests per reporting window, with live HTTP verification of deployed reuse.
+
+- Added native Cloudflare admission lanes before Durable Object lookup; controlled local runtime tests verified zero lab storage/namespace work on refusal, preserved earlier commits and independent scheduled monitoring, with explicit location-scoped consistency limits.

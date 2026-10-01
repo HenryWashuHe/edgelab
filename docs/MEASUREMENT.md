@@ -107,13 +107,13 @@ Run against a server you own:
 
 ```sh
 BASE_URL=http://localhost:8787 ROUNDS=3 npm run benchmark
-# Or your deployed URL, which writes benchmark-live.json:
-BASE_URL=https://YOUR-WORKER.workers.dev ROUNDS=3 npm run benchmark
+# The local development command explicitly disables outer admission.
+# Use npm run test:lab-admission separately for the enabled guard.
 ```
 
 The script creates a random, isolated lab per trial. It configures capacity 12, refill 1 token/second, a 250 ms controlled origin delay, and a 1,000 ms timeout. It launches bursts of 1, 12, 24, and 48 requests, three trials each by default. Each event is recorded at the real gateway and SQLite coordinator; the origin Worker uses a real service binding.
 
-Assertions verify all responses are expected, no request disappears from counters, and admissions stay below capacity plus the maximum possible refill across the measured wall time. The script records client p50/p95 including response body reading, observed origin calls, accepted/rejected counts, timestamp, Node version, endpoint, and methodology. Runtime tests separately cover the circuit, cache, concurrency, and reset invariants.
+An outer admission refusal aborts the run after dispatched requests settle and saves no partial success report; it does not replay writes or wait automatically. Historical deployed reports predate the 3.9.0 guard and cannot establish current native thresholds. Assertions verify all responses are genuine engine decisions, no request disappears from counters, and admissions stay below capacity plus the maximum possible refill across the measured wall time. The script records client p50/p95 including response body reading, observed origin calls, accepted/rejected counts, timestamp, Node version, endpoint, and methodology. Runtime tests separately cover the circuit, cache, concurrency, and reset invariants.
 
 The local results are in [benchmark-local.json](evidence/benchmark-local.json); deployed results, when collected, are in [benchmark-live.json](evidence/benchmark-live.json). Lower rejection latency is not faster origin performance. Do not average rejected requests into an origin-latency claim. These short bursts do not establish sustained throughput, internet-wide latency, or production capacity.
 
@@ -124,3 +124,9 @@ Unit tests exercise deterministic state transitions and parsing. Synthetic signa
 ## Database resource evidence
 
 The 3.3.1 shared projection reduces examined SQLite rows while preserving source-equivalent metrics. Read and write costs are separate: indexes improve reads but add writes. Controlled resource fixtures report actual consumed cursor counters, including trigger work, and distinguish initial bootstrap from repeated, advanced, repaired and evicted reads. Daily projections describe only the measured workload; they are not remaining account allowance or a global capacity guarantee. See the [resource decision](adr/005-bounded-monitoring-reads.md) and release evidence.
+
+## Pre-object admission measurements
+
+`npm run test:lab-admission` accepts no remote URL or workload arguments. Its [3.9.0 archive](evidence/releases/3.9.0-lab-admission.json) uses the actual gateway, native local RateLimit bindings, SQLite lab and private origin. Local profiles intentionally lower thresholds to exercise both lanes in bounded UTC-minute cohorts. Consumed lab cursor costs include index/trigger effects; namespace, KV and alarm method counts remain separate and are not physical billing counts. Monitor probes bypass the lanes and have separate origin/work attribution.
+
+Refusals show zero lab lookup/storage work in those controlled requests, not free gateway traffic or zero limiter overhead. Miniflare's implementation and Cloudflare's permissive location-local counters differ. Stable complete tested source/bundle hashes support reproduction, while the pinned Wrangler hash records intended configuration rather than the local profile. Production checks accept one empty owner read and one observer upgrade; interpreted with reviewed enabled configuration, they test deployment compatibility rather than exact refusal thresholds, fairness, global capacity or billing.

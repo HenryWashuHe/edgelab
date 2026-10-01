@@ -1,6 +1,6 @@
 {
   "name": "edgelab",
-  "version": "3.8.0",
+  "version": "3.9.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,7 +12,7 @@
     "deploy": "npm run build && wrangler deploy -c wrangler.origin.jsonc && wrangler deploy -c wrangler.jsonc",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "dev:workers": "wrangler dev --local -c wrangler.jsonc -c wrangler.origin.jsonc --port 8787 --var AI_BRIEFS_ENABLED:false",
+    "dev:workers": "wrangler dev --local -c wrangler.jsonc -c wrangler.origin.jsonc --port 8787 --var AI_BRIEFS_ENABLED:false --var LAB_ADMISSION_ENABLED:false",
     "test:lifecycle": "node scripts/lifecycle.mjs",
     "test:monitor": "node scripts/monitor-integration.mjs",
     "benchmark": "node scripts/benchmark.mjs",
@@ -33,7 +33,8 @@
     "test:lab-recording": "node scripts/lab-recording.mjs",
     "test:status-cache": "node scripts/status-cache.mjs",
     "test:lab-storm": "node scripts/lab-storm.mjs",
-    "test:status-evidence": "node scripts/status-evidence.mjs --check"
+    "test:status-evidence": "node scripts/status-evidence.mjs --check",
+    "test:lab-admission": "node scripts/lab-admission.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.48.0",

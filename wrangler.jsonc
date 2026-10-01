@@ -11,6 +11,18 @@
   },
   "services": [{ "binding": "ORIGIN", "service": "edgelab-origin" }],
   "ai": { "binding": "AI" },
+  "ratelimits": [
+    {
+      "name": "LAB_OWNER_LIMITER",
+      "namespace_id": "1581003001",
+      "simple": { "limit": 120, "period": 60 },
+    },
+    {
+      "name": "LAB_OBSERVER_LIMITER",
+      "namespace_id": "1581003002",
+      "simple": { "limit": 20, "period": 60 },
+    },
+  ],
   "durable_objects": {
     "bindings": [
       { "name": "LABS", "class_name": "ReliabilityLab" },
@@ -24,6 +36,7 @@
   "triggers": { "crons": ["* * * * *"] },
   "vars": {
     "AI_BRIEFS_ENABLED": "false",
+    "LAB_ADMISSION_ENABLED": "true",
     "MONITOR_TARGETS": "[{\"id\":\"catalog\",\"name\":\"Catalog service\",\"url\":\"https://origin.internal/catalog\",\"transport\":\"origin\",\"assertion\":\"catalog-json\"},{\"id\":\"gateway\",\"name\":\"Gateway API\",\"url\":\"https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/api/health\",\"transport\":\"https\",\"assertion\":\"ok-json\"}]",
   },
   "observability": { "enabled": true },

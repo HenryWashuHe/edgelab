@@ -16,6 +16,7 @@ import {
   type LabObserverTerminalFrame,
 } from './lab-observer';
 import { DurableObject } from 'cloudflare:workers';
+import { admitLabRequest, type LabAdmissionConfig } from './lab-admission';
 import {
   defaults,
   admit,
@@ -27,7 +28,7 @@ import {
   type LabEvent,
   type Decision,
 } from './engine';
-interface Env extends MonitorEnv {
+interface Env extends MonitorEnv, LabAdmissionConfig {
   LABS: DurableObjectNamespace<ReliabilityLab>;
   ASSETS: Fetcher;
   ORIGIN: Fetcher;
@@ -439,7 +440,7 @@ export default {
         ok: true,
         colo: colo(request),
         platform: 'Cloudflare Workers + Durable Objects',
-        version: '3.8.0',
+        version: '3.9.0',
         origin: 'service-binding',
       });
     if (url.pathname === '/api/ready') {
@@ -551,6 +552,8 @@ export default {
     if (url.pathname === '/api/observe') {
       const invalid = observerRequestFailure(request, url);
       if (invalid) return invalid;
+      const admission = await admitLabRequest(env, 'observer');
+      if (admission) return admission;
       const id = parseLabObserverProtocols(request.headers.get('Sec-WebSocket-Protocol'))!;
       const response = await forwardLab(
         env.LABS.get(env.LABS.idFromName(id)),
@@ -588,6 +591,8 @@ export default {
         return json({ error: 'Request exceeds 4 KB' }, 413);
       }
     }
+    const admission = await admitLabRequest(env, 'owner');
+    if (admission) return admission;
     const stub = env.LABS.get(env.LABS.idFromName(id));
     const response = await forwardLab(
       stub,

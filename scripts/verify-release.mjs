@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile, mkdir, writeFile, copyFile } from 'node:fs/promises';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
+import WebSocket from 'ws';
 const base = process.env.BASE_URL;
 if (!base?.startsWith('https://')) throw new Error('Set BASE_URL to your deployed HTTPS gateway');
 const token = (await readFile('.env.operator', 'utf8')).match(/^OPERATOR_TOKEN=(.+)$/m)?.[1];
@@ -15,7 +16,7 @@ const request = async (path, { method = 'GET', headers = {}, body } = {}) => {
 };
 const get = (path, headers = {}) => request(path, { headers });
 const assertStatusRead = (data) => {
-  assert.equal(data.version, '3.8.0');
+  assert.equal(data.version, '3.9.0');
   const read = data.read;
   assert(read && ['storage', 'memory'].includes(read.source));
   assert.deepEqual(Object.keys(read).sort(), [
@@ -35,7 +36,7 @@ const assertStatusRead = (data) => {
   assert(!JSON.stringify(data).includes('budgetSources'));
 };
 const health = await get('/api/health');
-assert.equal(health.data.version, '3.8.0');
+assert.equal(health.data.version, '3.9.0');
 const projectVersion = JSON.parse(await readFile('package.json', 'utf8')).version;
 assert.equal(health.data.version, projectVersion, 'Deployed/package version agreement');
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
@@ -191,6 +192,157 @@ const privateBriefRoutes = {
   checks: briefChecks,
 };
 console.log('PASS private brief auth, methods, origin, validation, and no-store boundaries');
+// One disposable empty run verifies both admission routes, conditional on the
+// reviewed deployed configuration enabling both native limiter bindings. HTTP
+// acceptance alone cannot distinguish that configuration from disabled bypass.
+// The capability stays in process memory and is never printed or archived.
+// No experiment/config/reset POST, application socket message or origin request is submitted.
+const capability = randomUUID();
+const ownerState = await get('/api/state', {
+  'X-Lab-ID': capability,
+  Origin: new URL(base).origin,
+});
+assert.equal(ownerState.response.status, 200, 'Live owner admission route');
+assert.equal(ownerState.data.state.total, 0);
+assert.equal(ownerState.data.state.originCalls, 0);
+assert.equal(ownerState.data.events.length, 0);
+assert(Object.values(ownerState.data.state.counts).every((count) => count === 0));
+const observerSnapshot = await new Promise((resolve, reject) => {
+  const socket = new WebSocket(
+    base.replace(/^https:/, 'wss:') + '/api/observe',
+    ['edgelab-observer-v1', `edgelab-cap.${capability}`],
+    {
+      headers: { Origin: new URL(base).origin },
+      handshakeTimeout: 8000,
+      maxPayload: 16384,
+      perMessageDeflate: false,
+    },
+  );
+  let settled = false;
+  let cleanupTimer;
+  const finish = (error, value) => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timer);
+    if (error) {
+      socket.terminate();
+      reject(error);
+    } else {
+      socket.close(1000, 'Release verification complete');
+      cleanupTimer = setTimeout(() => socket.terminate(), 1000);
+      cleanupTimer.unref();
+      resolve(value);
+    }
+  };
+  const timer = setTimeout(() => finish(new Error('Live observer admission timed out')), 10000);
+  socket.once('message', (bytes, isBinary) => {
+    try {
+      assert(isBinary === false, 'Observer snapshot is a text frame');
+      const frame = JSON.parse(bytes.toString('utf8'));
+      const exactKeys = (value, keys) =>
+        value !== null &&
+        typeof value === 'object' &&
+        !Array.isArray(value) &&
+        Object.keys(value).length === keys.length &&
+        Object.keys(value).every((key) => keys.includes(key));
+      // Match the public LabObserverDataFrame/LabObserverState/Config shapes.
+      // Boolean assertions avoid printing untrusted keys or source identifiers.
+      assert(
+        exactKeys(frame, [
+          'schemaVersion',
+          'kind',
+          'runId',
+          'revision',
+          'committedAt',
+          'now',
+          'expiresAt',
+          'state',
+          'events',
+        ]),
+        'Exact public observer snapshot shape',
+      );
+      assert(
+        exactKeys(frame.state, [
+          'config',
+          'tokens',
+          'circuit',
+          'failures',
+          'total',
+          'originCalls',
+          'counts',
+        ]),
+        'Exact public observer state shape',
+      );
+      const configKeys = [
+        'capacity',
+        'refillPerSecond',
+        'failureThreshold',
+        'cooldownMs',
+        'originLatencyMs',
+        'originTimeoutMs',
+        'staleFallback',
+        'originMode',
+      ];
+      assert(exactKeys(frame.state.config, configKeys), 'Exact public observer config shape');
+      assert(
+        configKeys.every((key) => frame.state.config[key] === ownerState.data.state.config[key]),
+        'Observer retains owner configuration',
+      );
+      assert(
+        exactKeys(frame.state.counts, ['origin', 'stale', 'limited', 'blocked', 'error']),
+        'Exact public observer counts shape',
+      );
+      assert.equal(socket.protocol, 'edgelab-observer-v1');
+      assert.equal(frame.schemaVersion, 1);
+      assert.equal(frame.kind, 'snapshot');
+      assert(frame.runId === ownerState.data.state.runId, 'Owner and observer share the run');
+      assert(
+        frame.revision === ownerState.data.state.revision &&
+          frame.committedAt === ownerState.data.state.committedAt,
+        'Observer retains owner commit metadata',
+      );
+      assert.equal(frame.expiresAt, ownerState.data.expiresAt, 'Observer did not renew the lease');
+      assert.equal(frame.state.total, 0);
+      assert.equal(frame.state.originCalls, 0);
+      assert(Array.isArray(frame.events), 'Observer events are an array');
+      assert.equal(frame.events.length, 0);
+      assert(Object.values(frame.state.counts).every((count) => count === 0));
+      const serialized = JSON.stringify(frame);
+      assert(!serialized.includes(capability), 'Capability excluded from observer frame');
+      for (const key of ['cachedPayload', 'requestId', 'payload', 'authorization'])
+        assert(!serialized.includes(`"${key}"`), 'Private fields excluded from observer');
+      finish(null, {
+        schemaVersion: 1,
+        kind: 'snapshot',
+        textFrame: true,
+        publicShapeValidated: true,
+        emptyRun: true,
+        unchangedLease: true,
+      });
+    } catch {
+      finish(new Error('Live observer admission or empty-run verification failed'));
+    }
+  });
+  // Keep a safe listener through close/terminate, including errors after settlement.
+  socket.on('error', () => finish(new Error('Live observer admission failed')));
+  socket.once('close', () => {
+    if (cleanupTimer) clearTimeout(cleanupTimer);
+    finish(new Error('Live observer closed before its snapshot'));
+  });
+});
+const labAdmissionChecks = {
+  verifiedAt: new Date().toISOString(),
+  strategy:
+    'One fresh owner state GET and one same-origin WebSocket handshake; no experiment, config or reset POST and no application socket messages. Capability and run identifiers omitted.',
+  configurationAssumption:
+    'The reviewed deployed configuration enables native admission and both limiter bindings. Accepted route requests alone do not independently distinguish enabled admission from disabled bypass.',
+  owner: { status: 200, emptyRun: true },
+  observer: { status: 101, protocol: 'edgelab-observer-v1', ...observerSnapshot },
+  experimentRequestsSubmitted: 0,
+  limits:
+    'One accepted request per lane, conditional on the reviewed enabled native-binding configuration; exact rate enforcement, production Lab/limiter storage cost, billing and global capacity are not measured.',
+};
+console.log('PASS live owner and observer admission on one empty run; no experiment submitted');
 const started = Date.now();
 let previous = '';
 while (Date.now() - started < 16 * 60_000) {
@@ -263,6 +415,7 @@ while (Date.now() - started < 16 * 60_000) {
           verification:
             'Two distinct new good scheduled minutes for each service after verification began, each actual observation start matching its UTC minute. New persisted version1 budget evaluations use finished-minute windows and reconcile observations, maintenance, and unknown counts. No manual tick endpoint was invoked. Readiness healthy, schema4 export, operator audit authentication, and public privacy boundaries checked. All three private brief routes verified for absent/invalid bearer, methods, origin rejection, validation, and no-store headers using only requests rejected before brief transactions or inference; native AI capability and output are not verified by these checks.',
           privateBriefRoutes,
+          labAdmissionChecks,
           statusReuseChecks,
           deployedAssets,
           health: health.data,
