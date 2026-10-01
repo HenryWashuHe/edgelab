@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -31,8 +31,18 @@ const code = (expected) => (error) => {
   assert.equal(error.code, expected);
   return true;
 };
+const duplicate = (json, key, earlier, escaped = false) => {
+  const finalKey = escaped
+    ? '\\u' + key.charCodeAt(0).toString(16).padStart(4, '0') + key.slice(1)
+    : key;
+  return json.replace(
+    JSON.stringify(key) + ':',
+    JSON.stringify(key) + ':' + JSON.stringify(earlier) + ',"' + finalKey + '":',
+  );
+};
 
 test('strict round-trip retains only discrete samples and the fixed source pin', async () => {
+  assert.deepEqual(start(JSON.stringify(sample(), null, 2), '3.13.0'), start(sample(), '3.13.0'));
   const { artifact, json } = await exportSamples(record());
   assert.deepEqual(await importSamples(json), artifact);
   assert.deepEqual(artifact.source, COUNTER_SOURCE);
@@ -53,6 +63,60 @@ test('canonical hashing tolerates JSON key order but detects changed state', asy
   const changed = structuredClone(artifact);
   changed.samples[1].state.value = 2;
   await assert.rejects(importSamples(JSON.stringify(changed)), code('record-integrity'));
+});
+
+test('known root and nested duplicate keys cannot survive strict artifact import', async () => {
+  const { artifact, json } = await exportSamples(record());
+  for (const [key, earlier] of [
+    ['schemaVersion', 1],
+    ['contentHash', artifact.contentHash],
+    ['commit', COUNTER_SOURCE.commit],
+    ['observedAt', artifact.samples[0].observedAt],
+    ['value', 0],
+    ['reason', 'stopped'],
+  ]) {
+    const text = duplicate(json, key, earlier);
+    assert.deepEqual(JSON.parse(text), artifact);
+    await assert.rejects(importSamples(text), code('invalid-record'));
+  }
+});
+
+test('escaped aliases cannot discard private earlier values behind valid fields and hash', async () => {
+  const { artifact, json } = await exportSamples(record());
+  const privateValue = { syntheticPrivate: { authorization: 'not-for-output' } };
+  for (const key of ['samples', 'source', 'state', 'value', 'contentHash']) {
+    const text = duplicate(json, key, privateValue, true);
+    assert.deepEqual(JSON.parse(text), artifact);
+    await assert.rejects(importSamples(text), (error) => {
+      code('invalid-record')(error);
+      assert.ok(!error.message.includes('not-for-output'));
+      return true;
+    });
+  }
+});
+
+test('pretty, reordered and frozen runtime artifacts preserve their existing hashes and bytes', async () => {
+  for (const [file, values] of [
+    ['before-loss.json', [0, 0, 0]],
+    ['after-loss.json', [0, 1, 1]],
+  ]) {
+    const text = await readFile(
+      new URL('../../docs/evidence/counter-portability/' + file, import.meta.url),
+      'utf8',
+    );
+    const artifact = await importSamples(text);
+    assert.deepEqual(
+      artifact.samples.map((item) => item.state.value),
+      values,
+    );
+    const reordered = Object.fromEntries(Object.entries(artifact).reverse());
+    assert.deepEqual(await importSamples(JSON.stringify(reordered, null, 2)), artifact);
+    const { contentHash, ...body } = artifact;
+    const exported = await exportSamples(body);
+    assert.equal(exported.artifact.contentHash, contentHash);
+    assert.equal(exported.json, text.trim());
+    assert.ok(Object.isFrozen(artifact.samples[0].state));
+  }
 });
 
 test('extra or private fields are rejected at every nested schema boundary', async () => {
@@ -162,6 +226,28 @@ test('invalid and oversized append closes the unchanged valid prefix', () => {
     assert.deepEqual(closed.end, { reason: 'invalid-sample', at: null });
     assert.equal(captured.end, null);
     assert.ok(Object.isFrozen(closed.samples[0].state));
+  }
+});
+
+test('duplicate raw samples safely close the unchanged valid prefix', async () => {
+  const captured = start(sample(), '3.13.0');
+  const json = JSON.stringify(sample(1, 2000));
+  for (const [key, earlier, escaped] of [
+    ['receivedAt', 2002, false],
+    ['state', { syntheticPrivate: 'not-for-output' }, true],
+    ['value', { syntheticPrivate: 'not-for-output' }, true],
+  ]) {
+    const text = duplicate(json, key, earlier, escaped);
+    assert.deepEqual(JSON.parse(text), sample(1, 2000));
+    assert.throws(() => start(text, '3.13.0'), code('invalid-sample'));
+    const closed = append(captured, text);
+    assert.deepEqual(closed.samples, captured.samples);
+    assert.deepEqual(closed.end, { reason: 'invalid-sample', at: null });
+    assert.equal(captured.end, null);
+    assert.ok(Object.isFrozen(closed.samples[0].state));
+    const exported = await exportSamples(closed);
+    assert.ok(!exported.json.includes('not-for-output'));
+    assert.deepEqual(await importSamples(exported.json), exported.artifact);
   }
 });
 

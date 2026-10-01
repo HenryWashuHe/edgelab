@@ -1,5 +1,11 @@
 # Verification record
 
+## EdgeLab 3.12.1: local evidence JSON validation
+
+Both codecs reject duplicate decoded object names before parsing can discard earlier values, including equivalent escaped spellings. Raw observer messages reach the strict recorder before display normalization. Existing schema/hash rules, prefix closure and historical archive hashes remain unchanged. The shared browser-safe iterative scanner bounds input to 192 KiB and 64 containers; codec limits remain narrower where applicable. [ADR 014](../adr/014-unique-evidence-json.md)
+
+Local check passes 295 unit tests across 24 files, 18 counter codec Node tests, eight asset-verifier Node tests, formatting, TypeScript, build and both deployment dry-runs. [Frozen patch evidence](releases/3.12.1-evidence-json/README.md) contains a fresh actual workerd/SQLite/network 25-frame Lab capture, all 29 graph/foundation source pins stable through capture, the two counter cohorts with 11 source pins stable through disposal, and the exact 16-file client build. Rendered observer/import interaction remains unverified. Complete CI, deployment and live verification are pending.
+
 ## EdgeLab 3.12.0
 
 A shared bounded JSON lifetime owns upstream fetch, consumption, decoding and parsing. It retains at most 16,384 body bytes, cooperatively yields through immediately resolved reads, requests cancellation without awaiting cleanup, releases readers and discards late responses before consumption. Monitoring requires HTTP 200; lab origin calls retain 2xx acceptance. Malformed and oversized lab JSON now classify as invalid. Known HTTP failures no longer become timeouts when cleanup hangs. Deliberate guided-demo Stop uses a distinct marker, waits for dispatched work, marks the cached view unconfirmed and makes one guarded state GET before unlocking. Generic failures and abandoned epochs make no automatic follow-up or POST replay.

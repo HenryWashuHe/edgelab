@@ -226,6 +226,7 @@ try {
     'scripts/counter-portability.mjs',
     'examples/counter-evidence/codec.mjs',
     'examples/counter-evidence/inspect.mjs',
+    'worker/unique-json.mjs',
     'package.json',
     'package-lock.json',
   ])

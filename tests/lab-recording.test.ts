@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { defaults } from '../worker/engine';
 import type { LabObserverDataFrame, LabObserverEvent } from '../worker/lab-observer';
+import golden from '../src/data/lab-recording-example.json';
+import goldenRaw from '../src/data/lab-recording-example.json?raw';
 import {
   LAB_RECORDING_FINALIZATION_HEADROOM,
   MAX_LAB_RECORDING_BYTES,
@@ -200,6 +202,52 @@ describe('bounded observer recording', () => {
     expect(JSON.stringify(invalid)).not.toContain('fixture-secret-');
   });
 
+  it('rejects duplicate raw snapshots, including escaped aliases, without exposing discarded bytes', () => {
+    const original = frame();
+    const json = JSON.stringify(original);
+    for (const duplicate of [
+      '{"schemaVersion":2,' + json.slice(1),
+      '{"\\u0073chemaVersion":2,' + json.slice(1),
+      json.replace('"tokens":12', '"tokens":"fixture-secret-discarded","tokens":12'),
+      json.replace('"tokens":12', '"tokens":"fixture-secret-discarded","\\u0074okens":12'),
+    ]) {
+      // Ordinary JSON parsing would erase the conflicting evidence entirely.
+      expect(JSON.parse(duplicate)).toEqual(original);
+      try {
+        beginLabRecording(duplicate, now + 5, '3.6.0');
+        expect.fail('Duplicate frame names must reject');
+      } catch (error) {
+        expect(error).toBeInstanceOf(LabRecordingError);
+        expect(error).toMatchObject({ code: 'invalid-frame' });
+        expect((error as Error).message).not.toContain('fixture-secret-');
+      }
+    }
+  });
+
+  it('stops at a duplicate raw update while preserving the valid prefix and safe end reason', async () => {
+    const original = frame(2, 'update');
+    const json = JSON.stringify(original);
+    for (const duplicate of [
+      '{"revision":999,' + json.slice(1),
+      '{"\\u0072evision":999,' + json.slice(1),
+      '{"state":{"cachedPayload":"fixture-secret-discarded"},' + json.slice(1),
+      json.replace('"tokens":12', '"\\u0074okens":"fixture-secret-discarded","tokens":12'),
+    ]) {
+      expect(JSON.parse(duplicate)).toEqual(original);
+      const prefix = start();
+      const stopped = appendLabRecording(prefix, duplicate, now + 10);
+      expect(stopped.end).toEqual({ reason: 'invalid-frame', at: now + 10 });
+      expect(stopped.entries).toEqual(prefix.entries);
+      expect(stopped.lastReceivedAt).toBe(prefix.lastReceivedAt);
+      expect(prefix.end).toBeNull();
+      expect(Object.isFrozen(stopped.entries[0].frame)).toBe(true);
+      expect(appendLabRecording(stopped, original, now + 20)).toBe(stopped);
+      const exported = await exportLabRecording(stopped);
+      expect(exported.json).not.toContain('fixture-secret-');
+      expect((await importLabRecording(exported.json)).entries).toEqual(prefix.entries);
+    }
+  });
+
   it('freezes exactly256 compact entries without evicting its actual initial snapshot', async () => {
     let recording = start();
     for (let revision = 2; revision <= MAX_LAB_RECORDING_ENTRIES; revision++)
@@ -306,6 +354,72 @@ describe('bounded observer recording', () => {
     const reordered = Object.fromEntries(Object.entries(JSON.parse(json)).reverse());
     expect(await importLabRecording(JSON.stringify(reordered, null, 2))).toEqual(artifact);
     await expect(exportLabRecording(start())).rejects.toMatchObject({ code: 'recording-open' });
+  });
+
+  it('rejects duplicate archive names at every evidence boundary despite the original content hash', async () => {
+    const initial = frame();
+    initial.events = [event(1)];
+    const { json, artifact } = await exportLabRecording(
+      finalizeLabRecording(beginLabRecording(initial, now + 5, '3.6.0'), 'stopped', now + 10),
+    );
+    for (const duplicate of [
+      '{"schemaVersion":2,' + json.slice(1),
+      '{"\\u0073chemaVersion":2,' + json.slice(1),
+      '{"entries":[{"capability":"fixture-secret-discarded"}],' + json.slice(1),
+      json.replace(
+        `"receivedAt":${now + 5}`,
+        `"receivedAt":"fixture-secret-discarded","receivedAt":${now + 5}`,
+      ),
+      json.replace(
+        `"committedAt":${now - 1000}`,
+        `"committedAt":"fixture-secret-discarded","committedAt":${now - 1000}`,
+      ),
+      json.replace('"config":{', '"config":{"headers":"fixture-secret-discarded"},"config":{'),
+      json.replace('"tokens":12', '"tokens":"fixture-secret-discarded","tokens":12'),
+      json.replace('"tokens":12', '"tokens":"fixture-secret-discarded","\\u0074okens":12'),
+      json.replace('"origin":0', '"\\u006frigin":"fixture-secret-discarded","origin":0'),
+      json.replace('"id":1', '"id":"fixture-secret-discarded","id":1'),
+      json.replace('"reason":"stopped"', '"reason":"fixture-secret-discarded","reason":"stopped"'),
+    ]) {
+      const normalized = JSON.parse(duplicate);
+      expect(normalized).toEqual(artifact);
+      expect(normalized.contentHash).toBe(artifact.contentHash);
+      try {
+        await importLabRecording(duplicate);
+        expect.fail('Duplicate archive names must reject before hashing');
+      } catch (error) {
+        expect(error).toBeInstanceOf(LabRecordingError);
+        expect(error).toMatchObject({ code: 'invalid-recording' });
+        expect((error as Error).message).not.toContain('fixture-secret-');
+      }
+    }
+  });
+
+  it('keeps the pinned golden archive and hash unchanged across pretty and reordered imports', async () => {
+    const reverseKeys = (value: unknown): unknown => {
+      if (Array.isArray(value)) return value.map(reverseKeys);
+      if (value !== null && typeof value === 'object')
+        return Object.fromEntries(
+          Object.entries(value)
+            .reverse()
+            .map(([key, child]) => [key, reverseKeys(child)]),
+        );
+      return value;
+    };
+    const expectedHash = 'ee884cdcefaedcd23c22eed275ec5088852beec2b6dd8ed323381d2cc908a082';
+    for (const json of [
+      goldenRaw,
+      JSON.stringify(golden),
+      JSON.stringify(golden, null, 2),
+      JSON.stringify(reverseKeys(golden), null, 2),
+    ]) {
+      const imported = await importLabRecording(json);
+      expect(imported).toEqual(golden);
+      expect(imported.contentHash).toBe(expectedHash);
+      const { contentHash: _contentHash, ...recording } = imported;
+      expect((await exportLabRecording(recording)).artifact.contentHash).toBe(expectedHash);
+      expect(imported.entries).toHaveLength(25);
+    }
   });
 
   it('rejects unsupported imported sequence structure before hashing', async () => {

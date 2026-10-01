@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-local-recording-source-manifest",
+  "recordedAt": "2026-10-01T17:19:21.275Z",
+  "recipe": "node scripts/lab-recording.mjs",
+  "sourceProjectVersion": "3.12.1",
+  "observedGatewayVersion": "3.12.1",
+  "recordingProducerVersion": "3.12.1",
+  "recording": {
+    "path": "output/lab-recording-example.json",
+    "bytes": 14249,
+    "entries": 25,
+    "contentHash": "b2d364bc30557cbee1806842e2265e67bea41a272052c37107c0e3db596db57e",
+    "fileSHA256": "6549d446fc24865dd407b77e7e3246238359885e259923538836a6d37fe41d73",
+    "end": {
+      "reason": "stopped",
+      "at": 1790875161258
+    },
+    "limits": {
+      "entries": 256,
+      "bytes": 196608,
+      "finalizationHeadroom": 1024
+    }
+  },
+  "runtime": {
+    "node": "v25.4.0",
+    "miniflare": "5.20260926.0-alpha",
+    "workerd": "1.20260926.1",
+    "compatibilityDate": "2026-09-01",
+    "origin": "Unchanged worker/origin.ts through an internal service binding",
+    "transport": "One real ws network peer against Miniflare.ready",
+    "storage": "Ephemeral actual workerd SQLite Durable Object",
+    "nativeInferenceCalls": 0,
+    "productionRequests": 0,
+    "accountCalls": 0,
+    "aiEnabled": false,
+    "remoteRequestCfRefresh": false,
+    "miniflareTelemetry": false
+  },
+  "sourceSHA256": {
+    "package-lock.json": "3db290a85836ce248f98fa9146a71195b40ac9ff7dcd37704d028e1e194ec349",
+    "package.json": "ff974ec3c069282aead7d717b921f29f97c1bbca57cbdf912c36d251e65498e6",
+    "scripts/lab-recording.mjs": "7b6eee427bd86d1565f370b3cb136242da9ccbc5834c2e435aabefc0740e7e5e",
+    "src/lab-recording.ts": "48eb16bb97214fc42041f1196fcf7a6ab7c227b3da1a6db71f70973b4617f715",
+    "tests/fixtures/lab-observer.ts": "18754e0de3f4923e2ba392b855514a4da7204132cca54d6fe99c6328f5793d7d",
+    "tsconfig.json": "9affb71fa759689786bd82d7dbe343c7fbed45e403dbc6fbd658c578d1bdface",
+    "worker/bounded-json.ts": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1",
+    "worker/budget-signals.ts": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15",
+    "worker/burn-rate.ts": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c",
+    "worker/engine.ts": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+    "worker/incident-brief-ai.ts": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b",
+    "worker/incident-brief-domain.ts": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1",
+    "worker/incident-briefs.ts": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d",
+    "worker/incident-evidence.ts": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2",
+    "worker/index.ts": "097f00487c2fe616e396dede4adfad5788e030d49fcf070160ebc52dfa347d4b",
+    "worker/lab-admission.ts": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc",
+    "worker/lab-observer.ts": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+    "worker/metadata-cleanup.ts": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee",
+    "worker/monitor-check-cache.ts": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1",
+    "worker/monitor-domain.ts": "15ed1d9218b5c0baeea4061f20077ded6350d02c6b3bb71b2906fc595f16a003",
+    "worker/monitor-forwarder.ts": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e",
+    "worker/monitor-probe.ts": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752",
+    "worker/monitor-readiness.ts": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c",
+    "worker/monitor-version-retention.ts": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455",
+    "worker/monitor.ts": "c192daf744b379802843801e8c08ffdad18e7ba1b84e7470ae9cc15e57fabc14",
+    "worker/origin-client.ts": "1c92a87dc002fa309e032f2b3ebd569c58fa012929db7d9d9be596d2a9e18e59",
+    "worker/origin.ts": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+    "worker/status-view-cache.ts": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158",
+    "worker/unique-json.mjs": "e3fbbc48550a7e035f2caebd5bd37cf544d6535b477dd63b54ec7ff2c7763c6a"
+  },
+  "buildInputs": {
+    "gateway": [
+      "tests/fixtures/lab-observer.ts",
+      "worker/bounded-json.ts",
+      "worker/budget-signals.ts",
+      "worker/burn-rate.ts",
+      "worker/engine.ts",
+      "worker/incident-brief-ai.ts",
+      "worker/incident-brief-domain.ts",
+      "worker/incident-briefs.ts",
+      "worker/incident-evidence.ts",
+      "worker/index.ts",
+      "worker/lab-admission.ts",
+      "worker/lab-observer.ts",
+      "worker/metadata-cleanup.ts",
+      "worker/monitor-check-cache.ts",
+      "worker/monitor-domain.ts",
+      "worker/monitor-forwarder.ts",
+      "worker/monitor-probe.ts",
+      "worker/monitor-readiness.ts",
+      "worker/monitor-version-retention.ts",
+      "worker/monitor.ts",
+      "worker/origin-client.ts",
+      "worker/origin.ts",
+      "worker/status-view-cache.ts"
+    ],
+    "origin": [
+      "worker/origin.ts"
+    ],
+    "codec": [
+      "src/lab-recording.ts",
+      "worker/engine.ts",
+      "worker/lab-observer.ts",
+      "worker/unique-json.mjs"
+    ]
+  },
+  "bundleSHA256": {
+    "gateway": "52120e3984ffe6976b88c9e2a700194d478c15641904356c02a6914778daedeb",
+    "origin": "2c2f5c182b0b95b57f1c3818fa8f8c6acce2048c3aba7ae2a771b605a098e83c",
+    "recording": "521713036374f6651ca779618cc46aeb28e2db83369fcf1516bd297a80e8461b",
+    "protocol": "861fa02d4d71b0dcd30538014398af6db6a4cb949ee5712e4c45e56e4b864376"
+  },
+  "sourceStableDuringRun": true,
+  "assertions": [
+    "Project, recorder and actual gateway health versions agree.",
+    "One actual network socket starts with the existing production run snapshot.",
+    "Two overlapping production-origin requests emit pending reservations and two settled successes.",
+    "Reset changes run identity; an actual late origin completion returns409 without a new-run event/update.",
+    "Forced hibernation restarts the real constructor and restores attachments; the original socket receives the next commit without reconnect.",
+    "The actual origin failure opens the circuit; an actual timed recovery probe closes it."
+  ],
+  "limitations": [
+    "A controlled local runtime trace, not a production incident, native AI result or customer traffic measurement.",
+    "Receipt times and run/event identities are real and vary each run; the fixed recipe is reproducible, not byte-identical across executions.",
+    "The production-exporting fixture adds read-only boot/attachment inspection and real storage instrumentation; no source seeding, deadline/clock manipulation or fault injection is used.",
+    "Hibernation is forced with the supported Miniflare unsafeEvictDurableObject testing API; this does not establish natural production hibernation timing.",
+    "The network peer uses a500ms close timeout. Recording capture stops before client cleanup; natural TCP teardown, billing and capacity are not measured.",
+    "The content hash identifies changes to the bounded recording. It is unsigned and does not authenticate its producer or prove causality."
+  ]
+}

@@ -7,6 +7,7 @@ import {
   type LabObserverEvent,
   type LabObserverFrame,
 } from '../worker/lab-observer';
+import { parseUniqueJson } from '../worker/unique-json.mjs';
 
 export const LAB_RECORDING_SCHEMA_VERSION = 1;
 export const MAX_LAB_RECORDING_ENTRIES = 256;
@@ -146,7 +147,7 @@ function strictFrame(value: unknown): LabObserverFrame | null {
   try {
     if (typeof value === 'string') {
       if (encoder.encode(value).byteLength > MAX_LAB_OBSERVER_FRAME_BYTES) return null;
-      value = JSON.parse(value);
+      value = parseUniqueJson(value);
     }
     const parsed = parseLabObserverFrame(value);
     // The live parser deliberately strips extras. An archive must reject them,
@@ -368,7 +369,7 @@ export async function importLabRecording(json: string): Promise<LabRecordingArti
     throw new LabRecordingError('recording-size');
   let value: unknown;
   try {
-    value = JSON.parse(json);
+    value = parseUniqueJson(json);
   } catch {
     throw new LabRecordingError('invalid-recording');
   }

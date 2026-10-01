@@ -1,4 +1,5 @@
 import { webcrypto } from 'node:crypto';
+import { parseUniqueJson } from '../../worker/unique-json.mjs';
 
 export const MAX_COUNTER_SAMPLES = 32;
 export const MAX_COUNTER_ARTIFACT_BYTES = 32 * 1024;
@@ -87,7 +88,7 @@ function sampleFrom(input, sequence) {
   try {
     if (typeof input === 'string') {
       if (bytes(input) > MAX_COUNTER_SAMPLE_BYTES) throw new Error();
-      input = JSON.parse(input);
+      input = parseUniqueJson(input);
     }
     if (
       !exact(input, sequence === undefined ? sampleKeys : ['sequence', ...sampleKeys]) ||
@@ -236,7 +237,7 @@ export async function importSamples(text) {
   if (bytes(text) > MAX_COUNTER_ARTIFACT_BYTES) throw new CounterSamplesError('record-size');
   let value;
   try {
-    value = JSON.parse(text);
+    value = parseUniqueJson(text);
   } catch {
     throw new CounterSamplesError('invalid-record');
   }

@@ -20,6 +20,8 @@ Schema version 1 records the observer protocol, producer version, first/last rec
 
 A canonical SHA-256 content hash is computed from an immutable copy captured before asynchronous hashing. Strict import validates byte/count limits and exact metadata/frame shapes before accepting the hash. The hash detects changed content; anyone can recompute it, so it establishes neither authenticity nor server origin. A recording is an observed interval, not a full event backup or deterministic re-execution.
 
+Version 3.12.1 adds the [unique-name rule](014-unique-evidence-json.md): archives and raw string frames reject duplicate object names, including escaped spellings that decode to the same name. The canonical hash covers validated data, not original file bytes. Ordinary member order, whitespace and valid historical hashes remain unchanged.
+
 ## Offline viewer
 
 Import and step inspection use a separate `#replay` route. Direct entry cannot connect a socket, fetch an application API, read or create a capability, persist a file or execute recorded commands. Check `File.size` before reading; stale asynchronous imports cannot replace a newer selection or update an unmounted view. Error messages do not echo rejected file contents.

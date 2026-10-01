@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { dirname, extname, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
@@ -12,7 +12,7 @@ import NetworkWebSocket from 'ws';
 // deadline and fault controls are never used; no account or native AI is called.
 if (process.argv.length !== 2) throw new Error('This local recording recipe accepts no arguments.');
 
-const PRODUCER_VERSION = '3.12.0';
+const PRODUCER_VERSION = '3.12.1';
 const COMPATIBILITY_DATE = '2026-09-01';
 const outputDirectory = 'output/lab-recording';
 const outputArtifact = 'output/lab-recording-example.json';
@@ -22,28 +22,82 @@ const bundles = {
   origin: `${outputDirectory}/origin.js`,
   recording: `${outputDirectory}/recording.mjs`,
 };
-const sourceFiles = [
-  'package.json',
-  'scripts/lab-recording.mjs',
-  'tests/fixtures/lab-observer.ts',
-  'worker/index.ts',
-  'worker/engine.ts',
-  'worker/lab-observer.ts',
-  'worker/origin-client.ts',
-  'worker/origin.ts',
-  'src/lab-recording.ts',
-];
+const projectRoot = resolve('.');
+const pinnedSources = new Map();
+const buildInputs = {};
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
-const sourceHashes = () =>
-  Promise.all(sourceFiles.map(async (path) => [path, sha256(await readFile(path))])).then(
-    Object.fromEntries,
+function projectPath(path) {
+  const key = relative(projectRoot, resolve(path)).replaceAll('\\', '/');
+  assert(key && !key.startsWith('../') && !key.includes(':'), 'Unexpected project input path');
+  return key;
+}
+async function pinSource(path) {
+  const key = projectPath(path);
+  const bytes = await readFile(resolve(projectRoot, key));
+  const hash = sha256(bytes);
+  if (pinnedSources.has(key))
+    assert.equal(hash, pinnedSources.get(key), 'Source changed during build');
+  pinnedSources.set(key, hash);
+  return bytes;
+}
+function sourceHashes() {
+  return Object.fromEntries([...pinnedSources].sort(([a], [b]) => a.localeCompare(b)));
+}
+async function buildPinned(name, options) {
+  const suppliedInputs = new Set();
+  const result = await build({
+    absWorkingDir: projectRoot,
+    ...options,
+    metafile: true,
+    plugins: [
+      {
+        name: 'pin-recording-project-inputs',
+        setup(builder) {
+          builder.onLoad({ filter: /./ }, async (args) => {
+            const key = projectPath(args.path);
+            const loader = { '.ts': 'ts', '.mjs': 'js' }[extname(key)];
+            assert.equal(args.namespace, 'file', 'Unexpected project input namespace');
+            assert(/^(src|worker|tests\/fixtures)\//.test(key), 'Unexpected project input path');
+            assert(loader, 'Unexpected project input loader');
+            const bytes = await pinSource(args.path);
+            suppliedInputs.add(key);
+            return { contents: bytes, loader, resolveDir: dirname(args.path) };
+          });
+        },
+      },
+    ],
+  });
+  const graphInputs = Object.keys(result.metafile.inputs).map(projectPath).sort();
+  assert.deepEqual(
+    graphInputs,
+    [...suppliedInputs].sort(),
+    'All build inputs have exact source pins',
   );
+  buildInputs[name] = graphInputs;
+}
+async function verifySourceHashes() {
+  await Promise.all(
+    [...pinnedSources].map(async ([path, hash]) =>
+      assert.equal(
+        sha256(await readFile(resolve(projectRoot, path))),
+        hash,
+        'Recipe source remains stable during capture',
+      ),
+    ),
+  );
+}
 const sleep = (milliseconds) => new Promise((done) => setTimeout(done, milliseconds));
 const sum = (counts) => Object.values(counts).reduce((total, count) => total + count, 0);
 
 await mkdir(outputDirectory, { recursive: true });
-const beforeSourceHashes = await sourceHashes();
-await build({
+for (const path of [
+  'scripts/lab-recording.mjs',
+  'package.json',
+  'package-lock.json',
+  'tsconfig.json',
+])
+  await pinSource(path);
+await buildPinned('gateway', {
   entryPoints: ['tests/fixtures/lab-observer.ts'],
   outfile: bundles.gateway,
   bundle: true,
@@ -52,7 +106,7 @@ await build({
   target: 'esnext',
   external: ['cloudflare:workers'],
 });
-await build({
+await buildPinned('origin', {
   entryPoints: ['worker/origin.ts'],
   outfile: bundles.origin,
   bundle: true,
@@ -60,7 +114,7 @@ await build({
   platform: 'browser',
   target: 'esnext',
 });
-await build({
+await buildPinned('codec', {
   entryPoints: ['src/lab-recording.ts', 'worker/lab-observer.ts'],
   outdir: `${outputDirectory}/codec`,
   outbase: '.',
@@ -70,6 +124,7 @@ await build({
   platform: 'node',
   target: 'esnext',
 });
+const beforeSourceHashes = sourceHashes();
 bundles.recording = `${outputDirectory}/codec/src/lab-recording.mjs`;
 bundles.protocol = `${outputDirectory}/codec/worker/lab-observer.mjs`;
 const {
@@ -329,12 +384,7 @@ try {
   assert(!json.includes(capability), 'Capability must be omitted from the recording');
   for (const field of ['cachedPayload', 'payload', 'requestId', 'message', 'Authorization'])
     assert(!json.includes('"' + field + '"'), 'Private field in recording: ' + field);
-  const afterSourceHashes = await sourceHashes();
-  assert.deepEqual(
-    afterSourceHashes,
-    beforeSourceHashes,
-    'Recipe source remains stable during capture',
-  );
+  await verifySourceHashes();
   const manifest = {
     schemaVersion: 1,
     kind: 'edgelab-local-recording-source-manifest',
@@ -372,6 +422,7 @@ try {
       miniflareTelemetry: false,
     },
     sourceSHA256: beforeSourceHashes,
+    buildInputs,
     bundleSHA256: Object.fromEntries(
       await Promise.all(
         Object.entries(bundles).map(async ([name, path]) => [name, sha256(await readFile(path))]),

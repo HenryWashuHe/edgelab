@@ -121,11 +121,13 @@ export function LabObserver() {
     if (previous?.end) return;
     const next = previous
       ? appendLabRecording(previous, frame, Date.now())
-      : beginLabRecording(frame, Date.now(), '3.12.0');
+      : beginLabRecording(frame, Date.now(), '3.12.1');
     recordingRef.current = next;
     setRecording(next);
     if (next.end?.reason === 'frame-limit' || next.end?.reason === 'byte-limit')
       setAnnouncement('Recording reached its limit. Live observation can continue.');
+    else if (next.end?.reason === 'invalid-frame')
+      setAnnouncement('Recording stopped at an invalid frame. Its valid prefix is preserved.');
   }
 
   async function downloadRecording() {
@@ -227,7 +229,7 @@ export function LabObserver() {
         return;
       }
       if (!('state' in frame)) {
-        if (recordingRef.current) recordFrame(frame);
+        if (recordingRef.current) recordFrame(message.data);
         disconnect(frame.kind);
         return;
       }
@@ -241,7 +243,13 @@ export function LabObserver() {
         frame.revision <= previous.revision
       )
         return;
-      recordFrame(frame);
+      try {
+        // Record the original text before live normalization can discard names.
+        recordFrame(message.data);
+      } catch {
+        disconnect('invalid-frame');
+        return;
+      }
       const newRun = !!previous && previous.runId !== frame.runId;
       const next = {
         ...frame,
