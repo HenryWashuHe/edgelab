@@ -1,4 +1,6 @@
-# EdgeLab v3.9: reliability operations and admission before object work
+# EdgeLab v3.10: inspectable coordination and reliability operations
+
+Release candidate 3.10.0 makes the actual historical recording discoverable from Operations and Fieldnotes. Three built-in-only bookmarks expose pending work, a new run and a half-open attempt, with separately labeled captured comparisons and pinned 3.6.0 source links. Imported files never gain that provenance. Thirteen new pure tests verify identity/action/semantic boundaries; existing recording limits and lifetime guards remain. A bounded real-runtime benchmark-helper compatibility check adds CI coverage for strict protocol drift and mixed native admission settlement. Local check passes 225 unit tests across 20 files, TypeScript, build and both deployment dry-runs. Full CI, deployment and fresh live verification are pending. Browser rendering, production resource cost and exact deployed rate thresholds remain unverified.
 
 Deployed 3.9.0 addresses measured lab storage amplification. Deployment enables independent native owner and observer admission lanes; validated HTTP envelope or handshake refusals return before any `LABS` lookup. One aggregate key per namespace spans rotating UUIDs, with nominal owner 120/minute and observer 20/minute policies. These are permissive location-scoped controls, not identity, fairness or a global budget. The frontend retains its busy state until all dispatched burst requests settle and never replays writes after an uncertain response.
 

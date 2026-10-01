@@ -1,6 +1,6 @@
 {
   "name": "edgelab",
-  "version": "3.9.0",
+  "version": "3.10.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -34,7 +34,8 @@
     "test:status-cache": "node scripts/status-cache.mjs",
     "test:lab-storm": "node scripts/lab-storm.mjs",
     "test:status-evidence": "node scripts/status-evidence.mjs --check",
-    "test:lab-admission": "node scripts/lab-admission.mjs"
+    "test:lab-admission": "node scripts/lab-admission.mjs",
+    "test:benchmark-compatibility": "node scripts/benchmark-compatibility.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.48.0",

@@ -13,7 +13,7 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 ## Verify an actual release
 
 1. Confirm the published commit passes GitHub CI.
-2. For release v3.9.0, `GET /api/health` must report version 3.9.0. Compare the deployed revision with the release evidence; these instructions alone do not prove publication.
+2. For release v3.10.0, `GET /api/health` must report version 3.10.0. Compare the deployed revision with the release evidence; these instructions alone do not prove publication.
 3. `GET /api/ops/status` must list the expected target names. Public output must not contain the operator token, target URLs, or investigation notes.
 4. Allow cron propagation ([Cloudflare documents up to 15 minutes](https://developers.cloudflare.com/workers/configuration/cron-triggers/)). Verify each service receives observations in two distinct scheduled minutes without clicking a “run” button. Check `latest.slot`, the actual probe start `latest.observedAt`, and completion `latest.at`, not just the page's snapshot timestamp. Trigger propagation is not permission to backfill: an invocation whose scheduled minute has passed is recorded as `skipped-late` and makes no observation.
 5. The private catalog probe must validate actual JSON through its service binding; the gateway probe must reach the configured public HTTPS health endpoint.
@@ -25,7 +25,13 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 
 The published 3.6.0 gateway deployment is `fe4a90e7-67f6-4a93-a62f-e799bd6d570f`, with the private origin unchanged. [CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36797743493) passes for source commit `3b0851c3b2c3e8b4ad5892be9bfb933215de7dc0`. The [live verification record](evidence/releases/3.6.0-live-monitoring.json) at 2026-10-01 00:46:21 UTC confirms the expected version, two new autonomous good minutes per service, healthy readiness, current budget evaluations and schemaVersion 4 privacy boundaries.
 
-## Current 3.9.0 release
+## 3.10.0 release candidate
+
+Operations and Fieldnotes link to the offline historical recording. Select **Load built-in recording** for three validated milestones; generic uploaded files retain their own source label, even when identical to the sample. Producer 3.6.0 remains pinned rather than claiming current deployment observations. No bookmark starts a lab, sends a command, simulates refill or changes monitoring evidence. Local check passes 225 unit tests across 20 files, TypeScript, build and both deployment dry-runs. Full CI, deployment and fresh live checks are pending. Browser rendering remains unverified.
+
+`npm run test:benchmark-compatibility` uses fixed ephemeral local runtimes and seven owner calls. It accepts no remote target or arguments and writes only its ignored report. It verifies actual helper/header/history reconciliation and waits for admitted origin work after a native refusal without returning a partial sample or replaying. This complements the local admission proof; it measures neither production performance nor limiter overhead.
+
+## Historical 3.9.0 release
 
 The [local admission archive](evidence/releases/3.9.0-lab-admission.json) passes 12 groups/19 samples against the actual gateway, native local limiter, lab SQLite and private origin. Local build/check passes 212 tests/19 files. Implementation commit `5bb9bf42134d1fbc9e5279f6e881affa6151240c` passes the [full CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36805850482); gateway deployment is `374aa670-3b88-4446-b4ab-758ce61cf3b9`. [Live verification](evidence/releases/3.9.0-live-monitoring.json) at October 1, 02:32:44 UTC confirms exact deployed assets, one empty owner/observer run, two new autonomous good minutes per service, healthy readiness, current budgets and privacy/provenance. The private origin was not redeployed. Exact production thresholds and production resource/billing costs remain unverified.
 

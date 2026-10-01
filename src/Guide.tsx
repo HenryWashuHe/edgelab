@@ -153,10 +153,14 @@ export function Notes() {
         <section className="panel doc-panel">
           <div className="eyebrow">A TWO-MINUTE WALKTHROUGH</div>
           <h2>Show the evidence. Explain the decisions.</h2>
-          <p>
+          <p className="examples-entry">
             Start with Operations: real scheduled observations, missing-data coverage, incident
             history, and authenticated policy changes. Explain lease fencing and why acknowledgement
-            is separate from recovery. Then use the lab to reproduce a failure safely.
+            is separate from recovery. Then{' '}
+            <a className="ops-doc-link" href="#replay">
+              inspect recorded coordination
+            </a>{' '}
+            through three historical landmarks, or use the lab to reproduce a failure safely.
           </p>
           <ol className="walkthrough">
             <li>

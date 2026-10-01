@@ -8,6 +8,12 @@ import {
   type LabRecordingArtifact,
   type LabRecordingEndReason,
 } from './lab-recording';
+import {
+  BUILTIN_TOUR_RECORDING_URL,
+  BUILTIN_TOUR_MANIFEST_URL,
+  replaySourceDetails,
+  type RecordingOrigin,
+} from './replay-tour';
 import type { Circuit, Outcome } from '../worker/engine';
 import './lab-replay.css';
 
@@ -34,7 +40,6 @@ const captureEnds: Record<LabRecordingEndReason, string> = {
   'byte-limit': 'Byte limit reached',
 };
 const INVALID_RECORDING = `This recording could not be validated. Choose a supported lab recording JSON file no larger than ${MAX_LAB_RECORDING_BYTES / 1024} KiB.`;
-type RecordingOrigin = 'local-file' | 'controlled-runtime';
 const utc = (at: number) => new Date(at).toISOString().replace('T', ' ').replace('Z', ' UTC');
 
 function Time({ at }: { at: number | null }) {
@@ -53,6 +58,7 @@ export function LabReplay({ exampleJson }: { exampleJson?: string } = {}) {
   const rangeId = useId();
   const rangeHelpId = useId();
   const eventsId = useId();
+  const tourId = useId();
   const [recording, setRecording] = useState<LabRecordingArtifact | null>(null);
   const [origin, setOrigin] = useState<RecordingOrigin | null>(null);
   const [selected, setSelected] = useState(0);
@@ -139,6 +145,14 @@ export function LabReplay({ exampleJson }: { exampleJson?: string } = {}) {
     () => (recording ? inspectLabRecording(recording, selected) : null),
     [recording, selected],
   );
+  const source = useMemo(
+    () => (recording ? replaySourceDetails(recording, origin) : null),
+    [recording, origin],
+  );
+  const tour = source?.tour;
+  const activeMilestone = tour?.milestones.find(
+    ({ observation }) => observation.index === selected,
+  );
   const data = step?.latestData;
   const state = data?.state;
   const settled = state ? Object.values(state.counts).reduce((sum, value) => sum + value, 0) : 0;
@@ -191,7 +205,7 @@ export function LabReplay({ exampleJson }: { exampleJson?: string } = {}) {
                 void loadRecording('controlled-runtime', () => Promise.resolve(exampleJson))
               }
             >
-              <FileText size={14} /> Load controlled runtime recording
+              <FileText size={14} /> Load built-in recording
             </button>
           )}
           <button className="button" onClick={clear} disabled={!recording && !reading && !error}>
@@ -209,14 +223,7 @@ export function LabReplay({ exampleJson }: { exampleJson?: string } = {}) {
       {recording && step && data && state ? (
         <>
           <p className="replay-notice">
-            <strong>
-              {origin === 'controlled-runtime'
-                ? 'Controlled local workerd recording.'
-                : 'Imported local file.'}
-            </strong>{' '}
-            {origin === 'controlled-runtime'
-              ? 'This bundled capture comes from the controlled local runtime recipe and is validated again in your browser.'
-              : 'This capture was supplied from your device; it is not the built-in runtime example.'}
+            <strong>{source?.label}</strong> {source?.description}
           </p>
           <p className="replay-caution">
             <strong>Historical capture · source authenticity is not verified.</strong> The matching
@@ -228,6 +235,45 @@ export function LabReplay({ exampleJson }: { exampleJson?: string } = {}) {
             timestamp: <Time at={recording.end.at} />. Activity outside the capture is unknown.
           </p>
           <div className="replay-scrubber">
+            {tour && (
+              <section className="replay-tour" aria-labelledby={tourId}>
+                <h3 id={tourId}>Three recorded coordination milestones</h3>
+                <p>Select a recorded stop, then inspect it with the frame controls below.</p>
+                <nav className="replay-tour-stops" aria-label="Recorded coordination milestones">
+                  {tour.milestones.map((milestone) => (
+                    <button
+                      key={milestone.id}
+                      type="button"
+                      className="button"
+                      aria-current={selected === milestone.observation.index ? 'step' : undefined}
+                      onClick={() => selectFrame(milestone.observation.index)}
+                    >
+                      {milestone.label}
+                      <span>Frame {milestone.observation.frameNumber}</span>
+                    </button>
+                  ))}
+                </nav>
+                {activeMilestone && (
+                  <div className="replay-tour-evidence">
+                    <p>
+                      <strong>Selected frame {activeMilestone.observation.frameNumber}:</strong>{' '}
+                      {activeMilestone.summary}
+                    </p>
+                    <p className="replay-tour-comparison">
+                      <strong>
+                        Comparison · recorded frame {activeMilestone.comparison.frameNumber}:
+                      </strong>{' '}
+                      {activeMilestone.comparisonSummary}
+                      <small>
+                        Comparison source commit · server clock:{' '}
+                        <Time at={activeMilestone.comparison.committedAt} />
+                      </small>
+                    </p>
+                    <p className="replay-tour-note">{activeMilestone.boundary}</p>
+                  </div>
+                )}
+              </section>
+            )}
             <div className="replay-step-heading">
               <strong>
                 Captured frame {selected + 1} of {recording.entries.length}
@@ -442,6 +488,19 @@ export function LabReplay({ exampleJson }: { exampleJson?: string } = {}) {
               Only the validated observer projection is displayed. Import and hash verification do
               not authenticate the server, run an action, or prove a root cause.
             </p>
+            {tour && (
+              <p className="replay-tour-sources">
+                Inspect the{' '}
+                <a href={BUILTIN_TOUR_RECORDING_URL} target="_blank" rel="noreferrer">
+                  pinned 3.6 recording
+                </a>{' '}
+                and its{' '}
+                <a href={BUILTIN_TOUR_MANIFEST_URL} target="_blank" rel="noreferrer">
+                  separate controlled runtime manifest
+                </a>
+                .
+              </p>
+            )}
           </details>
         </>
       ) : !reading && !error ? (

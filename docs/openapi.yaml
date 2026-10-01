@@ -1,18 +1,20 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.9.0
+  version: 3.10.0
   description: |
     Public monitoring read model and single-owner operator control plane.
     HTTP laboratory controls are documented in LAB.md; the observer upgrade and message schema are below.
-    This describes deployed 3.9.0, preserving the additive 3.7.0 view contract.
+    This describes release candidate 3.10.0, preserving the additive 3.7.0 view contract.
     Native owner/observer admission runs before lab object lookup; refusal has no engine outcome or source event.
     Scoped local verification is recorded in docs/evidence/VALIDATION.md and
-    docs/evidence/releases/3.9.0-lab-admission.json. Full implementation CI passes; live acceptance,
-    asset identity, autonomous monitoring and privacy checks are in docs/evidence/releases/3.9.0-live-monitoring.json.
+    docs/evidence/releases/3.9.0-lab-admission.json. Historical 3.9.0 CI/live evidence remains in
+    docs/evidence/releases/3.9.0-live-monitoring.json; 3.10.0 publication and fresh live checks are pending.
     Exact production thresholds, SQL/CPU/billing and rendered browser validation are not claimed.
     Historical 3.6.0 recording, 3.7.0 status-cache and 3.8.0 live evidence remain distinct.
     Bounded browser recording and the offline #replay view add no API endpoint or socket command.
+    The 3.10.0 built-in recording tour selects three validated historical frames, with labeled comparisons;
+    its producer remains 3.6.0. Uploaded files stay generic even when identical, and no bookmark executes a command.
     Recordings retain at most 256 entries and 196608 UTF-8 bytes in memory, with 1024 bytes reserved
     for finalization. Stop freezes the valid prefix while live observation may continue; Download
     exports it. Replay reads no capability, makes no application API requests or WebSocket messages,

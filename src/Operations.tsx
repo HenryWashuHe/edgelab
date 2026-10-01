@@ -455,6 +455,12 @@ export function Operations() {
         </a>{' '}
         using controlled test data and canned explanations, with zero native AI calls.
       </p>
+      <p className="ops-intro examples-entry">
+        <a className="ops-doc-link" href="#replay">
+          Inspect recorded coordination <ArrowUpRight size={14} aria-hidden="true" />
+        </a>{' '}
+        for historical lab evidence of pending work, a new run and a recovery attempt.
+      </p>
       {formError && (
         <div className="error-banner" role="alert">
           {formError}

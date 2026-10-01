@@ -1,5 +1,7 @@
 # EdgeLab
 
+Release candidate **3.10.0** makes the offline coordination recording easier to explore. Operations and Fieldnotes link to replay; loading the pinned built-in example reveals three recorded milestones with separate comparison frames. Its producer remains historical 3.6.0, and uploaded files stay generic even with identical bytes. Thirteen pure tests verify these boundaries. A bounded actual-runtime benchmark-helper compatibility recipe joins CI. Deployment and fresh live checks are pending; rendered browser behavior remains unverified.
+
 Deployed **3.9.0** adds separate native owner/observer admission lanes before any lab Durable Object lookup. The [local runtime proof](docs/evidence/releases/3.9.0-lab-admission.json) passes 12 groups and 19 samples: limited or unavailable lanes perform no lab namespace, SQL, lease, alarm or origin work, while scheduled monitoring remains independent. The frontend waits for every dispatched burst request to settle and distinguishes an unforwarded admission refusal from a committed engine decision. The [full CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36805850482) passes 212 unit tests and all runtime regressions. [Live verification](docs/evidence/releases/3.9.0-live-monitoring.json) at October 1, 02:32:44 UTC confirms byte-identical assets, one empty owner/observer run, two new autonomous good minutes per service, readiness and privacy boundaries. Exact production rate thresholds, rendered browser behavior and production resource cost remain unverified.
 
 [**Live operations dashboard**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev) · [**Explore controlled incident briefs**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#notes) · [CI](https://github.com/HenryWashuHe/edgelab/actions) · [Operator runbook](docs/OPERATIONS.md) · [API contract](docs/openapi.yaml)
@@ -124,6 +126,7 @@ npm run test:status-cache # bounded public reuse, real SQLite faults and measure
 npm run test:status-evidence # exact projection from the pinned historical artifact
 npm run test:lab-storm    # bounded real lab storage/lease/origin work; no remote URL accepted
 npm run test:lab-admission # real native admission lanes before lab lookup; no remote URL accepted
+npm run test:benchmark-compatibility # strict benchmark helper against actual local gateway/native gate
 # With the local server running:
 npm run test:integration  # lab HTTP behavior and isolation
 BASE_URL=http://localhost:8787 npm run benchmark

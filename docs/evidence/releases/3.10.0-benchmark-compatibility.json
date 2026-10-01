@@ -1,0 +1,245 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-local-benchmark-helper-compatibility",
+  "measuredAt": "2026-10-01T02:40:43.484Z",
+  "sourceProjectVersion": "3.10.0",
+  "environment": {
+    "node": "v25.4.0",
+    "esbuild": "0.28.1",
+    "miniflare": "5.20260926.0-alpha",
+    "workerd": "1.20260926.1",
+    "compatibilityDate": "2026-09-01",
+    "remoteCalls": 0,
+    "productionCalls": 0,
+    "nativeInferenceCalls": 0
+  },
+  "deadlines": {
+    "clientTimeoutMs": 5000,
+    "overallTimeoutMs": 60000,
+    "disposalTimeoutMs": 10000
+  },
+  "provenance": {
+    "sourceSHA256": {
+      "package-lock.json": "3dd1880dcea0769260f845f19a403a7ca21dccacf0219630c40981973e513924",
+      "package.json": "3b92be2263c09f722920e9107036a32a7cb36d8a32d15acc163b85b747306ffb",
+      "scripts/benchmark-compatibility.mjs": "c6a99d065bd11dacb9ae044e5963644138fbe23b76d9ebcbcdced8c5f63ea8ff",
+      "scripts/benchmark-control.mjs": "ab385930384408c2e82f58a25b9ebe9e4428bf6ae80fee3b1c8f93a29338244e",
+      "scripts/benchmark.mjs": "7c0c92d61e6e1ce58c3ff75003f9bface898609cd303e3687cb40d567d652168",
+      "tests/fixtures/lab-admission.ts": "d0f318900eadfb4d523a008df3339a6a2ef9e3c54ed9de6bc2876834b92e29f6",
+      "worker/budget-signals.ts": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15",
+      "worker/burn-rate.ts": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c",
+      "worker/engine.ts": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+      "worker/incident-brief-ai.ts": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b",
+      "worker/incident-brief-domain.ts": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1",
+      "worker/incident-briefs.ts": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d",
+      "worker/incident-evidence.ts": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2",
+      "worker/index.ts": "dc12359b046b1bc1c7ff0e0334884a8bfc948dc03dbe21835b427e2c43572b66",
+      "worker/lab-admission.ts": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc",
+      "worker/lab-observer.ts": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+      "worker/metadata-cleanup.ts": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee",
+      "worker/monitor-check-cache.ts": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1",
+      "worker/monitor-domain.ts": "15ed1d9218b5c0baeea4061f20077ded6350d02c6b3bb71b2906fc595f16a003",
+      "worker/monitor-forwarder.ts": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e",
+      "worker/monitor-probe.ts": "e06fa750a0a9888b74d32e03848fe966edbe67ae331c73d303d6c4046a87f034",
+      "worker/monitor-readiness.ts": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c",
+      "worker/monitor-version-retention.ts": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455",
+      "worker/monitor.ts": "eeb75cf37d789b800ee3b3cf9f009298059fb2fae41f70b7086b7325eab9f450",
+      "worker/origin-client.ts": "4db923944019dd24d3da2e19c1d54cac7247a2d5819db3016cde047374a91548",
+      "worker/origin.ts": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+      "worker/status-view-cache.ts": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158"
+    },
+    "inputGraphs": {
+      "gateway": [
+        "tests/fixtures/lab-admission.ts",
+        "worker/budget-signals.ts",
+        "worker/burn-rate.ts",
+        "worker/engine.ts",
+        "worker/incident-brief-ai.ts",
+        "worker/incident-brief-domain.ts",
+        "worker/incident-briefs.ts",
+        "worker/incident-evidence.ts",
+        "worker/index.ts",
+        "worker/lab-admission.ts",
+        "worker/lab-observer.ts",
+        "worker/metadata-cleanup.ts",
+        "worker/monitor-check-cache.ts",
+        "worker/monitor-domain.ts",
+        "worker/monitor-forwarder.ts",
+        "worker/monitor-probe.ts",
+        "worker/monitor-readiness.ts",
+        "worker/monitor-version-retention.ts",
+        "worker/monitor.ts",
+        "worker/origin-client.ts",
+        "worker/origin.ts",
+        "worker/status-view-cache.ts"
+      ],
+      "origin": ["worker/origin.ts"]
+    },
+    "additionalInputs": [
+      "scripts/benchmark-compatibility.mjs",
+      "scripts/benchmark-control.mjs",
+      "scripts/benchmark.mjs",
+      "package.json",
+      "package-lock.json"
+    ],
+    "inputsCapturedBeforeBuildAt": "2026-10-01T02:40:43.472Z",
+    "bundleSHA256": {
+      "gateway": "70e0d22eaee5f97fef110eff1b5858c7a1cca1af149c91f105673b62aa8a075a",
+      "origin": "2c2f5c182b0b95b57f1c3818fa8f8c6acce2048c3aba7ae2a771b605a098e83c"
+    },
+    "metafileSHA256": {
+      "gateway": "2c0faef99ecaa64a1ddbdf111b4a92704a24ff72db3793c214e810d6433a07f8",
+      "origin": "4517ea3cb220e34aa0857e0dcd925d881434bb6f51350e030bbdac7d4533ac3d"
+    },
+    "buildWrite": false,
+    "boundary": "Complete project-local Worker build input hashes plus exact helper/CLI/recipe/package/lock. Actual gateway/Lab/origin imports, with tracked local admission instrumentation only. Installed runtime binaries are identified by versions/lock, not independently hashed. Native limiter internal SQLite and diagnostic reads are outside Lab source measurement."
+  },
+  "assertions": [
+    "Actual native outcomes/trace/source headers and exact SQLite state/history pass the helper",
+    "Native pre-Lab refusal is sanitized and never counted as a committed engine-limited event",
+    "Helper rejection follows the real origin sibling settlement, with no state call/sample/retry/benchmark writer"
+  ],
+  "samples": [
+    {
+      "scenario": "healthy-legacy-bypass",
+      "concurrency": 2,
+      "returnedSample": {
+        "accepted": 2,
+        "limited": 0,
+        "wallMs": 261.6,
+        "clientP50Ms": 261.43,
+        "clientP95Ms": 261.5,
+        "originCalls": 2
+      },
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 4,
+          "namespaceIdFromName": 4,
+          "namespaceGet": 4,
+          "namespaceGetByName": 0,
+          "stubFetch": 4,
+          "stubCompleted": 4,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 1,
+        "sourceSql": {
+          "attemptedStatements": 34,
+          "statements": 34,
+          "failedStatements": 0,
+          "rowsRead": 32,
+          "rowsWritten": 19
+        },
+        "sourceOperations": {
+          "kvGet": 10,
+          "kvPut": 4,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 4,
+          "alarmDelete": 0,
+          "transactionSync": 9,
+          "transactionSyncFailed": 0
+        },
+        "origin": {
+          "originFetch": 2,
+          "originCompleted": 2,
+          "originFailed": 0,
+          "originInFlight": 0
+        },
+        "labFetchesInFlight": 0,
+        "nativeAdmission": {
+          "owner": 0,
+          "observer": 0
+        }
+      }
+    },
+    {
+      "scenario": "native-admission-refusal-with-settled-sibling",
+      "concurrency": 2,
+      "nativeOwnerLimit": 2,
+      "periodSeconds": 60,
+      "returnedSampleCount": 0,
+      "stateRouteCallsAfterRefusal": 0,
+      "refusedBeforeAdmittedSibling": true,
+      "rejectionAfterSiblingCompletion": true,
+      "sanitizedFailure": true,
+      "persistedDecisions": {
+        "total": 1,
+        "origin": 1,
+        "engineLimited": 0,
+        "events": 1
+      },
+      "meter": {
+        "gateway": {
+          "gatewayRequests": 3,
+          "namespaceIdFromName": 2,
+          "namespaceGet": 2,
+          "namespaceGetByName": 0,
+          "stubFetch": 2,
+          "stubCompleted": 2,
+          "stubFailed": 0,
+          "stubInFlight": 0
+        },
+        "labConstructors": 1,
+        "sourceSql": {
+          "attemptedStatements": 18,
+          "statements": 18,
+          "failedStatements": 0,
+          "rowsRead": 17,
+          "rowsWritten": 13
+        },
+        "sourceOperations": {
+          "kvGet": 5,
+          "kvPut": 2,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 2,
+          "alarmDelete": 0,
+          "transactionSync": 5,
+          "transactionSyncFailed": 0
+        },
+        "origin": {
+          "originFetch": 1,
+          "originCompleted": 1,
+          "originFailed": 0,
+          "originInFlight": 0
+        },
+        "labFetchesInFlight": 0,
+        "nativeAdmission": {
+          "owner": 3,
+          "observer": 0
+        }
+      }
+    }
+  ],
+  "observedGatewayVersions": ["3.10.0", "3.10.0"],
+  "limitations": [
+    "Two concurrency2 compatibility cohorts, not a performance benchmark or production capacity measurement.",
+    "Local native RateLimit uses Miniflare SQLite-backed counters. Production limits are permissive, per location and eventually consistent; local2/60 is not the deployed allowance.",
+    "Receipt sequence proves local settlement ordering; client timing is descriptive only. No production network/CPU/account/billing/browser claim.",
+    "Failed cohort legitimately commits the admitted origin sibling. Its pre-Lab refusal never becomes an engine-limited event; zero writes is not claimed for the whole cohort.",
+    "Only a successful ignored compatibility report is written. The benchmark CLI/sample-report writer and historical artifacts remain untouched."
+  ],
+  "calls": {
+    "owner": 7,
+    "health": 2,
+    "controls": 4,
+    "diagnostics": 1
+  },
+  "sourceStableDuringRun": true,
+  "ephemeralRuntimesDisposed": true,
+  "historicalArtifactsUnchanged": true,
+  "benchmarkWriterInvocations": 0
+}
