@@ -121,7 +121,7 @@ export function LabObserver() {
     if (previous?.end) return;
     const next = previous
       ? appendLabRecording(previous, frame, Date.now())
-      : beginLabRecording(frame, Date.now(), '3.12.1');
+      : beginLabRecording(frame, Date.now(), '3.12.2');
     recordingRef.current = next;
     setRecording(next);
     if (next.end?.reason === 'frame-limit' || next.end?.reason === 'byte-limit')
@@ -427,8 +427,9 @@ export function LabObserver() {
               <small>{state.total} requests evaluated in this run</small>
             </div>
             <div>
-              <dt>Pending requests</dt>
+              <dt>Unsettled outcomes</dt>
               <dd>{Math.max(0, state.total - settled)}</dd>
+              <small>Evaluated requests without a recorded outcome; some may have finished.</small>
               <small>{state.originCalls} origin attempts in this run</small>
             </div>
           </dl>

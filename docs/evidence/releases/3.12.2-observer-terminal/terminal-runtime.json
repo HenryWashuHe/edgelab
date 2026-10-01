@@ -1,0 +1,498 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-lab-terminal-delivery-proof",
+  "measuredAt": "2026-10-01T19:16:25.414Z",
+  "recipe": "node scripts/lab-observer-delivery.mjs",
+  "projectVersion": "3.12.2",
+  "runtime": "Actual local workerd SQLite and native network WebSockets via Miniflare",
+  "environment": {
+    "node": "v25.4.0",
+    "platform": "darwin",
+    "esbuild": "0.28.1",
+    "miniflare": "5.20260926.0-alpha",
+    "workerd": "1.20260926.1",
+    "ws": "8.21.0",
+    "compatibilityDate": "2026-09-01",
+    "cfMetadata": false,
+    "telemetry": false,
+    "productionRequests": 0,
+    "accountCalls": 0,
+    "nativeInferenceCalls": 0
+  },
+  "comparisonScope": "Exact pinned old index with maintained dependencies; not a full historical deployment",
+  "baselineIndex": {
+    "commit": "a830b2622a4e00759099da295467b0e5b8aadf8f",
+    "path": "worker/index.ts",
+    "sha256": "097f00487c2fe616e396dede4adfad5788e030d49fcf070160ebc52dfa347d4b"
+  },
+  "cases": {
+    "baseline": [
+      {
+        "kind": "unavailable",
+        "peers": 2,
+        "originalSocketsSurviveForcedHibernation": true,
+        "hibernationPreservesStateDeadlineAlarmAndAttachments": true,
+        "chosenRecipientOpenWhenSendThrows": true,
+        "chosenTerminalDelivered": false,
+        "healthyTerminalDelivered": true,
+        "chosenNativeCloseAttempts": 0,
+        "healthyNativeCloseAttempts": 1,
+        "chosenCloseControlReceived": false,
+        "healthyCloseControlReceived": true,
+        "chosenCloseCode": null,
+        "healthyCloseCode": 1011,
+        "remainingOpenSockets": 1,
+        "remainingMembership": 1,
+        "controlledSendFailures": 1,
+        "actualConfigSaveFaults": 1,
+        "executedNativeSaveBeforeFault": true,
+        "actionResponseStatus": 503,
+        "failedConfigRolledBackWithEarlierTouchPreserved": true,
+        "alarmClearsStateDeadlineAndEvents": false,
+        "noExperimentOrOriginAdmission": true,
+        "receivedCloseReasonsMatchStaticProtocol": true,
+        "protocolPrivacyPassed": true,
+        "runtimeDisposed": true
+      },
+      {
+        "kind": "expired",
+        "peers": 2,
+        "originalSocketsSurviveForcedHibernation": true,
+        "hibernationPreservesStateDeadlineAlarmAndAttachments": true,
+        "chosenRecipientOpenWhenSendThrows": true,
+        "chosenTerminalDelivered": false,
+        "healthyTerminalDelivered": true,
+        "chosenNativeCloseAttempts": 0,
+        "healthyNativeCloseAttempts": 1,
+        "chosenCloseControlReceived": false,
+        "healthyCloseControlReceived": true,
+        "chosenCloseCode": null,
+        "healthyCloseCode": 4001,
+        "remainingOpenSockets": 1,
+        "remainingMembership": 1,
+        "controlledSendFailures": 1,
+        "actualConfigSaveFaults": 0,
+        "executedNativeSaveBeforeFault": false,
+        "actionResponseStatus": null,
+        "failedConfigRolledBackWithEarlierTouchPreserved": false,
+        "alarmClearsStateDeadlineAndEvents": true,
+        "noExperimentOrOriginAdmission": true,
+        "receivedCloseReasonsMatchStaticProtocol": true,
+        "protocolPrivacyPassed": true,
+        "runtimeDisposed": true
+      }
+    ],
+    "maintained": [
+      {
+        "kind": "unavailable",
+        "peers": 2,
+        "originalSocketsSurviveForcedHibernation": true,
+        "hibernationPreservesStateDeadlineAlarmAndAttachments": true,
+        "chosenRecipientOpenWhenSendThrows": true,
+        "chosenTerminalDelivered": false,
+        "healthyTerminalDelivered": true,
+        "chosenNativeCloseAttempts": 1,
+        "healthyNativeCloseAttempts": 1,
+        "chosenCloseControlReceived": true,
+        "healthyCloseControlReceived": true,
+        "chosenCloseCode": 1011,
+        "healthyCloseCode": 1011,
+        "remainingOpenSockets": 0,
+        "remainingMembership": 0,
+        "controlledSendFailures": 1,
+        "actualConfigSaveFaults": 1,
+        "executedNativeSaveBeforeFault": true,
+        "actionResponseStatus": 503,
+        "failedConfigRolledBackWithEarlierTouchPreserved": true,
+        "alarmClearsStateDeadlineAndEvents": false,
+        "noExperimentOrOriginAdmission": true,
+        "receivedCloseReasonsMatchStaticProtocol": true,
+        "protocolPrivacyPassed": true,
+        "runtimeDisposed": true
+      },
+      {
+        "kind": "expired",
+        "peers": 2,
+        "originalSocketsSurviveForcedHibernation": true,
+        "hibernationPreservesStateDeadlineAlarmAndAttachments": true,
+        "chosenRecipientOpenWhenSendThrows": true,
+        "chosenTerminalDelivered": false,
+        "healthyTerminalDelivered": true,
+        "chosenNativeCloseAttempts": 1,
+        "healthyNativeCloseAttempts": 1,
+        "chosenCloseControlReceived": true,
+        "healthyCloseControlReceived": true,
+        "chosenCloseCode": 4001,
+        "healthyCloseCode": 4001,
+        "remainingOpenSockets": 0,
+        "remainingMembership": 0,
+        "controlledSendFailures": 1,
+        "actualConfigSaveFaults": 0,
+        "executedNativeSaveBeforeFault": false,
+        "actionResponseStatus": null,
+        "failedConfigRolledBackWithEarlierTouchPreserved": false,
+        "alarmClearsStateDeadlineAndEvents": true,
+        "noExperimentOrOriginAdmission": true,
+        "receivedCloseReasonsMatchStaticProtocol": true,
+        "protocolPrivacyPassed": true,
+        "runtimeDisposed": true
+      }
+    ]
+  },
+  "foundations": [
+    {
+      "path": "scripts/lab-observer-delivery.mjs",
+      "bytes": 22681,
+      "sha256": "441c0e2aec3c1c182676b71206438b69719d50df2380c605d7c92d6893485b7d"
+    },
+    {
+      "path": "package.json",
+      "bytes": 3108,
+      "sha256": "ef7fe0378a5fc79c2be434d2184828f6c6a9ecc193d1a34ecb9f793a6a6fd43c"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 102759,
+      "sha256": "bc97c8d48e86fe9fb820a09c1a83d583570c420beb9cbf0ce5fefda218550a51"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 447,
+      "sha256": "9affb71fa759689786bd82d7dbe343c7fbed45e403dbc6fbd658c578d1bdface"
+    }
+  ],
+  "buildInputs": {
+    "baseline": [
+      {
+        "path": "tests/fixtures/lab-observer-delivery.ts",
+        "bytes": 8620,
+        "sha256": "80b10bbb8ef6dfb3e485343588631716e56468c55723912618db8fac41e6dd20",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/bounded-json.ts",
+        "bytes": 4230,
+        "sha256": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/budget-signals.ts",
+        "bytes": 8063,
+        "sha256": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/burn-rate.ts",
+        "bytes": 7472,
+        "sha256": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/engine.ts",
+        "bytes": 7107,
+        "sha256": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/incident-brief-ai.ts",
+        "bytes": 3721,
+        "sha256": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/incident-brief-domain.ts",
+        "bytes": 28826,
+        "sha256": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/incident-briefs.ts",
+        "bytes": 21706,
+        "sha256": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/incident-evidence.ts",
+        "bytes": 15413,
+        "sha256": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/index.ts",
+        "bytes": 23193,
+        "sha256": "097f00487c2fe616e396dede4adfad5788e030d49fcf070160ebc52dfa347d4b",
+        "source": "pinned-git-index"
+      },
+      {
+        "path": "worker/lab-admission.ts",
+        "bytes": 3810,
+        "sha256": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/lab-observer.ts",
+        "bytes": 8257,
+        "sha256": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/metadata-cleanup.ts",
+        "bytes": 4888,
+        "sha256": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor-check-cache.ts",
+        "bytes": 9871,
+        "sha256": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor-domain.ts",
+        "bytes": 5156,
+        "sha256": "15ed1d9218b5c0baeea4061f20077ded6350d02c6b3bb71b2906fc595f16a003",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor-forwarder.ts",
+        "bytes": 3099,
+        "sha256": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor-probe.ts",
+        "bytes": 1380,
+        "sha256": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor-readiness.ts",
+        "bytes": 4245,
+        "sha256": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor-version-retention.ts",
+        "bytes": 9863,
+        "sha256": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor.ts",
+        "bytes": 30887,
+        "sha256": "e07eaad7912326fc67a7bc1fab7d0f54af4e95a82e7568f75f43e0a8dac2458b",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/origin-client.ts",
+        "bytes": 1181,
+        "sha256": "1c92a87dc002fa309e032f2b3ebd569c58fa012929db7d9d9be596d2a9e18e59",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/origin.ts",
+        "bytes": 2274,
+        "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/status-view-cache.ts",
+        "bytes": 6670,
+        "sha256": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158",
+        "source": "maintained-working-tree"
+      }
+    ],
+    "origin": [
+      {
+        "path": "worker/origin.ts",
+        "bytes": 2274,
+        "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+        "source": "maintained-working-tree"
+      }
+    ],
+    "protocol": [
+      {
+        "path": "worker/engine.ts",
+        "bytes": 7107,
+        "sha256": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/lab-observer.ts",
+        "bytes": 8257,
+        "sha256": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+        "source": "maintained-working-tree"
+      }
+    ],
+    "maintained": [
+      {
+        "path": "tests/fixtures/lab-observer-delivery.ts",
+        "bytes": 8620,
+        "sha256": "80b10bbb8ef6dfb3e485343588631716e56468c55723912618db8fac41e6dd20",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/bounded-json.ts",
+        "bytes": 4230,
+        "sha256": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/budget-signals.ts",
+        "bytes": 8063,
+        "sha256": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/burn-rate.ts",
+        "bytes": 7472,
+        "sha256": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/engine.ts",
+        "bytes": 7107,
+        "sha256": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/incident-brief-ai.ts",
+        "bytes": 3721,
+        "sha256": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/incident-brief-domain.ts",
+        "bytes": 28826,
+        "sha256": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/incident-briefs.ts",
+        "bytes": 21706,
+        "sha256": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/incident-evidence.ts",
+        "bytes": 15413,
+        "sha256": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/index.ts",
+        "bytes": 23311,
+        "sha256": "277d343c386a61ef6edead59fd5606a6f0f70ece0ede625b5ba42e651c57bb75",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/lab-admission.ts",
+        "bytes": 3810,
+        "sha256": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/lab-observer.ts",
+        "bytes": 8257,
+        "sha256": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/metadata-cleanup.ts",
+        "bytes": 4888,
+        "sha256": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor-check-cache.ts",
+        "bytes": 9871,
+        "sha256": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor-domain.ts",
+        "bytes": 5156,
+        "sha256": "15ed1d9218b5c0baeea4061f20077ded6350d02c6b3bb71b2906fc595f16a003",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor-forwarder.ts",
+        "bytes": 3099,
+        "sha256": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor-probe.ts",
+        "bytes": 1380,
+        "sha256": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor-readiness.ts",
+        "bytes": 4245,
+        "sha256": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor-version-retention.ts",
+        "bytes": 9863,
+        "sha256": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/monitor.ts",
+        "bytes": 30887,
+        "sha256": "e07eaad7912326fc67a7bc1fab7d0f54af4e95a82e7568f75f43e0a8dac2458b",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/origin-client.ts",
+        "bytes": 1181,
+        "sha256": "1c92a87dc002fa309e032f2b3ebd569c58fa012929db7d9d9be596d2a9e18e59",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/origin.ts",
+        "bytes": 2274,
+        "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+        "source": "maintained-working-tree"
+      },
+      {
+        "path": "worker/status-view-cache.ts",
+        "bytes": 6670,
+        "sha256": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158",
+        "source": "maintained-working-tree"
+      }
+    ]
+  },
+  "bundles": {
+    "baseline": {
+      "bytes": 170508,
+      "sha256": "03f6d35eef52b51bb4b36fe7c8f547025f01f0ba4c6907560e03a8908c88e726"
+    },
+    "origin": {
+      "bytes": 1834,
+      "sha256": "2c2f5c182b0b95b57f1c3818fa8f8c6acce2048c3aba7ae2a771b605a098e83c"
+    },
+    "protocol": {
+      "bytes": 7497,
+      "sha256": "861fa02d4d71b0dcd30538014398af6db6a4cb949ee5712e4c45e56e4b864376"
+    },
+    "maintained": {
+      "bytes": 170544,
+      "sha256": "10ae9a80546444b2b34da7e620e1ec8d1396e9936ce97bb319c44ebb9039a8d1"
+    }
+  },
+  "sourceStableAfterDisposal": true,
+  "allRuntimesDisposed": true,
+  "limitations": [
+    "The send exception is fixture-thrown JavaScript before one terminal send delegates to a still-OPEN native socket. It is a controlled API failure, not an observed native send exception or evidence of natural production incidence.",
+    "getWebSockets returns proxies around actual runtime sockets; nonfaulted send and all close calls are bound native methods. Socket transport, acceptance, attachments and membership are not simulated.",
+    "The baseline substitutes only the exact historical worker/index.ts bytes from the pinned Git commit; all other graph inputs and foundations match the maintained build.",
+    "Forced hibernation uses the supported unsafeEvictDurableObject API with webSockets:hibernate. No natural production eviction timing is claimed.",
+    "The peer uses a 500 ms close-handshake timeout. Received server close control frames and membership release are asserted; natural TCP teardown timing is not measured.",
+    "Unavailable injects a JavaScript exception after real config-save SQL is consumed inside the production transaction; it is not a naturally occurring SQLite failure. The failed action rolls back, while the earlier successful owner touch remains visible.",
+    "Expiry uses a fixture-shortened deadline and the real alarm. Diagnostic controls are local only and no experiment or origin request is issued.",
+    "Source commits and native send/close attempts do not acknowledge client application of a frame. No storage billing, capacity or account-wide cost claim is made."
+  ]
+}

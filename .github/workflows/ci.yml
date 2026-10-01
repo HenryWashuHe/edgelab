@@ -26,6 +26,7 @@ jobs:
       - run: npm run test:lifecycle
       - run: npm run test:async-lifetime
       - run: npm run test:lab-observer
+      - run: node scripts/lab-observer-delivery.mjs
       - run: npm run test:lab-recording
       - run: npm run test:lab-storm
       - run: npm run test:lab-admission

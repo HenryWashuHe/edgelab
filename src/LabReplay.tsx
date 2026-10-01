@@ -395,9 +395,9 @@ export function LabReplay({ exampleJson }: { exampleJson?: string } = {}) {
               <small>Totals in this recorded run snapshot</small>
             </div>
             <div>
-              <dt>Recorded pending</dt>
+              <dt>Unsettled outcomes</dt>
               <dd>{Math.max(0, state.total - settled)}</dd>
-              <small>Evaluated requests minus settled outcomes</small>
+              <small>Evaluated requests without a recorded outcome; some may have finished.</small>
             </div>
           </dl>
           <dl className="replay-counts" aria-label="Recorded settled outcomes">

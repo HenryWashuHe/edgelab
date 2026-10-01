@@ -1,0 +1,283 @@
+{
+  "measuredAt": "2026-10-01T19:09:41.987Z",
+  "recipe": "node scripts/lab-observer.mjs",
+  "runtime": "Actual local workerd SQLite and hibernatable WebSockets via Miniflare",
+  "environment": {
+    "node": "v25.4.0",
+    "miniflare": "5.20260926.0-alpha",
+    "workerd": "1.20260926.1",
+    "ws": "8.21.0",
+    "compatibilityDate": "2026-09-01",
+    "productionRequests": 0,
+    "accountCalls": 0,
+    "nativeInferenceCalls": 0
+  },
+  "sourceSHA256": {
+    "worker/index.ts": "277d343c386a61ef6edead59fd5606a6f0f70ece0ede625b5ba42e651c57bb75",
+    "worker/engine.ts": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+    "worker/lab-observer.ts": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08"
+  },
+  "bundleSHA256": "4c595154dfd39ae57e7754e2ffd89997d5e1d4a7f16faf1a75725e4bb77d8ecb",
+  "assertions": [
+    "Gateway rejects method, upgrade, Origin, protocol/UUID and query capability before namespace access",
+    "Unknown observer cannot create a source run, deadline or alarm",
+    "Two upgrade 101 sockets select only version protocol; allowlisted forwarding drops unrelated credentials; attach never renews source/TTL/alarm",
+    "Two clients receive identical ordered committed admission/pending/outcome frames under concurrent origin work",
+    "Maximum 4 rejects fifth without displacement; genuine hibernation restores original sockets/attachments and HTTP mutation updates them",
+    "Independent UUIDs isolate frames and reconnect supplies only a read-only snapshot",
+    "Commands, binary and oversized inbound messages close 1008/1009 without source writes or lease renewal",
+    "Reset carries revision, changes run, and fences late origin without source resurrection or phantom frame",
+    "Older in-flight success cannot close a newer open generation or refresh its cache",
+    "Timeout outcome is committed once; late provider success cannot replace its source/event/frame",
+    "Legacy 0/null snapshot, bounded newest 12 evidence, and raw privacy projection; malformed or partial stored metadata sanitizes unavailable without renewal",
+    "Executed first owner-touch save failure rolls back both source and KV deadline without a phantom update",
+    "Alarm failure before native storage confirmation resets the unconfirmed touch without a phantom update",
+    "Failure after awaited native alarm still precedes successful concurrency-block/output-gate completion; measured source/KV/alarm rollback and no phantom update",
+    "Unknown legacy deadline cannot be observed or invented; ordinary owner renewal preserves run/history, and idle observers do no source work",
+    "Actual executed/consumed config-save failure rolls back failed commit; prior owner touch/admission only remains observable",
+    "Actual executed/consumed admission-save failure rolls back failed commit; prior owner touch/admission only remains observable",
+    "Actual executed/consumed completion-save failure rolls back failed commit; prior owner touch/admission only remains observable",
+    "Actual executed/consumed event-insert failure rolls back failed commit; prior owner touch/admission only remains observable",
+    "Actual observer generic storage failure returns sanitized 503 without lease/source renewal",
+    "Actual observer read-quota storage failure returns sanitized 503 without lease/source renewal",
+    "Actual observer write-quota storage failure returns sanitized 503 without lease/source renewal",
+    "Live observer/reconnect/idle never renew owner TTL; actual alarm clears source and sends close 4001",
+    "Expired attach 410 and late origin cannot resurrect source while idle alarm is still pending",
+    "Elapsed deadline before delayed alarm becomes a new owner run; old sockets expire and old permit stays 409 under renewed lease",
+    "Same fixed owner workload has identical consumed SQL and KV/alarm operation counts with 0/1/4 watchers; handshakes metered separately"
+  ],
+  "costs": [
+    {
+      "operation": "unknown-observer-cold",
+      "sql": {
+        "statements": 5,
+        "rowsRead": 6,
+        "rowsWritten": 9
+      },
+      "operations": {
+        "kvGet": 0,
+        "kvPut": 0,
+        "kvDelete": 0,
+        "alarmGet": 0,
+        "alarmSet": 0,
+        "alarmDelete": 0
+      },
+      "faultsFired": 0
+    },
+    {
+      "operation": "existing-observer-handshake",
+      "sql": {
+        "statements": 2,
+        "rowsRead": 2,
+        "rowsWritten": 0
+      },
+      "operations": {
+        "kvGet": 1,
+        "kvPut": 0,
+        "kvDelete": 0,
+        "alarmGet": 0,
+        "alarmSet": 0,
+        "alarmDelete": 0
+      },
+      "faultsFired": 0
+    },
+    {
+      "operation": "warm-handshakes",
+      "watchers": 0,
+      "sql": {
+        "statements": 0,
+        "rowsRead": 0,
+        "rowsWritten": 0
+      },
+      "operations": {
+        "kvGet": 0,
+        "kvPut": 0,
+        "kvDelete": 0,
+        "alarmGet": 0,
+        "alarmSet": 0,
+        "alarmDelete": 0
+      },
+      "faultsFired": 0
+    },
+    {
+      "operation": "fixed-recurring-owner-workload",
+      "workload": "config + two successful requests + reset; ten committed updates",
+      "watchers": 0,
+      "sql": {
+        "statements": 33,
+        "rowsRead": 28,
+        "rowsWritten": 16
+      },
+      "operations": {
+        "kvGet": 10,
+        "kvPut": 4,
+        "kvDelete": 0,
+        "alarmGet": 0,
+        "alarmSet": 4,
+        "alarmDelete": 0
+      },
+      "faultsFired": 0,
+      "originCalls": 2
+    },
+    {
+      "operation": "warm-handshakes",
+      "watchers": 1,
+      "sql": {
+        "statements": 2,
+        "rowsRead": 2,
+        "rowsWritten": 0
+      },
+      "operations": {
+        "kvGet": 1,
+        "kvPut": 0,
+        "kvDelete": 0,
+        "alarmGet": 0,
+        "alarmSet": 0,
+        "alarmDelete": 0
+      },
+      "faultsFired": 0
+    },
+    {
+      "operation": "fixed-recurring-owner-workload",
+      "workload": "config + two successful requests + reset; ten committed updates",
+      "watchers": 1,
+      "sql": {
+        "statements": 33,
+        "rowsRead": 28,
+        "rowsWritten": 16
+      },
+      "operations": {
+        "kvGet": 10,
+        "kvPut": 4,
+        "kvDelete": 0,
+        "alarmGet": 0,
+        "alarmSet": 4,
+        "alarmDelete": 0
+      },
+      "faultsFired": 0,
+      "originCalls": 2
+    },
+    {
+      "operation": "warm-handshakes",
+      "watchers": 4,
+      "sql": {
+        "statements": 8,
+        "rowsRead": 8,
+        "rowsWritten": 0
+      },
+      "operations": {
+        "kvGet": 4,
+        "kvPut": 0,
+        "kvDelete": 0,
+        "alarmGet": 0,
+        "alarmSet": 0,
+        "alarmDelete": 0
+      },
+      "faultsFired": 0
+    },
+    {
+      "operation": "fixed-recurring-owner-workload",
+      "workload": "config + two successful requests + reset; ten committed updates",
+      "watchers": 4,
+      "sql": {
+        "statements": 33,
+        "rowsRead": 28,
+        "rowsWritten": 16
+      },
+      "operations": {
+        "kvGet": 10,
+        "kvPut": 4,
+        "kvDelete": 0,
+        "alarmGet": 0,
+        "alarmSet": 4,
+        "alarmDelete": 0
+      },
+      "faultsFired": 0,
+      "originCalls": 2
+    }
+  ],
+  "serverCloseControlFrames": [
+    {
+      "code": 1008,
+      "received": true
+    },
+    {
+      "code": 1008,
+      "received": true
+    },
+    {
+      "code": 1009,
+      "received": true
+    },
+    {
+      "code": 1011,
+      "received": true
+    },
+    {
+      "code": 1011,
+      "received": true
+    },
+    {
+      "code": 1011,
+      "received": true
+    },
+    {
+      "code": 1011,
+      "received": true
+    },
+    {
+      "code": 1011,
+      "received": true
+    },
+    {
+      "code": 4001,
+      "received": true
+    },
+    {
+      "code": 4001,
+      "received": true
+    },
+    {
+      "code": 4001,
+      "received": true
+    },
+    {
+      "code": 4001,
+      "received": true
+    }
+  ],
+  "touchFailureBoundaries": [
+    {
+      "stage": "owner-save",
+      "revisionDelta": 0,
+      "deadlineRenewed": false,
+      "alarmRenewed": false,
+      "objectReset": true
+    },
+    {
+      "stage": "owner-alarm",
+      "revisionDelta": 0,
+      "deadlineRenewed": false,
+      "alarmRenewed": false,
+      "objectReset": true
+    },
+    {
+      "stage": "owner-alarm-after",
+      "revisionDelta": 0,
+      "deadlineRenewed": false,
+      "alarmRenewed": false,
+      "objectReset": true
+    }
+  ],
+  "limitations": [
+    "SQL counts are consumed cursor rowsRead/rowsWritten/statements, including SQL triggers. They exclude hidden KV SQLite work and alarm billing; KV/alarm method operations are reported separately.",
+    "Controlled fixed workload only. No production account usage, global throughput, CPU, socket duration charges, natural hibernation timing or daily capacity claim.",
+    "Forced hibernation uses unsafeEvictDurableObject with webSockets:hibernate; no abort or manually reconstructed production object.",
+    "Observers use real WebSocket network peers against Miniflare.ready, including close and original-socket hibernation assertions. dispatchFetch is used only for HTTP requests; its in-process WebSocket bridge does not faithfully deliver server-initiated HTTP/alarm close handshakes.",
+    "The ws network peer has a 500 ms close-handshake timeout. Close codes require a received server close frame; this does not measure natural TCP teardown timing in the local runtime.",
+    "Faults execute and consume real SQL before throwing inside the unchanged production transactionSync. A separately committed owner touch may be published before a later action fails.",
+    "A rejected production blockConcurrencyWhile resets the object and can interrupt observers with code 1006 before a terminal frame. Tests distinguish this from handled action failures that send unavailable/1011; neither confirms the failed action."
+  ],
+  "sourceStableDuringRun": true,
+  "result": "passed"
+}

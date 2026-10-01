@@ -679,7 +679,9 @@ components:
       description: |
         expiresAt must be later than now; committedAt and event times must not be in the future.
         Zero revision is legacy snapshot-only with null committedAt. Positive revision requires
-        nonnull committedAt. Each event ID is unique. Pending equals total minus the sum of counts.
+        nonnull committedAt. Each event ID is unique. Unsettled outcomes equal total minus the
+        sum of counts. This means no recorded outcome, not necessarily work still running:
+        a request may finish without successfully saving its settlement.
       properties:
         schemaVersion: { type: integer, const: 1 }
         kind: { type: string, enum: [snapshot, update] }

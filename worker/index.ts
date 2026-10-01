@@ -190,12 +190,16 @@ export class ReliabilityLab extends DurableObject<Env> {
       if (ws.readyState !== WebSocket.OPEN) continue;
       try {
         ws.send(encoded);
+      } catch {
+        // Notification failure must not skip the independent close attempt.
+      }
+      try {
         ws.close(
           code,
           kind === 'expired' ? 'Lab idle deadline expired' : 'Lab observer unavailable',
         );
       } catch {
-        // Best-effort notification; never expose the storage exception.
+        // Cleanup is best effort; continue closing the remaining recipients.
       }
     }
   }
@@ -440,7 +444,7 @@ export default {
         ok: true,
         colo: colo(request),
         platform: 'Cloudflare Workers + Durable Objects',
-        version: '3.12.1',
+        version: '3.12.2',
         origin: 'service-binding',
       });
     if (url.pathname === '/api/ready') {
