@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import {
   COUNTER_SOURCE,
+  COUNTER_RPC_SOURCE,
   CounterSamplesError,
   MAX_COUNTER_ARTIFACT_BYTES,
   MAX_COUNTER_SAMPLES,
@@ -63,6 +64,84 @@ test('canonical hashing tolerates JSON key order but detects changed state', asy
   const changed = structuredClone(artifact);
   changed.samples[1].state.value = 2;
   await assert.rejects(importSamples(JSON.stringify(changed)), code('record-integrity'));
+});
+
+test('existing-read RPC profile round-trips with its explicit pinned descriptor', async () => {
+  const captured = finish(
+    append(start(sample(), '3.13.0', COUNTER_RPC_SOURCE), sample(1, 2000)),
+    'stopped',
+    2010,
+  );
+  const { artifact, json } = await exportSamples(captured);
+  const imported = await importSamples(json);
+  assert.deepEqual(imported, artifact);
+  assert.deepEqual(imported.source, COUNTER_RPC_SOURCE);
+  assert.equal(imported.source.adapterVersion, 2);
+  assert.deepEqual(
+    imported.samples.map((item) => item.state.value),
+    [0, 1],
+  );
+  assert.ok(
+    imported.samples.every((item) => item.sourceRevision === null && item.sourceCommitAt === null),
+  );
+  assert.ok(Object.isFrozen(imported.source));
+});
+
+test('the canonical content hash covers the chosen source profile', async () => {
+  const first = await exportSamples(finish(start(sample(), '3.13.0'), 'stopped', 1010));
+  const second = await exportSamples(
+    finish(start(sample(), '3.13.0', COUNTER_RPC_SOURCE), 'stopped', 1010),
+  );
+  assert.notEqual(first.artifact.contentHash, second.artifact.contentHash);
+  const changed = structuredClone(first.artifact);
+  changed.source = { ...COUNTER_RPC_SOURCE };
+  await assert.rejects(importSamples(JSON.stringify(changed)), code('record-integrity'));
+});
+
+test('only exact known source descriptors are accepted with safe failures', async () => {
+  for (const source of [COUNTER_SOURCE, COUNTER_RPC_SOURCE]) {
+    for (const patch of [
+      { example: 'synthetic-private-source' },
+      { commit: '0'.repeat(40) },
+      { fileSHA256: '0'.repeat(64) },
+      { adapterVersion: 3 },
+      { adapterVersion: '2' },
+      { secret: 'synthetic-private-source' },
+    ]) {
+      const invalid = { ...source, ...patch };
+      assert.throws(
+        () => start(sample(), '3.13.0', invalid),
+        (error) => {
+          code('invalid-record')(error);
+          assert.ok(!error.message.includes('synthetic-private-source'));
+          return true;
+        },
+      );
+      const { artifact } = await exportSamples(record());
+      await assert.rejects(
+        importSamples(JSON.stringify({ ...artifact, source: invalid })),
+        code('invalid-record'),
+      );
+    }
+  }
+  assert.throws(() => start(sample(), '3.13.0', null), code('invalid-record'));
+});
+
+test('caller source aliases cannot change a capture or its asynchronous export', async () => {
+  const source = { ...COUNTER_RPC_SOURCE };
+  const captured = start(sample(), '3.13.0', source);
+  source.adapterVersion = 1;
+  source.example = 'synthetic-private-source';
+  assert.deepEqual(captured.source, COUNTER_RPC_SOURCE);
+  assert.ok(Object.isFrozen(captured.source));
+  const mutable = structuredClone(finish(captured, 'stopped', 1010));
+  const exporting = exportSamples(mutable);
+  mutable.source.adapterVersion = 1;
+  const { artifact, json } = await exporting;
+  assert.deepEqual(artifact.source, COUNTER_RPC_SOURCE);
+  assert.deepEqual(await importSamples(json), artifact);
+  assert.equal(COUNTER_SOURCE.adapterVersion, 1);
+  assert.equal(COUNTER_RPC_SOURCE.adapterVersion, 2);
 });
 
 test('known root and nested duplicate keys cannot survive strict artifact import', async () => {
@@ -145,7 +224,7 @@ test('unknown source pin, schema, kind and coverage are not accepted', async () 
   const changes = [
     (value) => (value.source.commit = '0'.repeat(40)),
     (value) => (value.source.fileSHA256 = '0'.repeat(64)),
-    (value) => (value.source.adapterVersion = 2),
+    (value) => (value.source.adapterVersion = 3),
     (value) => (value.schemaVersion = 2),
     (value) => (value.kind = 'edgelab-observer-recording'),
     (value) => (value.coverage = 'complete-history'),
@@ -335,6 +414,19 @@ test('offline CLI reads bounded UTF-8 and never prints rejected file content or 
     assert.match(logs[0], /does not establish authenticity/);
     assert.match(logs[0], /Observation clock/);
     assert.match(logs[0], /Recorder receipt clock/);
+    assert.match(
+      logs[0],
+      /Declared observation clock origin: Durable Object after the additional KV read/,
+    );
+    const rpcRecord = finish(start(sample(), '3.13.0', COUNTER_RPC_SOURCE), 'stopped', 1010);
+    await writeFile(path, (await exportSamples(rpcRecord)).json);
+    assert.equal(await main([path]), 0);
+    assert.match(logs[1], /Adapter: 2/);
+    assert.match(
+      logs[1],
+      /Declared observation clock origin: gateway after the existing counter read RPC returns/,
+    );
+    assert.match(logs[1], /Source revision and source commit time: unavailable/);
     await writeFile(path, 'private-contents ' + ' '.repeat(MAX_COUNTER_ARTIFACT_BYTES));
     await assert.rejects(readBoundedFile(path));
     assert.equal(await main([path]), 1);

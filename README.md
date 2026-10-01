@@ -26,7 +26,7 @@ The public gateway monitors its actual HTTPS health endpoint and a private catal
 
 The [product value assessment](docs/PRODUCT_VALUE.md) compares existing tools and narrows future scope to validating one developer debugging workflow. External adoption and an unmet market need remain unproven.
 
-A separate [local counter portability experiment](examples/counter-evidence/README.md) applies bounded evidence capture to unchanged Cloudflare example code. Two actual response-loss cases, read-only samples and forced eviction distinguish observed durable state from uncertain delivery; a memory-only control fails persistence. It adds no deployed feature and establishes no customer adoption.
+A separate [local counter portability experiment](examples/counter-evidence/README.md) applies bounded evidence capture to unchanged Cloudflare example code. A metered fixture and a smaller wrapper using the existing read RPC each pass two actual response-loss cases, route parity and forced eviction; a memory-only control fails persistence. The smaller wrapper adds zero Durable Object methods or classes and declares its gateway observation clock separately. [Frozen proof](docs/evidence/counter-portability/rpc/manifest.json) and 22 codec tests preserve both profiles' boundaries. It adds no deployed feature and establishes no customer adoption.
 
 ## What is implemented
 

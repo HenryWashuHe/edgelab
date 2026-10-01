@@ -39,6 +39,12 @@ The [counter experiment](../examples/counter-evidence/README.md) preserves Cloud
 
 This meets a small technical portability gate. The counter already has a read path, and these samples do not identify which command caused a value under arbitrary concurrent traffic. It does not establish an unmet inspection market, a general debugger, external adoption or faster diagnosis.
 
+## Second adapter checkpoint: existing RPC reuse
+
+A second local adapter keeps the original `Counter` unchanged and re-exports it. Its Worker wrapper adds `/__sample` by calling the existing `getCounterValue()` RPC, validating the returned number and projecting only that value. It adds zero Durable Object methods or classes and does not instrument `ctx.storage`. Compared with the first metered fixture, this reduces the structural setup burden; setup minutes, external adoption and faster diagnosis have not been measured.
+
+`adapterVersion: 2` declares a gateway observation timestamp recorded after the RPC returns, with native revision and commit time still null. The timestamp is not the actor's read or commit time, and concurrent writes can occur between the sampled read and that timestamp. Version 2 provides no storage-call metering or arbitrary KV inspection. The [second frozen manifest](evidence/counter-portability/rpc/manifest.json) records actual runtime route parity, ten samples preserving the observed value, three safely rejected unsupported values, both response-loss cases and retained values through forced eviction. Both profiles' artifacts pass network-blocked offline inspection; the original frozen experiment remains separate. These results do not establish setup minutes, external adoption or faster diagnosis.
+
 ## Next scope and decision gate
 
 1. Use the counter checkpoint to assess adapter/setup effort, then investigate a meaningful failure in a real independent application if a developer's recent debugging problem warrants it. Compare existing logs/native traces with the minimum evidence adapter needed. Do not build a general SDK first.

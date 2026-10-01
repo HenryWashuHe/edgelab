@@ -1,6 +1,6 @@
 import { open } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
-import { COUNTER_SOURCE, MAX_COUNTER_ARTIFACT_BYTES, importSamples, inspect } from './codec.mjs';
+import { MAX_COUNTER_ARTIFACT_BYTES, importSamples, inspect } from './codec.mjs';
 
 /** Read at most the artifact limit plus one byte, even if the file grows. */
 export async function readBoundedFile(path) {
@@ -29,12 +29,16 @@ export async function main(args = process.argv.slice(2)) {
   try {
     const artifact = await importSamples(await readBoundedFile(args[0]));
     const summary = inspect(artifact);
+    const source = artifact.source;
     console.log(
       [
         'EdgeLab counter read samples — offline inspection',
-        `Source: ${COUNTER_SOURCE.example}@${COUNTER_SOURCE.commit}`,
-        `Source file SHA-256: ${COUNTER_SOURCE.fileSHA256}`,
-        `Adapter: ${COUNTER_SOURCE.adapterVersion}; producer: ${artifact.producerVersion}`,
+        `Source: ${source.example}@${source.commit}`,
+        `Source file SHA-256: ${source.fileSHA256}`,
+        `Adapter: ${source.adapterVersion}; producer: ${artifact.producerVersion}`,
+        source.adapterVersion === 1
+          ? 'Declared observation clock origin: Durable Object after the additional KV read.'
+          : 'Declared observation clock origin: gateway after the existing counter read RPC returns.',
         `Coverage: ${artifact.coverage}; samples: ${summary.sampleCount}`,
         `Observed value: first ${summary.firstValue}; last ${summary.lastValue}; range ${summary.minimumValue}..${summary.maximumValue}`,
         `Observed value changes: ${summary.valueChanges}; these do not identify commands or causes.`,

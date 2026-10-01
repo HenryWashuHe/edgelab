@@ -1,0 +1,312 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-counter-portability-proof",
+  "measuredAt": "2026-10-01T18:14:59.803Z",
+  "producerVersion": "3.12.1",
+  "environment": {
+    "node": "25.4.0",
+    "esbuild": "0.28.1",
+    "miniflare": "5.20260926.0-alpha",
+    "compatibilityDate": "2026-09-01",
+    "storage": "Ephemeral local workerd SQLite DO using asynchronous KV API"
+  },
+  "upstream": {
+    "repository": "cloudflare/cloudflare-docs",
+    "commit": "976c80e2120fdea5b4e1b1dd0eff2683802da981",
+    "documentPath": "src/content/docs/durable-objects/examples/build-a-counter.mdx",
+    "documentSha256": "230f4451f61befd0171d39b64b33c9f8fbb16e4f4cc920f6fa67cf6e9c5d5bd4",
+    "extraction": "First JavaScript fenced block, unchanged UTF-8 bytes with final LF.",
+    "codePath": "examples/counter-evidence/upstream/counter.js",
+    "codeBytes": 1713,
+    "codeSha256": "1c7c0f960a1f9b91b0b7488fc228208d8ec2a39fdfaf0d89b553184fae9151a6",
+    "licensePath": "LICENSE-CODE",
+    "license": "MIT",
+    "licenseBytes": 1088,
+    "licenseSha256": "246b89de9b9621800e31db8422c53fdcb41b942a0cc1f7733dc6736fe49e6670"
+  },
+  "builds": {
+    "original": {
+      "sha256": "5f580e8ef39dc0c4140b62c09304f96b19ce84375dd505bbd6a78a9d0640b633",
+      "inputs": [
+        "examples/counter-evidence/upstream/counter.js"
+      ]
+    },
+    "adapter": {
+      "sha256": "0beaafebe4c0dbae5de9fa571100659cb4aa795a68cb1d1925780b9723262491",
+      "inputs": [
+        "examples/counter-evidence/adapter.mjs",
+        "examples/counter-evidence/upstream/counter.js"
+      ]
+    },
+    "rpcAdapter": {
+      "sha256": "971342fcc5308271d29e8afbfd543a78e9400ffa5d4efe0b08ca21822360eb50",
+      "inputs": [
+        "examples/counter-evidence/rpc-adapter.mjs",
+        "examples/counter-evidence/upstream/counter.js"
+      ],
+      "className": "Counter"
+    },
+    "memoryControl": {
+      "sha256": "b50f46efc18034009efda227d9c12fd3a9d2b8750ddb92fa8ad6e17851985b33",
+      "inputs": [
+        "examples/counter-evidence/memory-control.mjs",
+        "examples/counter-evidence/upstream/counter.js"
+      ]
+    }
+  },
+  "routeParity": [
+    {
+      "path": "/",
+      "method": "GET",
+      "value": 0
+    },
+    {
+      "path": "/increment",
+      "method": "POST",
+      "value": 1
+    },
+    {
+      "path": "/increment",
+      "method": "GET",
+      "value": 2
+    },
+    {
+      "path": "/decrement",
+      "method": "POST",
+      "value": 1
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "value": 1
+    }
+  ],
+  "transport": {
+    "beforeAttempts": 1,
+    "beforeDelegations": 0,
+    "afterAttempts": 1,
+    "afterDelegations": 1,
+    "afterResponsesConsumed": 1,
+    "upstreamErrors": 0
+  },
+  "rpcTransport": {
+    "beforeAttempts": 1,
+    "beforeDelegations": 0,
+    "afterAttempts": 1,
+    "afterDelegations": 1,
+    "afterResponsesConsumed": 1,
+    "upstreamErrors": 0
+  },
+  "artifacts": [
+    {
+      "file": "before-loss.json",
+      "bytes": 913,
+      "contentHash": "744c37b2efcf49fac4e74603301381a272acb1b1d143ce3f9d332871f1f2080f",
+      "adapterVersion": 1,
+      "values": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "file": "after-loss.json",
+      "bytes": 913,
+      "contentHash": "e94636cd237b1cb60f153b1592ad1e6d1e8ade671b13f88bb2ea45132f5279cd",
+      "adapterVersion": 1,
+      "values": [
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "file": "rpc-before-loss.json",
+      "bytes": 913,
+      "contentHash": "4d55a5a6de3a9b025974aa8b055ad889c2ddc167e45f4cbf99c1da183f773020",
+      "adapterVersion": 2,
+      "values": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "file": "rpc-after-loss.json",
+      "bytes": 913,
+      "contentHash": "ff5f84113183a21e02e8a8576f2002cede3d4079a71f89d1878eb03016cc24c7",
+      "adapterVersion": 2,
+      "values": [
+        0,
+        1,
+        1
+      ]
+    }
+  ],
+  "sampling": {
+    "samplesPerCase": 3,
+    "additionalKVGetCallsPerSample": 1,
+    "additionalKVWritesPerSample": 0,
+    "explicitAlarmOrSyncMethodsPerSample": 0,
+    "diagnosticMeterRPCsPerMeasuredSample": 2,
+    "resumedMeters": {
+      "before": {
+        "get": 1,
+        "put": 0,
+        "delete": 0,
+        "list": 0,
+        "deleteAll": 0,
+        "getAlarm": 0,
+        "setAlarm": 0,
+        "deleteAlarm": 0,
+        "sync": 0
+      },
+      "after": {
+        "get": 1,
+        "put": 0,
+        "delete": 0,
+        "list": 0,
+        "deleteAll": 0,
+        "getAlarm": 0,
+        "setAlarm": 0,
+        "deleteAlarm": 0,
+        "sync": 0
+      }
+    },
+    "beforeLossMeters": {
+      "before": {
+        "get": 1,
+        "put": 0,
+        "delete": 0,
+        "list": 0,
+        "deleteAll": 0,
+        "getAlarm": 0,
+        "setAlarm": 0,
+        "deleteAlarm": 0,
+        "sync": 0
+      },
+      "after": {
+        "get": 1,
+        "put": 0,
+        "delete": 0,
+        "list": 0,
+        "deleteAll": 0,
+        "getAlarm": 0,
+        "setAlarm": 0,
+        "deleteAlarm": 0,
+        "sync": 0
+      }
+    },
+    "afterLossMeters": {
+      "before": {
+        "get": 1,
+        "put": 0,
+        "delete": 0,
+        "list": 0,
+        "deleteAll": 0,
+        "getAlarm": 0,
+        "setAlarm": 0,
+        "deleteAlarm": 0,
+        "sync": 0
+      },
+      "after": {
+        "get": 2,
+        "put": 1,
+        "delete": 0,
+        "list": 0,
+        "deleteAll": 0,
+        "getAlarm": 0,
+        "setAlarm": 0,
+        "deleteAlarm": 0,
+        "sync": 0
+      }
+    },
+    "scope": "Attempted logical storage methods, not SQL rows or billed work"
+  },
+  "rpcSampling": {
+    "adapterVersion": 2,
+    "observedAtLocation": "Gateway after the original getCounterValue RPC resolves",
+    "reusedSourceMethod": "getCounterValue",
+    "originalDurableObjectClassUnchanged": true,
+    "sampleRequestsPerCapturedSample": 1,
+    "diagnosticMeterRPCs": 0,
+    "repeatedSamplesWithUnchangedObservedValue": 10,
+    "unsupportedValueCasesRejectedSafely": 3,
+    "scope": "Read-RPC/value parity and source review; unmetered storage calls, SQL work, latency and billing are not measured"
+  },
+  "negativeControl": {
+    "kind": "intentional-memory-only-substitute",
+    "separateRuntime": true,
+    "valueBeforeEviction": 1,
+    "valueAfterEviction": 0,
+    "persistenceRequirementSatisfied": false,
+    "upstreamDefect": false
+  },
+  "boundaries": {
+    "externalAuthoredExample": true,
+    "originalMutationSourceUnchanged": true,
+    "realLocalNetworkLoss": true,
+    "actualForcedEviction": true,
+    "offlineInspectorNetworkBlocked": true,
+    "retries": 0,
+    "productionOrAccountCalls": 0,
+    "nativeCommitTimestamp": null,
+    "deterministicReexecution": false,
+    "perCommandAttribution": false,
+    "exactlyOnceExecution": false,
+    "externalAdoption": false,
+    "fasterDiagnosisMeasured": false
+  },
+  "testedSources": [
+    {
+      "path": "examples/counter-evidence/adapter.mjs",
+      "sha256": "989f3258d347200a6246c4ef72c786268fdd0c434b50b202a4d504969514aa5a"
+    },
+    {
+      "path": "examples/counter-evidence/codec.mjs",
+      "sha256": "9e3f0a56a5dac9b584696b409eeee65bb9f78a04dd197bbefed98d1a60d77318"
+    },
+    {
+      "path": "examples/counter-evidence/inspect.mjs",
+      "sha256": "33feb5c9caf6ceecc852483011b666a597f7f5fa86c8bffd44a2592f1f352c75"
+    },
+    {
+      "path": "examples/counter-evidence/memory-control.mjs",
+      "sha256": "a19e43aa26c6b8c8fbef7c8cf9703eb2900fb41fc377a023dcdac2426c9724f4"
+    },
+    {
+      "path": "examples/counter-evidence/rpc-adapter.mjs",
+      "sha256": "6e6f6aded0f81c91f9ec97ec5750144b83fd610b0a87931738fde85be3f55e82"
+    },
+    {
+      "path": "examples/counter-evidence/upstream/counter.js",
+      "sha256": "1c7c0f960a1f9b91b0b7488fc228208d8ec2a39fdfaf0d89b553184fae9151a6"
+    },
+    {
+      "path": "examples/counter-evidence/upstream/LICENSE-CODE",
+      "sha256": "246b89de9b9621800e31db8422c53fdcb41b942a0cc1f7733dc6736fe49e6670"
+    },
+    {
+      "path": "examples/counter-evidence/upstream/provenance.json",
+      "sha256": "7c05e42238aa46b2daa773ace01e93b3466dfbb9dfe92d7d7e1cb164f9b2ead2"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "3db290a85836ce248f98fa9146a71195b40ac9ff7dcd37704d028e1e194ec349"
+    },
+    {
+      "path": "package.json",
+      "sha256": "ff974ec3c069282aead7d717b921f29f97c1bbca57cbdf912c36d251e65498e6"
+    },
+    {
+      "path": "scripts/counter-portability.mjs",
+      "sha256": "81ae6ad87c2452a63b80295bad8d4a0aa2a7e4d7d05f97d89c7e323780338a06"
+    },
+    {
+      "path": "worker/unique-json.mjs",
+      "sha256": "e3fbbc48550a7e035f2caebd5bd37cf544d6535b477dd63b54ec7ff2c7763c6a"
+    }
+  ],
+  "sourceHashesStableAfterDisposal": true,
+  "runtimesDisposed": true
+}

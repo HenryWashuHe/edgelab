@@ -1,5 +1,11 @@
 # Verification record
 
+## Existing-RPC counter adapter checkpoint
+
+The second local counter wrapper re-exports Cloudflare's pinned original `Counter` unchanged and uses its existing `getCounterValue()` RPC. It adds zero Durable Object methods/classes and no storage instrumentation. Profile 2 declares a gateway timestamp after that RPC returns, with native revision/commit metadata null; profile 1 retains its original DO-side clock and metered fixture. Both exact known source descriptors are covered by the canonical content hash. All 22 codec Node tests pass, including profile 2 import/export, source immutability and unchanged historical profile 1 hashes.
+
+The [frozen four-runtime proof](counter-portability/rpc/README.md), measured October 1 at 18:14:59 UTC, checks five normal-route outcomes against the bare original, ten extra RPC samples preserving the observed numeric value, and three unsupported getter results rejected with a static 503. Both adapters separately pass actual before-delegation and after-response network losses: observed values remain `0→0→0` and `0→1→1` through forced eviction. A separate memory-only control loses one to zero. All four exported artifacts pass network-blocked offline inspection. Twelve pinned source/foundation inputs remain stable through disposal. Only profile 1 meters attempted logical storage calls; profile 2 establishes neither physical SQL cost nor key-set/alarm preservation. Production application code and deployment are unchanged. Setup time, external adoption, faster diagnosis and rendered interaction remain unverified.
+
 ## EdgeLab 3.12.1: strict evidence JSON
 
 Both codecs reject duplicate decoded object names before parsing can discard earlier values, including equivalent escaped spellings. Raw observer messages reach the strict recorder before display normalization. Existing schema/hash rules, prefix closure and historical archive hashes remain unchanged. The shared browser-safe iterative scanner bounds input to 192 KiB and 64 containers; codec limits remain narrower where applicable. [ADR 014](../adr/014-unique-evidence-json.md)

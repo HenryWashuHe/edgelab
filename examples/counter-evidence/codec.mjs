@@ -11,6 +11,7 @@ export const COUNTER_SOURCE = Object.freeze({
   fileSHA256: '1c7c0f960a1f9b91b0b7488fc228208d8ec2a39fdfaf0d89b553184fae9151a6',
   adapterVersion: 1,
 });
+export const COUNTER_RPC_SOURCE = Object.freeze({ ...COUNTER_SOURCE, adapterVersion: 2 });
 const reasons = ['stopped', 'read-failed', 'invalid-sample', 'interrupted', 'sample-limit'];
 const sampleKeys = ['observedAt', 'receivedAt', 'sourceRevision', 'sourceCommitAt', 'state'];
 const bodyKeys = [
@@ -116,6 +117,15 @@ function sampleFrom(input, sequence) {
     throw new CounterSamplesError('invalid-sample');
   }
 }
+function sourceFrom(value) {
+  const known = [COUNTER_SOURCE, COUNTER_RPC_SOURCE].find(
+    (source) =>
+      exact(value, Object.keys(source)) &&
+      Object.entries(source).every(([key, expected]) => value[key] === expected),
+  );
+  if (!known) throw new CounterSamplesError('invalid-record');
+  return { ...known };
+}
 function bodyFrom(value, artifact = false) {
   try {
     if (
@@ -123,8 +133,6 @@ function bodyFrom(value, artifact = false) {
       value.schemaVersion !== 1 ||
       value.kind !== 'edgelab-counter-samples' ||
       !validVersion(value.producerVersion) ||
-      !exact(value.source, Object.keys(COUNTER_SOURCE)) ||
-      !Object.entries(COUNTER_SOURCE).every(([key, expected]) => value.source[key] === expected) ||
       value.coverage !== 'discrete-read-samples' ||
       !timestamp(value.startedAt) ||
       !timestamp(value.lastReceivedAt) ||
@@ -132,6 +140,7 @@ function bodyFrom(value, artifact = false) {
       value.samples.length < 1
     )
       throw new CounterSamplesError('invalid-record');
+    const source = sourceFrom(value.source);
     if (value.samples.length > MAX_COUNTER_SAMPLES) throw new CounterSamplesError('record-size');
     const samples = value.samples.map((sample, index) => {
       if (!object(sample)) throw new CounterSamplesError('invalid-record');
@@ -158,7 +167,7 @@ function bodyFrom(value, artifact = false) {
       schemaVersion: 1,
       kind: 'edgelab-counter-samples',
       producerVersion: value.producerVersion,
-      source: { ...COUNTER_SOURCE },
+      source,
       coverage: 'discrete-read-samples',
       startedAt: value.startedAt,
       lastReceivedAt: value.lastReceivedAt,
@@ -176,7 +185,7 @@ function bodyFrom(value, artifact = false) {
     throw new CounterSamplesError('invalid-record');
   }
 }
-export function start(sample, producerVersion) {
+export function start(sample, producerVersion, source = COUNTER_SOURCE) {
   if (!validVersion(producerVersion)) throw new CounterSamplesError('invalid-record');
   const parsed = sampleFrom(sample);
   return freeze(
@@ -184,7 +193,7 @@ export function start(sample, producerVersion) {
       schemaVersion: 1,
       kind: 'edgelab-counter-samples',
       producerVersion,
-      source: COUNTER_SOURCE,
+      source,
       coverage: 'discrete-read-samples',
       startedAt: parsed.receivedAt,
       lastReceivedAt: parsed.receivedAt,

@@ -15,6 +15,13 @@ import * as codec from '../examples/counter-evidence/codec.mjs';
 // browser, deployment, account, application credential or remote input exists.
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const directory = resolve(root, 'output/counter-portability');
+const successFiles = [
+  'result.json',
+  'before-loss.json',
+  'after-loss.json',
+  'rpc-before-loss.json',
+  'rpc-after-loss.json',
+];
 const started = performance.now();
 const sourceHashes = new Map();
 const runtimes = [];
@@ -179,6 +186,22 @@ async function sample(mf, ready, name) {
   assert.equal(value.sourceCommitAt, null);
   return { ...value, receivedAt };
 }
+async function rpcSample(mf, ready, name) {
+  stage = 'rpc-sample-read';
+  const response = await bounded(mf.dispatchFetch(address(ready, '/__sample', name)));
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('Cache-Control'), 'no-store');
+  assert.equal(response.headers.get('X-Content-Type-Options'), 'nosniff');
+  const value = JSON.parse(await body(response));
+  assert.deepEqual(
+    Object.keys(value).sort(),
+    ['observedAt', 'sourceRevision', 'sourceCommitAt', 'state'].sort(),
+  );
+  assert.deepEqual(Object.keys(value.state), ['value']);
+  assert.equal(value.sourceRevision, null);
+  assert.equal(value.sourceCommitAt, null);
+  return { ...value, receivedAt: Date.now() };
+}
 async function unavailable(url) {
   try {
     const response = await bounded(
@@ -209,8 +232,7 @@ try {
   assert.equal(process.argv.length, 2);
   await mkdir(directory, { recursive: true });
   // A failed rerun must not leave an old result looking like current success.
-  for (const name of ['result.json', 'before-loss.json', 'after-loss.json'])
-    await rm(resolve(directory, name), { force: true });
+  for (const name of successFiles) await rm(resolve(directory, name), { force: true });
   stage = 'source-provenance';
   const code = await pin('examples/counter-evidence/upstream/counter.js');
   const license = await pin('examples/counter-evidence/upstream/LICENSE-CODE');
@@ -234,12 +256,15 @@ try {
   const version = JSON.parse(await readFile(resolve(root, 'package.json'))).version;
   const bareBuild = await bundle('examples/counter-evidence/upstream/counter.js');
   const adaptedBuild = await bundle('examples/counter-evidence/adapter.mjs');
+  const rpcBuild = await bundle('examples/counter-evidence/rpc-adapter.mjs');
   const memoryBuild = await bundle('examples/counter-evidence/memory-control.mjs');
   const bare = runtime(bareBuild, 'Counter');
   const adapted = runtime(adaptedBuild, 'EvidenceCounter');
+  const rpc = runtime(rpcBuild, 'Counter');
   const memory = runtime(memoryBuild, 'MemoryCounter');
   const bareReady = await bounded(bare.ready);
   const ready = await bounded(adapted.ready);
+  const rpcReady = await bounded(rpc.ready);
   const memoryReady = await bounded(memory.ready);
 
   stage = 'unchanged-route-parity';
@@ -254,15 +279,20 @@ try {
   ]) {
     const originalValue = await count(bare, bareReady, parityName, path, method);
     const adaptedValue = await count(adapted, ready, parityName, path, method);
+    const rpcValue = await count(rpc, rpcReady, parityName, path, method);
     assert.equal(adaptedValue, originalValue);
+    assert.equal(rpcValue, originalValue);
     parity.push({ path, method, value: originalValue });
   }
   assert.deepEqual(
     parity.map((row) => row.value),
     [0, 1, 2, 1, 1],
   );
-  for (const mf of [bare, adapted]) {
-    const start = mf === bare ? bareReady : ready;
+  for (const [mf, start] of [
+    [bare, bareReady],
+    [adapted, ready],
+    [rpc, rpcReady],
+  ]) {
     assert.equal(
       (await bounded(mf.dispatchFetch(address(start, '/missing', parityName)))).status,
       404,
@@ -278,13 +308,52 @@ try {
     405,
   );
   assert.equal((await bounded(adapted.dispatchFetch(address(ready, '/__sample')))).status, 400);
+  const refusedSample = await bounded(
+    rpc.dispatchFetch(address(rpcReady, '/__sample', parityName), { method: 'POST' }),
+  );
+  assert.equal(refusedSample.status, 405);
+  assert.equal(refusedSample.headers.get('Allow'), 'GET');
+  assert.equal((await bounded(rpc.dispatchFetch(address(rpcReady, '/__sample')))).status, 400);
+  assert.equal(
+    (await bounded(rpc.dispatchFetch(address(rpcReady, '/__meter', parityName)))).status,
+    404,
+  );
+  stage = 'unmetered-sampling-preserves-value';
+  for (let index = 0; index < 10; index++)
+    assert.equal((await rpcSample(rpc, rpcReady, parityName)).state.value, 1);
+  assert.equal(await count(rpc, rpcReady, parityName), 1);
+
+  stage = 'rpc-adapter-unsupported-values';
+  const rpcNamespace = await bounded(rpc.getDurableObjectNamespace('COUNTERS', 'counter'));
+  const unsupportedValues = [1_000_000_001, 0.5, 'synthetic-not-for-export'];
+  for (const amount of unsupportedValues) {
+    // Exercise the unchanged public RPC method; no storage seed or added DO method.
+    const name = randomUUID();
+    await bounded(rpcNamespace.getByName(name).increment(amount));
+    const response = await bounded(rpc.dispatchFetch(address(rpcReady, '/__sample', name)));
+    assert.equal(response.status, 503);
+    assert.equal(response.headers.get('Cache-Control'), 'no-store');
+    assert.equal(response.headers.get('X-Content-Type-Options'), 'nosniff');
+    assert.deepEqual(JSON.parse(await body(response)), {
+      error: 'Counter inspection unavailable',
+    });
+  }
 
   stage = 'initial-adapter-samples';
-  const names = { before: randomUUID(), after: randomUUID() };
+  const names = {
+    before: randomUUID(),
+    after: randomUUID(),
+    rpcBefore: randomUUID(),
+    rpcAfter: randomUUID(),
+  };
   const beforeInitial = await sample(adapted, ready, names.before);
   const afterInitial = await sample(adapted, ready, names.after);
   assert.equal(beforeInitial.state.value, 0);
   assert.equal(afterInitial.state.value, 0);
+  const rpcBeforeInitial = await rpcSample(rpc, rpcReady, names.rpcBefore);
+  const rpcAfterInitial = await rpcSample(rpc, rpcReady, names.rpcAfter);
+  assert.equal(rpcBeforeInitial.state.value, 0);
+  assert.equal(rpcAfterInitial.state.value, 0);
   const transport = {
     beforeAttempts: 0,
     beforeDelegations: 0,
@@ -293,26 +362,41 @@ try {
     afterResponsesConsumed: 0,
     upstreamErrors: 0,
   };
+  const rpcTransport = { ...transport };
   proxy = createServer(async (request, response) => {
     request.resume();
-    if (request.method !== 'POST' || !['/before', '/after'].includes(request.url)) {
+    if (
+      request.method !== 'POST' ||
+      !['/before', '/after', '/before-rpc', '/after-rpc'].includes(request.url)
+    ) {
       response.writeHead(404).end();
       return;
     }
-    if (request.url === '/before') {
-      transport.beforeAttempts++;
+    const rpcCase = request.url.endsWith('-rpc');
+    const events = rpcCase ? rpcTransport : transport;
+    if (request.url.startsWith('/before')) {
+      events.beforeAttempts++;
       request.socket.destroy();
       return;
     }
-    transport.afterAttempts++;
-    transport.afterDelegations++;
+    events.afterAttempts++;
+    events.afterDelegations++;
     try {
       // Consuming the original normal response crosses its default output gate.
       // The client receives neither headers nor the response value.
-      assert.equal(await count(adapted, ready, names.after, '/increment', 'POST'), 1);
-      transport.afterResponsesConsumed++;
+      assert.equal(
+        await count(
+          rpcCase ? rpc : adapted,
+          rpcCase ? rpcReady : ready,
+          rpcCase ? names.rpcAfter : names.after,
+          '/increment',
+          'POST',
+        ),
+        1,
+      );
+      events.afterResponsesConsumed++;
     } catch {
-      transport.upstreamErrors++;
+      events.upstreamErrors++;
     }
     request.socket.destroy();
   });
@@ -335,6 +419,10 @@ try {
   assert.equal(await unavailable(`http://127.0.0.1:${port}/before`), true);
   stage = 'network-after-drop';
   assert.equal(await unavailable(`http://127.0.0.1:${port}/after`), true);
+  stage = 'rpc-network-before-drop';
+  assert.equal(await unavailable(`http://127.0.0.1:${port}/before-rpc`), true);
+  stage = 'rpc-network-after-drop';
+  assert.equal(await unavailable(`http://127.0.0.1:${port}/after-rpc`), true);
   stage = 'transport-attempts';
   assert.deepEqual(transport, {
     beforeAttempts: 1,
@@ -344,6 +432,7 @@ try {
     afterResponsesConsumed: 1,
     upstreamErrors: 0,
   });
+  assert.deepEqual(rpcTransport, transport);
   const afterLossMeters = {
     before: await meter(adapted, ready, names.before),
     after: await meter(adapted, ready, names.after),
@@ -361,6 +450,10 @@ try {
   assert.equal(afterAfterLoss.state.value, 1);
   assert.equal((await meter(adapted, ready, names.before)).put, 0);
   assert.equal((await meter(adapted, ready, names.after)).put, 1);
+  const rpcBeforeAfterLoss = await rpcSample(rpc, rpcReady, names.rpcBefore);
+  const rpcAfterAfterLoss = await rpcSample(rpc, rpcReady, names.rpcAfter);
+  assert.equal(rpcBeforeAfterLoss.state.value, 0);
+  assert.equal(rpcAfterAfterLoss.state.value, 1);
 
   stage = 'actual-eviction';
   await bounded(
@@ -369,10 +462,16 @@ try {
   await bounded(
     adapted.unsafeEvictDurableObject('counter', 'EvidenceCounter', { name: names.after }),
   );
+  for (const name of [names.rpcBefore, names.rpcAfter])
+    await bounded(rpc.unsafeEvictDurableObject('counter', 'Counter', { name }));
   const beforeAfterEviction = await sample(adapted, ready, names.before);
   const afterAfterEviction = await sample(adapted, ready, names.after);
   assert.equal(beforeAfterEviction.state.value, 0);
   assert.equal(afterAfterEviction.state.value, 1);
+  const rpcBeforeAfterEviction = await rpcSample(rpc, rpcReady, names.rpcBefore);
+  const rpcAfterAfterEviction = await rpcSample(rpc, rpcReady, names.rpcAfter);
+  assert.equal(rpcBeforeAfterEviction.state.value, 0);
+  assert.equal(rpcAfterAfterEviction.state.value, 1);
   const resumedMeters = {
     before: await meter(adapted, ready, names.before),
     after: await meter(adapted, ready, names.after),
@@ -396,12 +495,26 @@ try {
 
   stage = 'bounded-offline-artifacts';
   const cases = [
-    ['before-loss.json', [beforeInitial, beforeAfterLoss, beforeAfterEviction]],
-    ['after-loss.json', [afterInitial, afterAfterLoss, afterAfterEviction]],
+    [
+      'before-loss.json',
+      [beforeInitial, beforeAfterLoss, beforeAfterEviction],
+      codec.COUNTER_SOURCE,
+    ],
+    ['after-loss.json', [afterInitial, afterAfterLoss, afterAfterEviction], codec.COUNTER_SOURCE],
+    [
+      'rpc-before-loss.json',
+      [rpcBeforeInitial, rpcBeforeAfterLoss, rpcBeforeAfterEviction],
+      codec.COUNTER_RPC_SOURCE,
+    ],
+    [
+      'rpc-after-loss.json',
+      [rpcAfterInitial, rpcAfterAfterLoss, rpcAfterAfterEviction],
+      codec.COUNTER_RPC_SOURCE,
+    ],
   ];
   const artifacts = [];
-  for (const [file, samples] of cases) {
-    let recording = codec.start(samples[0], version);
+  for (const [file, samples, source] of cases) {
+    let recording = codec.start(samples[0], version, source);
     for (const value of samples.slice(1)) recording = codec.append(recording, value);
     recording = codec.finish(recording, 'stopped', Date.now());
     const exported = await codec.exportSamples(recording);
@@ -417,6 +530,7 @@ try {
       file,
       bytes: Buffer.byteLength(exported.json),
       contentHash: imported.contentHash,
+      adapterVersion: imported.source.adapterVersion,
       values: samples.map((row) => row.state.value),
     });
   }
@@ -446,6 +560,7 @@ try {
       ),
     );
     assert(output.stdout.includes(`Content SHA-256: ${artifact.contentHash}`));
+    assert(output.stdout.includes(`Adapter: ${artifact.adapterVersion};`));
   }
   result = {
     schemaVersion: 1,
@@ -464,10 +579,12 @@ try {
     builds: {
       original: { sha256: bareBuild.sha256, inputs: bareBuild.inputs },
       adapter: { sha256: adaptedBuild.sha256, inputs: adaptedBuild.inputs },
+      rpcAdapter: { sha256: rpcBuild.sha256, inputs: rpcBuild.inputs, className: 'Counter' },
       memoryControl: { sha256: memoryBuild.sha256, inputs: memoryBuild.inputs },
     },
     routeParity: parity,
     transport,
+    rpcTransport,
     artifacts,
     sampling: {
       samplesPerCase: 3,
@@ -479,6 +596,18 @@ try {
       beforeLossMeters,
       afterLossMeters,
       scope: 'Attempted logical storage methods, not SQL rows or billed work',
+    },
+    rpcSampling: {
+      adapterVersion: 2,
+      observedAtLocation: 'Gateway after the original getCounterValue RPC resolves',
+      reusedSourceMethod: 'getCounterValue',
+      originalDurableObjectClassUnchanged: true,
+      sampleRequestsPerCapturedSample: 1,
+      diagnosticMeterRPCs: 0,
+      repeatedSamplesWithUnchangedObservedValue: 10,
+      unsupportedValueCasesRejectedSafely: unsupportedValues.length,
+      scope:
+        'Read-RPC/value parity and source review; unmetered storage calls, SQL work, latency and billing are not measured',
     },
     negativeControl: {
       kind: 'intentional-memory-only-substitute',
@@ -530,7 +659,7 @@ try {
       result.runtimesDisposed = true;
       await atomic('result.json', result);
       console.log(
-        'PASS unchanged external counter, two real response-loss cases, read-only samples, actual eviction and offline inspection',
+        'PASS original counter with metered and RPC-only adapters, four response-loss cohorts, eviction and offline inspection',
       );
     } catch {
       process.exitCode = 1;
@@ -538,7 +667,6 @@ try {
     }
   }
   if (process.exitCode) {
-    for (const name of ['result.json', 'before-loss.json', 'after-loss.json'])
-      await rm(resolve(directory, name), { force: true });
+    for (const name of successFiles) await rm(resolve(directory, name), { force: true });
   }
 }
