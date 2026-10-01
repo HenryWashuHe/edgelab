@@ -1,6 +1,6 @@
 # ADR 011: native lab admission before object lookup
 
-Status: release candidate 3.9.0; local proof complete, publication pending.
+Status: accepted in deployed 3.9.0. [Full CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36805850482) passes for source `5bb9bf42134d1fbc9e5279f6e881affa6151240c`; gateway `374aa670-3b88-4446-b4ab-758ce61cf3b9` passes [scoped live verification](../evidence/releases/3.9.0-live-monitoring.json).
 
 ## Context
 
