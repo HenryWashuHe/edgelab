@@ -202,7 +202,7 @@ async function assertDependencies(base) {
   assert.equal(oldCheck.split(checkMarker).length, 2);
   const approvedCheck = oldCheck.replace(
     checkMarker,
-    'npm test && npm run test:assets-unit && npm run build',
+    'npm test && npm run test:assets-unit && npm run test:operator && npm run build',
   );
   for (const [name, value] of Object.entries(oldPackage.scripts))
     assert.equal(currentPackage.scripts[name], name === 'check' ? approvedCheck : value);
@@ -224,7 +224,11 @@ async function assertDependencies(base) {
     packageDependenciesAndOtherNonScriptMetadataEqual: true,
     existingPackageScriptsEqualExceptApprovedCheckAddition: true,
     approvedPackageScriptChanges: {
-      check: { before: oldCheck, after: approvedCheck, inserted: 'npm run test:assets-unit' },
+      check: {
+        before: oldCheck,
+        after: approvedCheck,
+        inserted: 'npm run test:assets-unit && npm run test:operator',
+      },
     },
     addedPackageScripts: Object.keys(currentPackage.scripts)
       .filter((name) => !Object.hasOwn(oldPackage.scripts, name))
