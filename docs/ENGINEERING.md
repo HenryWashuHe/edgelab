@@ -46,6 +46,18 @@ Explain `read.source`, `materializedAt`, `servedAt`, `ageMs` and `maxAgeMs: 1000
 
 The [final-source controlled runtime archive](evidence/releases/3.7.0-status-cache.json), measured at 2026-10-01 01:15:44 UTC, verifies 28 groups, including native SQLite failures and rollback. For both windows a mature two-target miss or export uses 27 statements/158 rows read, and five targets use 63/362, with zero writes. Each 100-request concurrent/sequential warm-hit group uses zero attempted or consumed SQL, KV or alarm work. Constructor/enrollment and mature-input bootstrap are separate profiles; native failed attempts that yield no cursor have unknown row cost rather than a claimed zero. [Implementation CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36800527533) and [live HTTP verification](evidence/releases/3.7.0-live-monitoring.json) pass. The live check confirms both-window reuse provenance and authoritative exports, not production SQL/CPU/billing cost or rendered browser behavior. Explain the measurement boundary before using numbers on a résumé.
 
+## Inspect the recorded runtime evidence
+
+Open Architecture to compare the pinned 3.7.0 status-cache run for two or five targets and either reporting window. Read the shown request counts: one mature miss or export and 100 concurrent or sequential warm hits are separate measured groups. The controls read `src/data/status-reuse-evidence.json`, a small allowlisted projection checked by `npm run test:status-evidence`; they do not run a benchmark or call the application. Check out the linked artifact commit before attempting to reproduce that exact source. Runtime versions and source bytes are provenance, not authenticity or production-cost guarantees.
+
+## Identify work that origin admission does not prevent
+
+Run `npm run test:lab-storm` on the current checkout. It accepts no deployed URL or workload arguments, uses at most eight ephemeral local objects and delegates to the production gateway, native SQLite and the actual private origin Worker. The [3.8.0 manifest](evidence/releases/3.8.0-lab-storm.json) passes eight groups and ten samples with complete project-local build-input hashes captured before the tested builds and checked after disposal. The [frozen 3.7.0 baseline](evidence/releases/3.7.0-lab-storm.json) can be reproduced from commit `bf5d311`; its version and package hashes stay historical.
+
+In the 3.8.0 local run, 24 existing empty-run state reads consumed 96 SQLite rows read and 24 written, with 24 KV puts and alarm sets and no origin requests. Eight circuit-denied requests consumed 64 rows read and 32 written, plus lease/alarm work, while making no origin requests. Eight state reads with 180 retained events consumed 1,464 rows read and eight written. A six-run fresh-capability sample includes constructor/enrollment work and used 54 rows read and 60 written. Constructor, initial enrollment, origin dispatch, diagnostics and later eviction are separately attributed. Successful cursor counts include index/trigger effects; method counters are not physical billing counts.
+
+The current token bucket limits origin work per run. It cannot stop repeated state reads or rotating capabilities from performing object/storage work. A future gateway admission layer must reject traffic before namespace lookup, preserve validation and capability boundaries, and distinguish its refusal from a committed lab decision. An edge location limiter is a separate control with different consistency and fairness tradeoffs. These local measurements do not establish production SQL usage, CPU cost, free traffic or account-wide protection.
+
 ## Questions and candid answers
 
 **Why Durable Objects instead of KV?**

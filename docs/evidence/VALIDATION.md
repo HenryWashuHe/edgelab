@@ -1,5 +1,15 @@
 # Verification record
 
+## EdgeLab 3.8.0
+
+Release candidate: deployment verification is pending. The new Architecture panel presents a thin allowlisted projection of the pinned 3.7.0 status-cache artifact and keeps its source version, date, commit and runtime hashes explicit. Native controls choose only recorded two/five-target and 24h/7d workloads; request counts remain separate. Fault details preserve unknown cursor cost, rollback and stale-fallback boundaries. Selection adds no application API calls, sockets, browser persistence or timers. Eight new tests verify artifact-byte/source parity, all four selections, failure accounting, immutability and the bundled dependency boundary. Rendered browser, keyboard and mobile verification remain unverified.
+
+Formatting, 162 unit tests across 16 files, strict TypeScript, the production build and both deployment dry-runs pass locally. `test:status-evidence` and `test:lab-storm` are added to CI. Existing checkout/setup-node actions are pinned to reviewed official Node 24 releases on an explicit Ubuntu 24.04 runner; project tests still use Node 22. The CI-maintenance commit alone passed the complete [GitHub run](https://github.com/HenryWashuHe/edgelab/actions/runs/36802760581). The full release CI is pending.
+
+The [3.8.0 lab workload manifest](releases/3.8.0-lab-storm.json) passes eight proof groups and ten samples against the actual gateway, production-exporting Durable Object, native workerd SQLite and real private origin Worker. All 24 unique project inputs from both tested build graphs plus recipe/package/lock were hashed before the tested builds and remained stable afterward. Gateway and package report 3.8.0; bundle/metafile hashes and runtime versions are recorded. The [3.7.0 baseline](releases/3.7.0-lab-storm.json) remains frozen at commit `bf5d311`.
+
+Twenty-four existing empty-run reads use 96 SQL rows read/24 written; eight circuit denials use 64/32 and no origin fetch; eight reads with 180 retained events use 1,464/eight and no origin fetch; six fresh enrollments including constructors use 54/60. The retention sample preserves all-run counters while retaining exactly 180 events. Actual eviction preserves complete persisted source hashes. Constructor/enrollment, gateway dispatch, consumed SQL, KV/alarm calls and diagnostic control work are separately attributed. There are zero account, production or native-inference calls. These measured local workloads establish neither CPU/billing cost nor production or account capacity; origin limiting alone does not prevent object/storage work.
+
 ## EdgeLab 3.7.0
 
 Gateway deployment: `1b60639f-12f2-41f0-9761-7313a72144e3`. The private origin is unchanged. Implementation commit `565ea3504eadfd0b85e682ddf5922dfb0454bc17` passes the [complete GitHub CI run](https://github.com/HenryWashuHe/edgelab/actions/runs/36800527533), including the new status-cache suite and real local HTTP integration on Linux.

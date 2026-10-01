@@ -1,130 +1,138 @@
 import { Globe2, Cloud, Database, ArrowRight, Server, Code2, Check } from 'lucide-react';
 import { BriefExamples } from './BriefExamples';
+import { RuntimeEvidence } from './RuntimeEvidence';
 export function Architecture() {
   return (
-    <div className="docs-layout">
-      <section className="panel doc-panel">
-        <div className="eyebrow">OPERATIONS / THE PERSISTENT PATH</div>
-        <h2>One schedule. Durable evidence.</h2>
-        <p>
-          A one-minute Cron Trigger drives a SQLite monitoring coordinator for up to five approved
-          services. It runs independently of the browser. The public dashboard reads checks and
-          incidents; authenticated operators edit policies, acknowledge incidents, and inspect the
-          audit trail.
-        </p>
-        <pre>{`Cron → claim durable job lease → bounded probe
+    <>
+      <RuntimeEvidence />
+      <div className="docs-layout">
+        <section className="panel doc-panel">
+          <div className="eyebrow">OPERATIONS / THE PERSISTENT PATH</div>
+          <h2>One schedule. Durable evidence.</h2>
+          <p>
+            A one-minute Cron Trigger drives a SQLite monitoring coordinator for up to five approved
+            services. It runs independently of the browser. The public dashboard reads checks and
+            incidents; authenticated operators edit policies, acknowledge incidents, and inspect the
+            audit trail.
+          </p>
+          <pre>{`Cron → claim durable job lease → bounded probe
   → verify lease token + policy revision
   → atomically store check and incident transition`}</pre>
-        <p>
-          Each service and scheduled minute has a unique key. Duplicate deliveries cannot
-          double-count observations. A 30-second lease recovers abandoned work; revision fencing
-          rejects results from outdated policies. Missing checks reduce coverage and never become
-          healthy samples.
-        </p>
-        <p>
-          Monitoring history has 30-day retention, with open incidents and policies preserved.
-          Acknowledgement records ownership; only measured recovery resolves an incident. The
-          monitor shares Cloudflare with its targets and does not establish global uptime.
-        </p>
-        <hr />
-        <div className="eyebrow">LABORATORY / THE REQUEST PATH</div>
-        <h2>Stateless at the edge. Consistent at the coordinator.</h2>
-        <p>
-          The Worker validates the request and routes the lab's opaque session ID to one Durable
-          Object. That object owns admission, circuit state, the last successful catalog response,
-          and a bounded SQLite event log.
-        </p>
-        <div className="architecture-strip">
-          <span>
-            <Globe2 />
-            Browser
-          </span>
-          <ArrowRight />
-          <span>
-            <Cloud />
-            Worker
-          </span>
-          <ArrowRight />
-          <span>
-            <Database />
-            Durable Object
-            <br />+ SQLite
-          </span>
-          <ArrowRight />
-          <span>
-            <Server />
-            Origin Worker
-          </span>
-        </div>
-        <p>
-          The coordinator calls a separate, private origin Worker through a service binding. Its
-          catalog data and failures are controlled, but the service call, timeout, and cached
-          payload are real. The UI shows server elapsed time, not browser round-trip latency or
-          multi-region benchmarks.
-        </p>
-        <hr />
-        <div className="eyebrow">02 / WHY A DURABLE OBJECT?</div>
-        <h2>One budget, even under concurrent traffic.</h2>
-        <p>
-          A per-Worker in-memory bucket would split the budget across isolates. An eventually
-          consistent store can admit too many concurrent requests. A Durable Object coordinates each
-          lab's state; synchronous SQLite transactions persist each admission before the handler
-          awaits origin work.
-        </p>
-        <pre>{`Client → validate session → Durable Object\n  1. Refill and reserve a token\n  2. Check circuit / reserve recovery probe\n  3. Persist admission synchronously\n  4. Call origin Worker with timeout\n  5. Record result + circuit transition atomically`}</pre>
-        <hr />
-        <div className="eyebrow">03 / THE SUBTLE PART</div>
-        <h2>Recovery is a concurrency problem.</h2>
-        <p>
-          Only one request enters half-open recovery. Other requests get a bounded-age cached
-          response or HTTP 503. Each permit carries a circuit generation: a late success from an
-          older generation cannot close a circuit that just tripped. A run ID prevents old in-flight
-          requests from repopulating a reset lab.
-        </p>
-        <p>
-          A persisted 10-second probe lease allows recovery if a probe is interrupted. Multiple
-          calls admitted before a failure threshold may still reach the origin; a breaker cannot
-          recall work already in flight.
-        </p>
-        <hr />
-        <div className="eyebrow">04 / NOTHING LIVES FOREVER</div>
-        <h2>Expiry is part of correctness.</h2>
-        <p>
-          Every API request renews the lab’s 24-hour idle deadline. An alarm checks the latest
-          deadline before deleting storage. A completion arriving after deletion cannot recreate the
-          old run. Local runtime tests exercise actual alarms and eviction, including cached payload
-          persistence.
-        </p>
-      </section>
-      <aside className="doc-side">
-        <div className="panel doc-panel">
-          <h3>Deliberate boundaries</h3>
-          <ul>
-            <li>
-              One monitor coordinator for five services; separate isolated coordinators for
-              experimental labs.
-            </li>
-            <li>Latest 180 events retained; counters cover the full run.</li>
-            <li>
-              The cache stores the actual catalog response and replays its revision for at most 60
-              seconds.
-            </li>
-            <li>
-              Opaque session IDs isolate demos; this is not an authenticated multi-tenant gateway.
-            </li>
-            <li>A public deployment needs account-level abuse controls and quota monitoring.</li>
-            <li>An alarm clears all lab state after 24 hours without an API request.</li>
-          </ul>
-        </div>
-        <div className="insight-card">
-          <span className="insight-label">THE TRADEOFF</span>
           <p>
-            Strong coordination adds a network hop to the object location. Measure it before
-            claiming global low latency.
+            Each service and scheduled minute has a unique key. Duplicate deliveries cannot
+            double-count observations. A 30-second lease recovers abandoned work; revision fencing
+            rejects results from outdated policies. Missing checks reduce coverage and never become
+            healthy samples.
           </p>
-        </div>
-      </aside>
-    </div>
+          <p>
+            Monitoring history has 30-day retention, with open incidents and policies preserved.
+            Acknowledgement records ownership; only measured recovery resolves an incident. The
+            monitor shares Cloudflare with its targets and does not establish global uptime.
+          </p>
+          <hr />
+          <div className="eyebrow">LABORATORY / THE REQUEST PATH</div>
+          <h2>Stateless at the edge. Consistent at the coordinator.</h2>
+          <p>
+            The Worker validates the request and routes the lab's opaque session ID to one Durable
+            Object. That object owns admission, circuit state, the last successful catalog response,
+            and a bounded SQLite event log.
+          </p>
+          <div className="architecture-strip">
+            <span>
+              <Globe2 />
+              Browser
+            </span>
+            <ArrowRight />
+            <span>
+              <Cloud />
+              Worker
+            </span>
+            <ArrowRight />
+            <span>
+              <Database />
+              Durable Object
+              <br />+ SQLite
+            </span>
+            <ArrowRight />
+            <span>
+              <Server />
+              Origin Worker
+            </span>
+          </div>
+          <p>
+            The coordinator calls a separate, private origin Worker through a service binding. Its
+            catalog data and failures are controlled, but the service call, timeout, and cached
+            payload are real. The UI shows server elapsed time, not browser round-trip latency or
+            multi-region benchmarks.
+          </p>
+          <hr />
+          <div className="eyebrow">02 / WHY A DURABLE OBJECT?</div>
+          <h2>One budget, even under concurrent traffic.</h2>
+          <p>
+            A per-Worker in-memory bucket would split the budget across isolates. An eventually
+            consistent store can admit too many concurrent requests. A Durable Object coordinates
+            each lab's state; synchronous SQLite transactions persist each admission before the
+            handler awaits origin work.
+          </p>
+          <pre>{`Client → validate session → Durable Object\n  1. Refill and reserve a token\n  2. Check circuit / reserve recovery probe\n  3. Persist admission synchronously\n  4. Call origin Worker with timeout\n  5. Record result + circuit transition atomically`}</pre>
+          <hr />
+          <div className="eyebrow">03 / THE SUBTLE PART</div>
+          <h2>Recovery is a concurrency problem.</h2>
+          <p>
+            Only one request enters half-open recovery. Other requests get a bounded-age cached
+            response or HTTP 503. Each permit carries a circuit generation: a late success from an
+            older generation cannot close a circuit that just tripped. A run ID prevents old
+            in-flight requests from repopulating a reset lab.
+          </p>
+          <p>
+            A persisted 10-second probe lease allows recovery if a probe is interrupted. Multiple
+            calls admitted before a failure threshold may still reach the origin; a breaker cannot
+            recall work already in flight.
+          </p>
+          <hr />
+          <div className="eyebrow">04 / NOTHING LIVES FOREVER</div>
+          <h2>Expiry is part of correctness.</h2>
+          <p>
+            Lab control calls and state reads renew the lab’s 24-hour idle deadline. Observer
+            connections and frames do not renew it. An alarm checks the latest deadline before
+            deleting storage. A completion arriving after deletion cannot recreate the old run.
+            Local runtime tests exercise actual alarms and eviction, including cached payload
+            persistence.
+          </p>
+        </section>
+        <aside className="doc-side">
+          <div className="panel doc-panel">
+            <h3>Deliberate boundaries</h3>
+            <ul>
+              <li>
+                One monitor coordinator for up to five approved services; separate isolated
+                coordinators for experimental labs.
+              </li>
+              <li>Latest 180 events retained; counters cover the full run.</li>
+              <li>
+                The cache stores the actual catalog response and replays its revision for at most 60
+                seconds.
+              </li>
+              <li>
+                Opaque session IDs isolate demos; this is not an authenticated multi-tenant gateway.
+              </li>
+              <li>A public deployment needs account-level abuse controls and quota monitoring.</li>
+              <li>
+                An alarm clears lab state after 24 hours without a control or state request.
+                Observation does not renew that deadline.
+              </li>
+            </ul>
+          </div>
+          <div className="insight-card">
+            <span className="insight-label">THE TRADEOFF</span>
+            <p>
+              Strong coordination adds a network hop to the object location. Measure it before
+              claiming global low latency.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </>
   );
 }
 export function Notes() {

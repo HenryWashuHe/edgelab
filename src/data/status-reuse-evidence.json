@@ -1,0 +1,330 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "projectVersion": "3.7.0",
+    "measuredAt": "2026-10-01T01:15:44.822Z",
+    "artifactPath": "docs/evidence/releases/3.7.0-status-cache.json",
+    "artifactCommit": "565ea3504eadfd0b85e682ddf5922dfb0454bc17",
+    "artifactURL": "https://github.com/HenryWashuHe/edgelab/blob/565ea3504eadfd0b85e682ddf5922dfb0454bc17/docs/evidence/releases/3.7.0-status-cache.json",
+    "artifactSHA256": "551c4c23f4e5dc9b3ed084a9330093c2ecb18874db0fb509c01f6d5050586853",
+    "bundleSHA256": "46dabff2a0404f1915a60501c381adbeec7339d9fd57d89ad93898589c8b16d7",
+    "sourceSHA256": [
+      {
+        "path": "package.json",
+        "sha256": "a94b201a46b375c771a7769def6e51e67ae46f12cb128cafb914b7d011a23ccc"
+      },
+      {
+        "path": "worker/monitor.ts",
+        "sha256": "289f97402ee3b676f3857c25f93363baa1f848713a855869d8c3faf9313f4488"
+      },
+      {
+        "path": "worker/status-view-cache.ts",
+        "sha256": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158"
+      },
+      {
+        "path": "worker/budget-signals.ts",
+        "sha256": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15"
+      },
+      {
+        "path": "worker/index.ts",
+        "sha256": "12b215bc330615dd44fe2cc2f9f791d6454c563d457b1dc4247fab327cd53561"
+      },
+      {
+        "path": "tests/fixtures/status-cache.ts",
+        "sha256": "6339da840c080dbdc2acfd830a1988cc65ada53060613f37b8c965c9e0c9e3ab"
+      },
+      {
+        "path": "scripts/status-cache.mjs",
+        "sha256": "9885e2cb9904fd15bdc43e5a14dc196dfb15bde2510a558084b8947e593c3e39"
+      }
+    ],
+    "sourceStableDuringRun": true,
+    "proofGroups": 28,
+    "command": "npm run test:status-cache",
+    "runtime": {
+      "node": "v25.4.0",
+      "miniflare": "5.20260926.0-alpha",
+      "workerd": "1.20260926.1",
+      "compatibilityDate": "2026-09-01"
+    },
+    "execution": { "productionRequests": 0, "accountCalls": 0, "nativeInferenceCalls": 0 }
+  },
+  "limits": {
+    "maxAgeMs": 10000,
+    "sameUTCMinute": true,
+    "maxEntries": 2,
+    "maxCombinedSerializedBytes": 1048576
+  },
+  "profiles": [
+    {
+      "targetCount": 2,
+      "fixture": {
+        "finishedHistorySlotsPerTarget": 10080,
+        "retainedFinishedChecksPerTarget": 9756,
+        "recentSchedulerEvents": 20
+      },
+      "sourceTimesProof": "2 targets: memory-hit freshness 180000→180001 ages status/budget/readiness without renewing evidence",
+      "windows": [
+        {
+          "window": "24h",
+          "measurements": [
+            {
+              "id": "storage-miss",
+              "requests": 1,
+              "attemptedStatements": 27,
+              "statements": 27,
+              "rowsRead": 158,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            },
+            {
+              "id": "authoritative-export",
+              "requests": 1,
+              "attemptedStatements": 27,
+              "statements": 27,
+              "rowsRead": 158,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            },
+            {
+              "id": "concurrent-hits",
+              "requests": 100,
+              "attemptedStatements": 0,
+              "statements": 0,
+              "rowsRead": 0,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            },
+            {
+              "id": "sequential-hits",
+              "requests": 100,
+              "attemptedStatements": 0,
+              "statements": 0,
+              "rowsRead": 0,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            }
+          ]
+        },
+        {
+          "window": "7d",
+          "measurements": [
+            {
+              "id": "storage-miss",
+              "requests": 1,
+              "attemptedStatements": 27,
+              "statements": 27,
+              "rowsRead": 158,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            },
+            {
+              "id": "authoritative-export",
+              "requests": 1,
+              "attemptedStatements": 27,
+              "statements": 27,
+              "rowsRead": 158,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            },
+            {
+              "id": "concurrent-hits",
+              "requests": 100,
+              "attemptedStatements": 0,
+              "statements": 0,
+              "rowsRead": 0,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            },
+            {
+              "id": "sequential-hits",
+              "requests": 100,
+              "attemptedStatements": 0,
+              "statements": 0,
+              "rowsRead": 0,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            }
+          ]
+        }
+      ],
+      "policyFailure": {
+        "attemptedStatements": 7,
+        "consumedStatements": 6,
+        "failedAttempts": 1,
+        "nativeFaultsFired": 1,
+        "consumedCursorRowsRead": 9,
+        "consumedCursorRowsWritten": 4,
+        "failedAttemptCursorCost": null,
+        "sanitized503": true,
+        "staleFallbackServed": false,
+        "selectedWriteExecuted": true,
+        "sourceAndQueueRolledBack": true
+      },
+      "readFailure": {
+        "attemptedStatements": 2,
+        "consumedStatements": 1,
+        "failedAttempts": 1,
+        "nativeFaultsFired": 1,
+        "consumedCursorRowsRead": 1,
+        "consumedCursorRowsWritten": 0,
+        "failedAttemptCursorCost": null,
+        "sanitized503": true,
+        "staleFallbackServed": false,
+        "otherWindowWasOneMillisecondOld": true,
+        "bothWindowsCleared": true
+      }
+    },
+    {
+      "targetCount": 5,
+      "fixture": {
+        "finishedHistorySlotsPerTarget": 10080,
+        "retainedFinishedChecksPerTarget": 9756,
+        "recentSchedulerEvents": 20
+      },
+      "sourceTimesProof": "5 targets: memory-hit freshness 180000→180001 ages status/budget/readiness without renewing evidence",
+      "windows": [
+        {
+          "window": "24h",
+          "measurements": [
+            {
+              "id": "storage-miss",
+              "requests": 1,
+              "attemptedStatements": 63,
+              "statements": 63,
+              "rowsRead": 362,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            },
+            {
+              "id": "authoritative-export",
+              "requests": 1,
+              "attemptedStatements": 63,
+              "statements": 63,
+              "rowsRead": 362,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            },
+            {
+              "id": "concurrent-hits",
+              "requests": 100,
+              "attemptedStatements": 0,
+              "statements": 0,
+              "rowsRead": 0,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            },
+            {
+              "id": "sequential-hits",
+              "requests": 100,
+              "attemptedStatements": 0,
+              "statements": 0,
+              "rowsRead": 0,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            }
+          ]
+        },
+        {
+          "window": "7d",
+          "measurements": [
+            {
+              "id": "storage-miss",
+              "requests": 1,
+              "attemptedStatements": 63,
+              "statements": 63,
+              "rowsRead": 362,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            },
+            {
+              "id": "authoritative-export",
+              "requests": 1,
+              "attemptedStatements": 63,
+              "statements": 63,
+              "rowsRead": 362,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            },
+            {
+              "id": "concurrent-hits",
+              "requests": 100,
+              "attemptedStatements": 0,
+              "statements": 0,
+              "rowsRead": 0,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            },
+            {
+              "id": "sequential-hits",
+              "requests": 100,
+              "attemptedStatements": 0,
+              "statements": 0,
+              "rowsRead": 0,
+              "rowsWritten": 0,
+              "kvCalls": 0,
+              "storageCalls": 0,
+              "alarmCalls": 0
+            }
+          ]
+        }
+      ],
+      "policyFailure": {
+        "attemptedStatements": 13,
+        "consumedStatements": 12,
+        "failedAttempts": 1,
+        "nativeFaultsFired": 1,
+        "consumedCursorRowsRead": 15,
+        "consumedCursorRowsWritten": 4,
+        "failedAttemptCursorCost": null,
+        "sanitized503": true,
+        "staleFallbackServed": false,
+        "selectedWriteExecuted": true,
+        "sourceAndQueueRolledBack": true
+      },
+      "readFailure": {
+        "attemptedStatements": 2,
+        "consumedStatements": 1,
+        "failedAttempts": 1,
+        "nativeFaultsFired": 1,
+        "consumedCursorRowsRead": 1,
+        "consumedCursorRowsWritten": 0,
+        "failedAttemptCursorCost": null,
+        "sanitized503": true,
+        "staleFallbackServed": false,
+        "otherWindowWasOneMillisecondOld": true,
+        "bothWindowsCleared": true
+      }
+    }
+  ]
+}

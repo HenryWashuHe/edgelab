@@ -1,0 +1,178 @@
+.runtime-evidence {
+  min-width: 0;
+  max-width: 100%;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  color: #405669;
+}
+.runtime-evidence h2 {
+  margin: 12px 0;
+  font-size: 21px;
+  line-height: 1.5;
+  color: #304353;
+}
+.runtime-evidence p {
+  font-size: 13px;
+  line-height: 1.8;
+}
+.runtime-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 230px));
+  gap: 12px 18px;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 20px 0 16px;
+}
+.runtime-controls legend {
+  padding: 0;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.runtime-controls label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #5e7283;
+}
+.runtime-controls select {
+  min-height: 42px;
+  width: 100%;
+  max-width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #dce5ec;
+  border-radius: 6px;
+  background: #fff;
+  color: #304353;
+}
+.runtime-announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.runtime-table {
+  overflow: auto;
+  max-width: 100%;
+  border: 1px solid #e2e8ee;
+  border-radius: 7px;
+}
+.runtime-table table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 740px;
+  font-size: 12px;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+.runtime-table caption {
+  text-align: left;
+  padding: 12px 14px;
+  background: #f5f8fa;
+  color: #405669;
+  font-weight: 600;
+}
+.runtime-table th,
+.runtime-table td {
+  padding: 11px 12px;
+  border-top: 1px solid #e2e8ee;
+  text-align: right;
+}
+.runtime-table th:first-child {
+  text-align: left;
+  min-width: 166px;
+}
+.runtime-table thead th {
+  background: #fafbfd;
+  color: #5e7283;
+  font-weight: 600;
+}
+.runtime-table tbody th {
+  font-weight: 500;
+  color: #304353;
+}
+.runtime-evidence .runtime-note {
+  color: #5e7283;
+  font-size: 12px;
+}
+.runtime-details {
+  border-top: 1px solid #e4e9ee;
+  padding: 12px 0;
+}
+.runtime-details summary {
+  cursor: pointer;
+  color: #3d627e;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.runtime-details:last-child {
+  padding-bottom: 0;
+}
+.runtime-table:focus-visible,
+.runtime-details summary:focus-visible {
+  outline: 3px solid #f1ad86;
+  outline-offset: 3px;
+}
+.runtime-failure {
+  margin: 14px 0;
+  padding: 12px 15px;
+  border: 1px solid #e2e8ee;
+  border-radius: 7px;
+  background: #fafbfd;
+}
+.runtime-failure h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #304353;
+}
+.runtime-failure p {
+  margin: 8px 0;
+}
+.runtime-failure dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 18px;
+  margin-bottom: 0;
+}
+.runtime-evidence dt {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #5e7283;
+}
+.runtime-evidence dd {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.runtime-provenance dl {
+  display: grid;
+  gap: 12px;
+}
+.runtime-provenance a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.runtime-provenance code {
+  font-size: 11px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .runtime-evidence {
+    padding: 20px 18px;
+  }
+  .runtime-evidence h2 {
+    font-size: 19px;
+  }
+  .runtime-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .runtime-failure dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

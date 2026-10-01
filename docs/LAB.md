@@ -18,6 +18,8 @@ Storage failures return JSON503 with code `lab-storage-unavailable`, a sanitized
 
 Deployed 3.7.0 reuses only the separate Operations dashboard's public status view, for less than ten seconds in one UTC minute. Its `read` provenance separates storage materialization from serving time, without renewing observations. Export, readiness, private evidence and all laboratory HTTP/WebSocket paths bypass that cache. A previously unobserved monitor-storage failure can be hidden during the short reuse interval; observed monitor failures clear it. See the [operator guidance](OPERATIONS.md#interpret-370-view-timing), [final-source controlled runtime archive](evidence/releases/3.7.0-status-cache.json) and [live HTTP verification](evidence/releases/3.7.0-live-monitoring.json). Rendered browser validation and production SQL/CPU/billing measurements are not claimed. The published 3.6 recording and its 192 KiB limit remain unchanged.
 
+Version 3.8.0 adds recorded runtime measurements to Architecture without application API calls. `npm run test:lab-storm` measures the actual lab request path locally, including state reads and circuit denials that avoid the origin but still perform storage and idle-lease work. The [manifest](evidence/releases/3.8.0-lab-storm.json) separates measured groups, constructors, enrollment, diagnostic reads and eviction. It accepts no remote URL and establishes no production cost or capacity claim.
+
 ## Run locally
 
 Requires Node.js 22.12+ and npm.

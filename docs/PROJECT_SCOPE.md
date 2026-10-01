@@ -1,8 +1,10 @@
-# EdgeLab v3.7: reliability operations and bounded status reuse
+# EdgeLab v3.8: reliability operations and inspectable runtime evidence
 
 Goal: evolve the interactive resilience lab into a complete, self-hostable reliability application with an operating service, durable history, an operator workflow, and reproducible evidence.
 
 Deployed 3.7.0 adds bounded public status reuse. Its [final-source controlled runtime archive](evidence/releases/3.7.0-status-cache.json) passes 28 proof groups, and [implementation CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36800527533) passes 154 unit tests plus runtime regressions. [Live HTTP verification](evidence/releases/3.7.0-live-monitoring.json) at 2026-10-01 01:39:44 UTC confirms two new autonomous good minutes per service, healthy readiness, current budgets, schemaVersion 4 privacy, both-window reuse and authoritative exports. Historical 3.6.0 recovery and its pinned recording remain separate evidence. No rendered browser validation or production SQL/CPU/billing measurement is claimed.
+
+Version 3.8.0 adds a static interactive Architecture proof panel. Its source remains explicitly pinned to the historical 3.7.0 status-cache artifact, independent of the app version. A strict generator verifies the exact artifact bytes and projects allowlisted measurements; selections add no API calls or browser persistence. Eight new tests cover source pins, all four workloads, native unknown costs, immutability and the dependency boundary. The current [lab workload manifest](evidence/releases/3.8.0-lab-storm.json) independently runs actual gateway/origin/SQLite work with full local bundle-input hashes, eight proof groups and ten samples. Deployment verification is pending.
 
 Acceptance requirements (completion requires evidence for every item):
 

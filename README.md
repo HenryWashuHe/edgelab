@@ -14,6 +14,8 @@ Published 3.6.0 adds bounded observer recording and offline inspection on `#repl
 
 Deployed 3.7.0 adds bounded public status reuse with explicit storage-read and serve times. The [implementation CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36800527533) passes 154 unit tests and the runtime regressions, including the [28-group controlled status-cache proof](docs/evidence/releases/3.7.0-status-cache.json). [Live HTTP verification](docs/evidence/releases/3.7.0-live-monitoring.json) at 2026-10-01 01:39:44 UTC confirms new autonomous observations, healthy readiness, bounded reuse for both windows and authoritative exports. Rendered browser validation and production SQL/CPU/billing measurements are not claimed.
 
+Version 3.8.0 adds an interactive Architecture evidence panel with pinned 3.7.0 measurements, source hashes and native-failure boundaries. Its controls select recorded workloads without API calls. A new [bounded lab workload record](docs/evidence/releases/3.8.0-lab-storm.json) separates origin admission from storage/lease work, including repeated reads, denied traffic, fresh runs and actual eviction. Local checks pass 162 unit tests; deployment verification is pending.
+
 ## What is implemented
 
 - **Continuous checks:** one observation opportunity per current UTC minute per deployment-approved target; HTTP status, bounded JSON contract validation, latency objective, timeout, and 16 KB body limit. Redirects are not followed. Delayed schedules are skipped rather than backfilled.
@@ -29,6 +31,7 @@ Deployed 3.7.0 adds bounded public status reuse with explicit storage-read and s
 - **Public evidence explorer:** three pinned controlled scenarios expose frozen facts, citations, policy context and input limits without operator access. Verify a snapshot hash or compare an altered copy locally. Explanations are human-authored canned test responses; interactions make no application API or native AI calls.
 - **Engineering lab:** isolated per-session token buckets, circuit breakers, actual cached payloads, timeout experiments, traces, CSV/JSON export, and cancellable guided runs. A second tab observes committed changes through hibernating WebSockets without renewing the run's idle lease.
 - **Bounded recording and offline replay:** the observer captures one connection in memory, up to 256 entries and 192 KiB. Stop freezes the valid prefix while live observation continues; Download exports it with a content hash. Offline stepping validates recorded frames without API calls, socket messages, browser persistence or experiment execution.
+- **Inspectable runtime measurements:** the Architecture panel compares recorded one-request storage reads with separate 100-request warm batches, preserving request counts, unknown failed-attempt costs and source hashes. It uses a small bundled projection and makes no application API calls.
 - **Evidence:** deterministic unit tests, real workerd/SQLite fault tests, local and live HTTP verification, and repeatable concurrency benchmarks with raw results.
 
 ## Quick start
@@ -114,7 +117,9 @@ npm run test:monitor-unavailable # safe quota failures and authentication preced
 npm run test:retention    # bounded metadata cleanup, reference repair, migration and rollback
 npm run test:retention-cost # whole-cron metadata growth, catch-up and source/output parity
 npm run test:monitor-cost # whole-cron read/write measurements in isolated SQLite
-node scripts/status-cache.mjs # bounded public reuse, real SQLite faults and measured warm reads
+npm run test:status-cache # bounded public reuse, real SQLite faults and measured warm reads
+npm run test:status-evidence # exact projection from the pinned historical artifact
+npm run test:lab-storm    # bounded real lab storage/lease/origin work; no remote URL accepted
 # With the local server running:
 npm run test:integration  # lab HTTP behavior and isolation
 BASE_URL=http://localhost:8787 npm run benchmark

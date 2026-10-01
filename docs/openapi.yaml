@@ -1,11 +1,11 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.7.0
+  version: 3.8.0
   description: |
     Public monitoring read model and single-owner operator control plane.
     HTTP laboratory controls are documented in LAB.md; the observer upgrade and message schema are below.
-    This describes deployed 3.7.0. Scoped verification is recorded in docs/evidence/VALIDATION.md,
+    This describes release 3.8.0; its API preserves the additive 3.7.0 view contract. Scoped verification is recorded in docs/evidence/VALIDATION.md,
     the final-source controlled runtime archive in docs/evidence/releases/3.7.0-status-cache.json,
     and live HTTP provenance/monitoring/privacy checks in docs/evidence/releases/3.7.0-live-monitoring.json.
     Implementation CI passes; production SQL/CPU/billing measurements and rendered browser

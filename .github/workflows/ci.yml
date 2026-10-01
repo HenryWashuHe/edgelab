@@ -19,6 +19,7 @@ jobs:
       - run: npm run test:lifecycle
       - run: npm run test:lab-observer
       - run: npm run test:lab-recording
+      - run: npm run test:lab-storm
       - run: npm run test:monitor
       - run: npm run test:incident
       - run: npm run test:upgrade
@@ -32,6 +33,7 @@ jobs:
       - run: npm run test:retention-cost
       - run: npm run test:monitor-cost
       - run: npm run test:status-cache
+      - run: npm run test:status-evidence
       - name: Test real local Worker and Durable Object
         run: |
           npm run dev:workers > /tmp/edgelab.log 2>&1 &
