@@ -15,6 +15,25 @@ node examples/counter-evidence/inspect.mjs output/counter-portability/rpc-after-
 
 The recipe accepts no arguments. It starts four ephemeral local workerd runtimes and a local network proxy, disables optional metadata refresh/telemetry, uses no Cloudflare account and disposes its resources. It writes a passing manifest and four sample artifacts under the ignored `output/counter-portability/` directory. A failed run removes those success outputs. Inspection needs Node and this repository's inspector/codec/shared parser files, rather than installed npm dependencies; it reads only the selected local artifact, with a 32 KiB bound before JSON parsing, sends no network request and executes no recorded command.
 
+## Share an inspector without the repository
+
+The maintainer can build a standalone inspector with installed repository dependencies:
+
+```sh
+node scripts/build-counter-inspector.mjs
+node --test scripts/counter-inspector.test.mjs
+```
+
+Copy `output/counter-inspector/inspect-counter.mjs` and a selected sample artifact to the recipient. With Node.js 22.12+ installed, the recipient runs:
+
+```sh
+node inspect-counter.mjs local-artifact.json
+```
+
+The recipient does not need the repository, npm dependencies or Cloudflare account access. The file includes the existing bounded codec and duplicate-name parser, supports only the two pinned counter profiles and retains their declared clocks and unsigned-hash limits. Building the inspector does not capture evidence or adapt another application.
+
+The builder records SHA-256 hashes for the exact three bundled source inputs, its recipe/package/lock, build options and generated file bytes. These identify the inspected code against a trusted reference; they do not authenticate its publisher. The [frozen distribution proof](../../docs/evidence/counter-inspector/README.md) records copied and renamed execution outside the checkout, with test instrumentation denying network and child-process APIs. That instrumentation is not an operating-system sandbox. The CLI opens inputs read-only, rejects non-regular files, reads at most 32 KiB plus one byte and reports only a static error on failure. POSIX nonblocking open prevents an unwritten FIFO from stalling before the type check; filesystem operations are not given a general wall-clock deadline.
+
 ## What the recipe establishes
 
 | Controlled case                                                                | Client response | Initial sample | Sample after loss | Sample after forced eviction |

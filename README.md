@@ -30,6 +30,8 @@ A separate [local counter portability experiment](examples/counter-evidence/READ
 
 ## What is implemented
 
+The counter experiment also has a [standalone offline inspector](docs/evidence/counter-inspector/README.md): a recipient can inspect either pinned sample profile with one copied file and Node, without installing this repository. Nine actual distribution test groups cover strict byte/privacy/hash bounds, copied/renamed/symlinked execution and safe FIFO rejection. Capturing evidence still requires an app-specific adapter; no external adoption or debugging speed improvement is claimed.
+
 - **Continuous checks:** one observation opportunity per current UTC minute per deployment-approved target; HTTP status, bounded JSON contract validation, latency objective, timeout, and 16 KB body limit. Redirects are not followed. Delayed schedules are skipped rather than backfilled.
 - **Durable incident response:** consecutive-failure opening, consecutive-success recovery, acknowledgement, private investigation notes, and audit events. Incident detail pages expose paginated check evidence, lifecycle timestamps, and the policy versions applicable to each page. Maintenance suspends probes while preserving incidents.
 - **Reliable scheduling:** atomic persisted leases, per-service/minute uniqueness, retry deduplication, crash recovery, and policy revision fencing. Observations retain their actual probe start time; a completion may cross a minute boundary without becoming a new sample.

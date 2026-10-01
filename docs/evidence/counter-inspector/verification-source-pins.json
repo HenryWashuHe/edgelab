@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-counter-inspector-verification-source-pins",
+  "measuredAt": "2026-10-01T18:33:40.275Z",
+  "node": "25.4.0",
+  "platform": "darwin",
+  "command": "node --test --test-reporter=tap scripts/counter-inspector.test.mjs",
+  "bundleSHA256": "6c5bb2748725d0f31bdc0e320afc69e79755bac44b5a13a01cb0d6ef47e623bb",
+  "sourceHashesStableAfterVerification": true,
+  "inputs": [
+    {
+      "path": "scripts/counter-inspector.test.mjs",
+      "bytes": 17549,
+      "sha256": "ac60971fb6afb0ff0d258b7a854db7bef8feabf4c318488453dd19f195cc74f8"
+    },
+    {
+      "path": "docs/evidence/counter-portability/before-loss.json",
+      "bytes": 913,
+      "sha256": "a6087e0fbd12652120a84de931658fdf0aff1ec0881cbc3590a8c6e99f3db55c"
+    },
+    {
+      "path": "docs/evidence/counter-portability/after-loss.json",
+      "bytes": 913,
+      "sha256": "80544a88ac4223fa27dc92ef985006f19053ee094f12a185d27f2e70d14a7086"
+    },
+    {
+      "path": "docs/evidence/counter-portability/rpc/before-loss.json",
+      "bytes": 913,
+      "sha256": "8646693509e62bccd78f554a416afd3057841fa948308328cb116442a33dfe9b"
+    },
+    {
+      "path": "docs/evidence/counter-portability/rpc/after-loss.json",
+      "bytes": 913,
+      "sha256": "52a313ae97af9f9f1096b39f3aac2c4ce7f61ac1d055da561facba7105ac9fbe"
+    },
+    {
+      "path": "docs/evidence/counter-portability/rpc/rpc-before-loss.json",
+      "bytes": 913,
+      "sha256": "6af55fa0ece8328db2a37b654a7577e1f1ec83f828dfea463b700997556b6af2"
+    },
+    {
+      "path": "docs/evidence/counter-portability/rpc/rpc-after-loss.json",
+      "bytes": 913,
+      "sha256": "35a61ae5fc94d0d40ab0e74463050f60c38123c8526032a8d8dcf56984f7461f"
+    }
+  ],
+  "report": {
+    "file": "verification.tap",
+    "bytes": 3372,
+    "sha256": "72c976a180cf1cb32186302afbee8bfbf6e136f86c9b5c122005baeedd3367e4"
+  }
+}

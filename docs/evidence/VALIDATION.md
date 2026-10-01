@@ -1,5 +1,11 @@
 # Verification record
 
+## Standalone counter inspector checkpoint
+
+The [frozen distribution](counter-inspector/README.md), built October 1 at 18:33:37 UTC and verified at 18:33:40 UTC, packages the current inspector/codec/shared parser into one 13,463-byte Node ESM file. Exactly three bundled source buffers and three builder/package/lock foundations are pinned; only three Node built-in imports remain. A separate raw TAP report binds the same bundle hash and passes nine test groups on Node 25.4.0/macOS with zero skips: 28 actual copied-inspector cases and one control verifying 21 named network/process API denials. Six historical/profile 2 artifacts, spaced/renamed/symlinked entrypoints, canonical formatting, strict privacy/hash errors, UTF-8 and exact 32 KiB/overflow bounds pass. Unwritten POSIX FIFO and symlink-entry defects were reproduced and repaired. Each inspector child leaves its fixture tree unchanged; these API fences are not an OS sandbox or a global no-write proof. Seven separate test/archive pins and the raw report hash remain stable through verification. Recipient inspection needs Node but no repository/npm install/account access; setup time, external use and diagnostic advantage remain unmeasured. Production code and deployed assets are unchanged.
+
+The standalone checkpoint also passes local formatting, 295 application tests/24 files, 22 counter codec tests, eight asset fault tests, TypeScript/build and both deployment dry-runs. All 16 rebuilt client assets match the shipped 3.12.1 archive. Its nine distribution groups add independent Node CLI proof without production deployment or rendered interaction.
+
 ## Existing-RPC counter adapter checkpoint
 
 The second local counter wrapper re-exports Cloudflare's pinned original `Counter` unchanged and uses its existing `getCounterValue()` RPC. It adds zero Durable Object methods/classes and no storage instrumentation. Profile 2 declares a gateway timestamp after that RPC returns, with native revision/commit metadata null; profile 1 retains its original DO-side clock and metered fixture. Both exact known source descriptors are covered by the canonical content hash. All 22 codec Node tests pass, including profile 2 import/export, source immutability and unchanged historical profile 1 hashes.

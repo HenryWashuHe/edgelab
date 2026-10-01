@@ -1,10 +1,11 @@
-import { open } from 'node:fs/promises';
+import { constants, open, realpath } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { MAX_COUNTER_ARTIFACT_BYTES, importSamples, inspect } from './codec.mjs';
 
 /** Read at most the artifact limit plus one byte, even if the file grows. */
 export async function readBoundedFile(path) {
-  const file = await open(path, 'r');
+  // An unwritten FIFO must not block before the regular-file check below.
+  const file = await open(path, constants.O_RDONLY | (constants.O_NONBLOCK ?? 0));
   try {
     if (!(await file.stat()).isFile()) throw new Error('Unsupported input.');
     const buffer = Buffer.alloc(MAX_COUNTER_ARTIFACT_BYTES + 1);
@@ -23,7 +24,7 @@ export async function readBoundedFile(path) {
 const utc = (at) => (at === null ? 'unavailable' : new Date(at).toISOString());
 export async function main(args = process.argv.slice(2)) {
   if (args.length !== 1) {
-    console.error('Usage: node examples/counter-evidence/inspect.mjs <local-artifact.json>');
+    console.error('Usage: node <inspector.mjs> <local-artifact.json>');
     return 1;
   }
   try {
@@ -58,5 +59,6 @@ export async function main(args = process.argv.slice(2)) {
     return 1;
   }
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
-  process.exitCode = await main();
+// Node resolves the module's path through symlinks; argv can keep the alias.
+const entryPath = process.argv[1] ? await realpath(process.argv[1]).catch(() => null) : null;
+if (entryPath && import.meta.url === pathToFileURL(entryPath).href) process.exitCode = await main();

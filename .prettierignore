@@ -7,3 +7,5 @@ examples/counter-evidence/upstream/counter.js
 examples/counter-evidence/upstream/LICENSE-CODE
 docs/evidence/counter-portability/
 docs/evidence/releases/3.12.1-evidence-json/*.json
+docs/evidence/counter-inspector/*.mjs
+docs/evidence/counter-inspector/*.json

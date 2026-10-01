@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-counter-inspector-build",
+  "measuredAt": "2026-10-01T18:33:37.716Z",
+  "sourceProjectVersion": "3.12.1",
+  "producerVersion": "3.12.1",
+  "package": {
+    "name": "edgelab",
+    "version": "3.12.1"
+  },
+  "environment": {
+    "node": "25.4.0",
+    "esbuild": "0.28.1"
+  },
+  "buildOptions": {
+    "entryPoints": [
+      "examples/counter-evidence/inspect.mjs"
+    ],
+    "outfile": "inspect-counter.mjs",
+    "bundle": true,
+    "write": false,
+    "format": "esm",
+    "platform": "node",
+    "target": "node22.12",
+    "packages": "bundle",
+    "external": [
+      "node:*"
+    ],
+    "splitting": false,
+    "sourcemap": false,
+    "minify": false,
+    "metafile": true,
+    "tsconfigRaw": {},
+    "logLevel": "silent",
+    "root": "inferred-from-script",
+    "inputPinning": "exact-onLoad-bytes"
+  },
+  "inputs": [
+    {
+      "path": "examples/counter-evidence/codec.mjs",
+      "bytes": 10670,
+      "sha256": "9e3f0a56a5dac9b584696b409eeee65bb9f78a04dd197bbefed98d1a60d77318"
+    },
+    {
+      "path": "examples/counter-evidence/inspect.mjs",
+      "bytes": 3543,
+      "sha256": "d6a8c1ea00388a26c0d345535ce9279335ff830f2adafc162023e5a4b5d6eab8"
+    },
+    {
+      "path": "worker/unique-json.mjs",
+      "bytes": 2597,
+      "sha256": "e3fbbc48550a7e035f2caebd5bd37cf544d6535b477dd63b54ec7ff2c7763c6a"
+    }
+  ],
+  "foundationPins": [
+    {
+      "path": "scripts/build-counter-inspector.mjs",
+      "bytes": 7779,
+      "sha256": "e932b7685e0794b7aa57402fb65997933a398d0f796f16c45c31355f23705dec"
+    },
+    {
+      "path": "package.json",
+      "bytes": 3108,
+      "sha256": "ff974ec3c069282aead7d717b921f29f97c1bbca57cbdf912c36d251e65498e6"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 102759,
+      "sha256": "3db290a85836ce248f98fa9146a71195b40ac9ff7dcd37704d028e1e194ec349"
+    }
+  ],
+  "externalImports": [
+    "node:crypto",
+    "node:fs/promises",
+    "node:url"
+  ],
+  "bundle": {
+    "filename": "inspect-counter.mjs",
+    "bytes": 13463,
+    "sha256": "6c5bb2748725d0f31bdc0e320afc69e79755bac44b5a13a01cb0d6ef47e623bb"
+  },
+  "profiles": [
+    {
+      "source": {
+        "example": "cloudflare-build-a-counter-js",
+        "commit": "976c80e2120fdea5b4e1b1dd0eff2683802da981",
+        "fileSHA256": "1c7c0f960a1f9b91b0b7488fc228208d8ec2a39fdfaf0d89b553184fae9151a6",
+        "adapterVersion": 1
+      },
+      "declaredObservationClockOrigin": "Durable Object after the additional KV read"
+    },
+    {
+      "source": {
+        "example": "cloudflare-build-a-counter-js",
+        "commit": "976c80e2120fdea5b4e1b1dd0eff2683802da981",
+        "fileSHA256": "1c7c0f960a1f9b91b0b7488fc228208d8ec2a39fdfaf0d89b553184fae9151a6",
+        "adapterVersion": 2
+      },
+      "declaredObservationClockOrigin": "gateway after the existing counter read RPC returns"
+    }
+  ],
+  "limits": {
+    "maxSamples": 32,
+    "maxArtifactBytes": 32768,
+    "maxSampleBytes": 1024,
+    "finalizationReserveBytes": 1024,
+    "maxUniqueJsonBytes": 196608,
+    "maxUniqueJsonDepth": 64
+  },
+  "sourceHashesStableAfterBuild": true,
+  "boundaries": {
+    "recipientRuntime": "Node.js 22.12 or newer; no npm packages required",
+    "runtimeExecutedDuringBuild": false,
+    "sourceAuthenticationEstablished": false,
+    "dependencyFreeExecutionVerified": false,
+    "renderedInteractionVerified": false
+  }
+}

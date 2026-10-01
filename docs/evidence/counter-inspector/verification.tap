@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: actual standalone entrypoint accepts frozen profiles without repository dependencies
+ok 1 - actual standalone entrypoint accepts frozen profiles without repository dependencies
+  ---
+  duration_ms: 561.009
+  type: 'test'
+  ...
+# 6 actual frozen archives; profiles 1 and 2; filename with spaces; no node_modules; 6 unchanged-tree checks.
+# Actual child runtime: Node v25.4.0; platform darwin.
+# Inspected bundle: 13463 bytes; SHA-256 6c5bb2748725d0f31bdc0e320afc69e79755bac44b5a13a01cb0d6ef47e623bb.
+# Network/process denials are instrumented Node API checks, not an OS sandbox; write checks cover the fixture tree.
+# Subtest: renamed copied entrypoint preserves canonical stdout for pretty and reordered JSON
+ok 2 - renamed copied entrypoint preserves canonical stdout for pretty and reordered JSON
+  ---
+  duration_ms: 172.368417
+  type: 'test'
+  ...
+# 2 pretty/reordered artifacts; renamed copied executable; matching canonical hashes/stdout; 2 unchanged-tree checks.
+# Subtest: a copied inspector launched through a POSIX directory symlink executes main
+ok 3 - a copied inspector launched through a POSIX directory symlink executes main
+  ---
+  duration_ms: 78.217459
+  type: 'test'
+  ...
+# Actual POSIX directory symlink launch; execution path remains lexical; canonical stdout and unchanged-tree check.
+# Subtest: raw duplicate and escaped aliases cannot hide private subtrees behind valid hashes
+ok 4 - raw duplicate and escaped aliases cannot hide private subtrees behind valid hashes
+  ---
+  duration_ms: 283.053708
+  type: 'test'
+  ...
+# 4 duplicate root/nested/escaped private-alias cases; static failures only; 4 unchanged-tree checks.
+# Subtest: unsupported profiles, source pins, fields and changed contents fail without echo
+ok 5 - unsupported profiles, source pins, fields and changed contents fail without echo
+  ---
+  duration_ms: 496.085459
+  type: 'test'
+  ...
+# 7 profile/pin/extra-field/hash/content cases; no raw input or path echoed; 7 unchanged-tree checks.
+# Subtest: UTF-8 and exact 32 KiB file bounds are enforced by the copied CLI
+ok 6 - UTF-8 and exact 32 KiB file bounds are enforced by the copied CLI
+  ---
+  duration_ms: 214.940083
+  type: 'test'
+  ...
+# 32 KiB accepted; 32 KiB + 1 byte and malformed UTF-8 rejected; 3 unchanged-tree checks.
+# Subtest: missing files, directory inputs and wrong arguments reveal only static errors
+ok 7 - missing files, directory inputs and wrong arguments reveal only static errors
+  ---
+  duration_ms: 276.442417
+  type: 'test'
+  ...
+# 4 missing/directory/argument cases; generic static usage/failure; 4 unchanged-tree checks.
+# Subtest: an unwritten POSIX FIFO is rejected without waiting for a writer
+ok 8 - an unwritten POSIX FIFO is rejected without waiting for a writer
+  ---
+  duration_ms: 70.803083
+  type: 'test'
+  ...
+# Actual unwritten POSIX FIFO; no peer writer; static rejection within the 3 s child bound; unchanged-tree check.
+# Subtest: test-only preload denies named Node network and child-process entrypoints
+ok 9 - test-only preload denies named Node network and child-process entrypoints
+  ---
+  duration_ms: 66.383125
+  type: 'test'
+  ...
+# 21 named network/process API controls rejected before I/O; ESM named exports synchronized; no OS sandbox claim.
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2309.439417
