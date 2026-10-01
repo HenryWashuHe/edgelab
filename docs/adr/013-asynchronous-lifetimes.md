@@ -1,6 +1,6 @@
 # ADR 013: Bound upstream consumption and settle deliberate demo stops
 
-Status: accepted for 3.12.0. Local unit, actual workerd and lab protocol checks pass; complete CI and live verification remain pending.
+Status: accepted and deployed in 3.12.0. Local unit, actual workerd, lab protocol, complete CI and live asset/monitoring checks pass. Browser interaction and provider termination remain unverified.
 
 ## Context
 

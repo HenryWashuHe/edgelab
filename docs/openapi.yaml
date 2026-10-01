@@ -5,10 +5,13 @@ info:
   description: |
     Public monitoring read model and single-owner operator control plane.
     HTTP laboratory controls are documented in LAB.md; the observer upgrade and message schema are below.
-    This describes candidate 3.12.0, preserving the additive 3.7.0 view contract.
+    This describes deployed 3.12.0, preserving the additive 3.7.0 view contract.
     Upstream JSON consumption is bounded to 16384 bytes with best-effort deadline cleanup.
     Deliberate guided-demo Stop confirms settled state once; it adds no endpoint or command.
-    Local checks pass 274 unit tests and eight asset fault tests. Complete CI/live checks remain pending.
+    Local checks pass 274 unit tests and eight asset fault tests. Complete CI passes for `4a3bc6d27b4805e7f9802b4af0d05869cc39e3d0`.
+    Gateway deployment: a7b66af3-a748-4ae7-af28-80a6846bdde3. Fresh live verification at October 1, 16:21:40 UTC passes: two new good scheduled minutes
+    per service, current budgets, healthy readiness and all 16 asset bytes/MIME/revalidation.
+    Record: docs/evidence/releases/3.12.0-live-monitoring.json.
     Evidence: docs/evidence/releases/3.12.0-async-lifetime.json and 3.12.0-client-build.json.
     Historical deployed 3.11.0 evidence follows:
     Demand-loaded sections add no API endpoint or socket command; static chunk downloads are expected.
