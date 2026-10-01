@@ -16,6 +16,8 @@ Published 3.6.0 adds in-memory observer recording and an offline `#replay` view.
 
 Storage failures return JSON503 with code `lab-storage-unavailable`, a sanitized reason and a known UTC reset time when available. The browser marks current state unconfirmed, pauses experiments, and retains cached logs as historical evidence. Reconnect performs one state read and never repeats an uncertain request, reset or configuration write. With no loaded snapshot, metrics and history remain unknown.
 
+Deployed 3.7.0 reuses only the separate Operations dashboard's public status view, for less than ten seconds in one UTC minute. Its `read` provenance separates storage materialization from serving time, without renewing observations. Export, readiness, private evidence and all laboratory HTTP/WebSocket paths bypass that cache. A previously unobserved monitor-storage failure can be hidden during the short reuse interval; observed monitor failures clear it. See the [operator guidance](OPERATIONS.md#interpret-370-view-timing), [final-source controlled runtime archive](evidence/releases/3.7.0-status-cache.json) and [live HTTP verification](evidence/releases/3.7.0-live-monitoring.json). Rendered browser validation and production SQL/CPU/billing measurements are not claimed. The published 3.6 recording and its 192 KiB limit remain unchanged.
+
 ## Run locally
 
 Requires Node.js 22.12+ and npm.

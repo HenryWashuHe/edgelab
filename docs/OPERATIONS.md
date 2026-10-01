@@ -13,7 +13,7 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 ## Verify an actual release
 
 1. Confirm the published commit passes GitHub CI.
-2. For release v3.6.0, `GET /api/health` must report version 3.6.0. Compare the deployed revision with the release evidence; these instructions alone do not prove publication.
+2. For release v3.7.0, `GET /api/health` must report version 3.7.0. Compare the deployed revision with the release evidence; these instructions alone do not prove publication.
 3. `GET /api/ops/status` must list the expected target names. Public output must not contain the operator token, target URLs, or investigation notes.
 4. Allow cron propagation ([Cloudflare documents up to 15 minutes](https://developers.cloudflare.com/workers/configuration/cron-triggers/)). Verify each service receives observations in two distinct scheduled minutes without clicking a “run” button. Check `latest.slot`, the actual probe start `latest.observedAt`, and completion `latest.at`, not just the page's snapshot timestamp. Trigger propagation is not permission to backfill: an invocation whose scheduled minute has passed is recorded as `skipped-late` and makes no observation.
 5. The private catalog probe must validate actual JSON through its service binding; the gateway probe must reach the configured public HTTPS health endpoint.
@@ -24,6 +24,32 @@ Deploy with `npm run deploy`, then `npm run operator:setup`. The setup command s
 10. Run the bounded benchmark if performance evidence is being updated. Save raw results and their environment; do not mix local and live observations.
 
 The published 3.6.0 gateway deployment is `fe4a90e7-67f6-4a93-a62f-e799bd6d570f`, with the private origin unchanged. [CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36797743493) passes for source commit `3b0851c3b2c3e8b4ad5892be9bfb933215de7dc0`. The [live verification record](evidence/releases/3.6.0-live-monitoring.json) at 2026-10-01 00:46:21 UTC confirms the expected version, two new autonomous good minutes per service, healthy readiness, current budget evaluations and schemaVersion 4 privacy boundaries.
+
+## Interpret 3.7.0 view timing
+
+Deployed 3.7.0 can reuse a recently materialized public dashboard view. Gateway deployment `1b60639f-12f2-41f0-9761-7313a72144e3` uses implementation commit `565ea3504eadfd0b85e682ddf5922dfb0454bc17`, whose [full CI](https://github.com/HenryWashuHe/edgelab/actions/runs/36800527533) passes 154 unit tests and runtime regressions. The private origin is unchanged. The [final-source controlled runtime archive](evidence/releases/3.7.0-status-cache.json), measured at 2026-10-01 01:15:44 UTC, passes 28 proof groups. The published 3.6.0 recovery above remains separate dated evidence.
+
+The [live HTTP verification](evidence/releases/3.7.0-live-monitoring.json) began at 2026-10-01 01:37:43 UTC and passed at 01:39:44 UTC. Both services recorded new good observations in scheduled minutes `29846978` and `29846979`; readiness was healthy, budgets current and schemaVersion 4/authentication/privacy boundaries held. Both reporting windows returned memory provenance with the same original materialization and unchanged observations; exports returned storage provenance. Deployed HTML/JavaScript/CSS hashes matched the final build. These checks do not measure production SQL/CPU/billing or validate rendered browser behavior.
+
+The optional `read` object explains the view's timing:
+
+| Field            | Meaning                                                                             |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| `source`         | `storage` for a newly materialized view; `memory` for bounded instance reuse.       |
+| `materializedAt` | Original storage-view time, in Unix milliseconds.                                   |
+| `servedAt`       | Delivery time, in Unix milliseconds; equals response `now`.                         |
+| `ageMs`          | Exact `servedAt - materializedAt`; zero for a storage view, below 10,000 for reuse. |
+| `maxAgeMs`       | Fixed limit of 10,000 milliseconds.                                                 |
+
+Storage materialization has `materializedAt === servedAt === now`. A memory hit must remain in the same UTC minute and unchanged configuration/mutation context. The dashboard's native **Dashboard view timing** disclosure shows UTC materialization and delivery times plus reuse age when served; opening it makes no request. Missing/malformed older provenance is unavailable, rather than an assumed fresh storage read. Client evidence continues aging after the response and during refresh failures.
+
+Response `now` is a delivery clock, not a new check. Actual observation, policy, evaluation, warning, incident, scheduler and cleanup timestamps stay unchanged. Current service status, budget freshness and monitoring readiness age against delivery time. A reused view cannot make an old scheduler run current. It also cannot discover a storage outage no operation has observed yet: that outage can remain hidden for less than ten seconds. Observed monitor failures clear both windows, and a retained success is never an error fallback.
+
+Use `/api/ready` or `/api/ops/export` for an authoritative storage read when investigating availability. Both bypass reuse and cannot initiate a probe; healthy readiness still means fresh monitoring evidence rather than successful upstream services. Export provenance has `source: "storage"` and `ageMs: 0`. Incident detail, audit and brief routes also bypass, as do all laboratory paths. A valid operator bearer token on public status does not convert it into private output or a bypass. HTTP responses remain `no-store`.
+
+At most two canonical `24h`/`7d` views share a 1 MiB serialized UTF-8 envelope cap, including internal budget-row revision/time sources used for aging. These sources never appear in public output. This is not a measured JavaScript heap limit. Oversized views remain complete and uncached. Eviction discards the instance buffers; authoritative SQLite and the separate persisted check projection survive. Relevant writes invalidate reuse, including each asynchronous probe completion.
+
+Run `node scripts/status-cache.mjs` locally to reproduce source/export parity, freshness/clock/byte boundaries, mutation interleaving, eviction and real SQLite fault rollback. Mature misses and authoritative exports cost 27 statements/158 rows read for two targets and 63/362 for five, with zero writes, for both windows. Each 100-request concurrent and sequential warm-hit group uses zero SQL attempts, rows read/written, KV operations and alarms. Constructor/enrollment and mature-input bootstrap are separate profiles. Older fixtures report 162/369 view reads because their clock/control overhead differs; this is not an additional query optimization claim. These local counters measure neither CPU, production savings nor account capacity.
 
 ## Laboratory observation
 
@@ -153,6 +179,8 @@ References: [Cron triggers](https://developers.cloudflare.com/workers/configurat
 ## Storage-limit recovery
 
 A 503 with code `monitor-storage-unavailable` means current monitoring cannot be confirmed. `daily-read-limit` and `daily-write-limit` identify Free-plan database quota exceptions; `retryAtUTC` gives the next midnight UTC. A generic storage failure has a null reset time. Gateway `/api/health` can still respond while `/api/ready` is unavailable. An export failure returns JSON without an attachment or invented healthy report.
+
+Version 3.7.0 can serve a public memory hit before an otherwise unobserved monitor-storage failure is detected, for less than ten seconds. Its read/serve provenance is not proof of fresh storage availability. Readiness and export bypass that cache; once a monitor operation observes a failure, both entries are cleared and no cached success replaces the error.
 
 The laboratory uses the same sanitized boundary with code `lab-storage-unavailable` and a separate short isolate cooldown. A failed request cannot confirm a stored experiment decision. Keep prior logs as historical evidence and reconnect with a read; do not automatically repeat an uncertain config, reset or experiment POST.
 

@@ -1,6 +1,6 @@
 # Bound public status reuse and expose materialization age
 
-Status: proposed for the next release. EdgeLab 3.6.0 remains deployed. Implementation and actual-runtime verification are in progress on `codex/status-view-cache`; no reduction below the archived status-read costs is claimed yet.
+Status: accepted in EdgeLab 3.7.0. [Actual-runtime verification](../evidence/releases/3.7.0-status-cache.json) passes 28 proof groups against stable source hashes. [Live HTTP verification](../evidence/releases/3.7.0-live-monitoring.json) confirms response provenance, authoritative exports, deployed asset identity and two new autonomous good minutes per service. Browser rendering and production cost remain unverified.
 
 ## Problem
 
@@ -8,7 +8,7 @@ Browser request coalescing protects one tab, but every public monitoring view st
 
 [Cloudflare documents instance-owned memory](https://developers.cloudflare.com/durable-objects/reference/in-memory-state/) as a way to reuse values without further storage calls. Eviction discards that memory. SQLite remains authoritative; reusable reporting data must be disposable and never acquire new observation credit.
 
-## Proposed decision
+## Decision
 
 Reuse only the public status view in the existing MonitorStore instance. Retain at most the two canonical `24h` and `7d` windows and at most 1 MiB of combined serialized UTF-8 data, including the private projection envelope. This bounds retained serialized content, not measured JavaScript heap consumption. Oversized responses remain complete and uncached. Query-string variations must not create new cache entries.
 
@@ -28,7 +28,7 @@ Thrown storage failures immediately clear both entries. Conservatively clear on 
 
 A zero-read hit cannot detect a storage outage that no operation has observed yet. It can reuse earlier materialized evidence for less than ten seconds. Disclose that age; projected healthy monitoring describes recent scheduler/probe evidence and is not a fresh storage check. The independent authoritative readiness endpoint remains available. This tradeoff is part of the contract, not a claim that caching prevents account exhaustion.
 
-## Required evidence
+## Validation gates
 
 - Actual workerd/SQLite fixtures compare source-derived public output and authoritative exports for both windows, with private sentinel exclusion.
 - Two/five-target runs measure constructor/bootstrap, misses, eviction rebuilds, and 100 concurrent/repeated hits separately. Hits must perform literally zero consumed SQL statements/rows/writes, KV operations and alarm work. Private/ready/export reads must still execute their authoritative paths.
@@ -38,4 +38,4 @@ A zero-read hit cannot detect a storage outage that no operation has observed ye
 - Executed native SQL failures and transactional rollback after warming return the existing sanitized failure boundary, with no phantom state or stale-success fallback. Old-revision probe fencing remains intact.
 - The fixture uses an in-memory clock during measured operations. Test-only SQL clock reads must not be hidden in a zero-operation claim. [Cloudflare's cursor accounting](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/) is inspected after consuming the real cursor.
 
-Publish measured warm-read savings only after those gates pass; retain the separate cron write-limit and account-capacity caveats.
+The gates pass in the pinned two/five-target fixture. Each window/profile executes 100 concurrent and 100 sequential warm reads with zero attempted/consumed SQL, KV or alarm operations. Mature misses/exports use 158 or 362 rows read, with a memory clock; the older 162/369 fixture includes separate SQL clock overhead. Neither result measures production billing, CPU or account capacity. Retain the separate cron write-limit and account-capacity caveats.

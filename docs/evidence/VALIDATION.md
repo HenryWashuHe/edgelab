@@ -1,6 +1,8 @@
 # Verification record
 
-## EdgeLab 3.7.0 candidate
+## EdgeLab 3.7.0
+
+Gateway deployment: `1b60639f-12f2-41f0-9761-7313a72144e3`. The private origin is unchanged. Implementation commit `565ea3504eadfd0b85e682ddf5922dfb0454bc17` passes the [complete GitHub CI run](https://github.com/HenryWashuHe/edgelab/actions/runs/36800527533), including the new status-cache suite and real local HTTP integration on Linux.
 
 The public status route now reuses two canonical reporting windows inside the MonitorStore instance for strictly less than ten seconds, within the same UTC minute, with a combined serialized UTF-8 envelope cap of 1 MiB. Delivery provenance distinguishes `storage` from `memory`, retains original materialization time and projects freshness against response time. Exports, readiness, incident detail, audit and brief routes remain authoritative. Real source commits and observed monitor-storage failures invalidate reuse; an unobserved outage can remain unseen on a warm hit for less than ten seconds. This is disposable view reuse, not a storage-success or account-capacity guarantee. [ADR 010](../adr/010-bounded-public-status-reuse.md) specifies the boundaries.
 
@@ -8,7 +10,9 @@ The [actual workerd/SQLite record](releases/3.7.0-status-cache.json) passes 28 g
 
 Native SQLite exceptions after consumed SELECT/UPDATE cursors prove sanitized503s, cross-window clearing and transaction rollback of policy, source and retention queues. Failed native attempts produce no cursor and retain unknown (`null`) cursor cost. Held probes allow an intervening read before real completion; the later commit, budget publication and completed cleanup all invalidate. Tests cover exact freshness/TTL/minute boundaries, rollback and invalid clocks, deployment configuration, historical timestamps, private sentinel exclusion, the byte cap and complete oversized uncached output.
 
-Formatting, 154 unit tests across 15 files, strict TypeScript, production build and both deployment dry-runs pass. Actual local HTTP integration passes reset fencing, origin timeout, payload fallback, concurrent admission and capability/privacy validation. Browser access was declined earlier and was not retried or worked around; the new timing disclosure has parser/source/build verification, with rendered UI validation unverified. Native inference remains disabled. Deployment and exact full-CI verification are pending.
+Formatting, 154 unit tests across 15 files, strict TypeScript, production build and both deployment dry-runs pass. Actual local HTTP integration passes reset fencing, origin timeout, payload fallback, concurrent admission and capability/privacy validation. Browser access was declined earlier and was not retried or worked around; the new timing disclosure has parser/source/build verification, with rendered UI validation unverified. Native inference remains disabled with zero native calls; entitlement and real-model output remain unverified.
+
+The [live monitoring record](releases/3.7.0-live-monitoring.json) passed at October 1, 01:39:44 UTC after starting at 01:37:43 UTC. Both services produced two distinct new good autonomous minutes (UTC slots 29846978 and 29846979) with actual observation starts matching their slots, current persisted budget evaluations and healthy authoritative readiness. Both reporting windows witnessed same-materialization memory responses with unchanged observations; exports still reported storage materialization. Deployed HTML/JavaScript/CSS bytes match the final build. Public privacy, operator authentication and private-brief rejection boundaries pass. No manual tick, production history seed or native inference was used. These HTTP checks establish deployment identity and response provenance, not rendered browser behavior, production SQL/CPU/billing cost or long-term capacity. The earlier quota gap remains historical evidence.
 
 ## EdgeLab 3.6.0
 
