@@ -3,3 +3,6 @@ dist/
 .wrangler/
 output/
 package-lock.json
+examples/counter-evidence/upstream/counter.js
+examples/counter-evidence/upstream/LICENSE-CODE
+docs/evidence/counter-portability/

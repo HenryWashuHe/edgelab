@@ -1,0 +1,14 @@
+{
+  "repository": "cloudflare/cloudflare-docs",
+  "commit": "976c80e2120fdea5b4e1b1dd0eff2683802da981",
+  "documentPath": "src/content/docs/durable-objects/examples/build-a-counter.mdx",
+  "documentSha256": "230f4451f61befd0171d39b64b33c9f8fbb16e4f4cc920f6fa67cf6e9c5d5bd4",
+  "extraction": "First JavaScript fenced block, unchanged UTF-8 bytes with final LF.",
+  "codePath": "examples/counter-evidence/upstream/counter.js",
+  "codeBytes": 1713,
+  "codeSha256": "1c7c0f960a1f9b91b0b7488fc228208d8ec2a39fdfaf0d89b553184fae9151a6",
+  "licensePath": "LICENSE-CODE",
+  "license": "MIT",
+  "licenseBytes": 1088,
+  "licenseSha256": "246b89de9b9621800e31db8422c53fdcb41b942a0cc1f7733dc6736fe49e6670"
+}

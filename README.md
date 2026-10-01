@@ -22,6 +22,10 @@ Historical **3.11.0** passed [complete Linux CI](https://github.com/HenryWashuHe
 
 The public gateway monitors its actual HTTPS health endpoint and a private catalog Worker through a service binding. A Cron Trigger drives monitoring independently of browsers. The catalog uses controlled example data; this is an independent engineering project with real deployment observations.
 
+The [product value assessment](docs/PRODUCT_VALUE.md) compares existing tools and narrows future scope to validating one developer debugging workflow. External adoption and an unmet market need remain unproven.
+
+A separate [local counter portability experiment](examples/counter-evidence/README.md) applies bounded evidence capture to unchanged Cloudflare example code. Two actual response-loss cases, read-only samples and forced eviction distinguish observed durable state from uncertain delivery; a memory-only control fails persistence. It adds no deployed feature and establishes no customer adoption.
+
 ## What is implemented
 
 - **Continuous checks:** one observation opportunity per current UTC minute per deployment-approved target; HTTP status, bounded JSON contract validation, latency objective, timeout, and 16 KB body limit. Redirects are not followed. Delayed schedules are skipped rather than backfilled.

@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-counter-portability-proof",
+  "measuredAt": "2026-10-01T16:55:14.990Z",
+  "producerVersion": "3.12.0",
+  "environment": {
+    "node": "25.4.0",
+    "esbuild": "0.28.1",
+    "miniflare": "5.20260926.0-alpha",
+    "compatibilityDate": "2026-09-01",
+    "storage": "Ephemeral local workerd SQLite DO using asynchronous KV API"
+  },
+  "upstream": {
+    "repository": "cloudflare/cloudflare-docs",
+    "commit": "976c80e2120fdea5b4e1b1dd0eff2683802da981",
+    "documentPath": "src/content/docs/durable-objects/examples/build-a-counter.mdx",
+    "documentSha256": "230f4451f61befd0171d39b64b33c9f8fbb16e4f4cc920f6fa67cf6e9c5d5bd4",
+    "extraction": "First JavaScript fenced block, unchanged UTF-8 bytes with final LF.",
+    "codePath": "examples/counter-evidence/upstream/counter.js",
+    "codeBytes": 1713,
+    "codeSha256": "1c7c0f960a1f9b91b0b7488fc228208d8ec2a39fdfaf0d89b553184fae9151a6",
+    "licensePath": "LICENSE-CODE",
+    "license": "MIT",
+    "licenseBytes": 1088,
+    "licenseSha256": "246b89de9b9621800e31db8422c53fdcb41b942a0cc1f7733dc6736fe49e6670"
+  },
+  "builds": {
+    "original": {
+      "sha256": "5f580e8ef39dc0c4140b62c09304f96b19ce84375dd505bbd6a78a9d0640b633",
+      "inputs": [
+        "examples/counter-evidence/upstream/counter.js"
+      ]
+    },
+    "adapter": {
+      "sha256": "0beaafebe4c0dbae5de9fa571100659cb4aa795a68cb1d1925780b9723262491",
+      "inputs": [
+        "examples/counter-evidence/adapter.mjs",
+        "examples/counter-evidence/upstream/counter.js"
+      ]
+    },
+    "memoryControl": {
+      "sha256": "b50f46efc18034009efda227d9c12fd3a9d2b8750ddb92fa8ad6e17851985b33",
+      "inputs": [
+        "examples/counter-evidence/memory-control.mjs",
+        "examples/counter-evidence/upstream/counter.js"
+      ]
+    }
+  },
+  "routeParity": [
+    {
+      "path": "/",
+      "method": "GET",
+      "value": 0
+    },
+    {
+      "path": "/increment",
+      "method": "POST",
+      "value": 1
+    },
+    {
+      "path": "/increment",
+      "method": "GET",
+      "value": 2
+    },
+    {
+      "path": "/decrement",
+      "method": "POST",
+      "value": 1
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "value": 1
+    }
+  ],
+  "transport": {
+    "beforeAttempts": 1,
+    "beforeDelegations": 0,
+    "afterAttempts": 1,
+    "afterDelegations": 1,
+    "afterResponsesConsumed": 1,
+    "upstreamErrors": 0
+  },
+  "artifacts": [
+    {
+      "file": "before-loss.json",
+      "bytes": 913,
+      "contentHash": "0cceba240e57b64c331b026e261f44d0921605f69572d780df59fc92b0cea5ea",
+      "values": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "file": "after-loss.json",
+      "bytes": 913,
+      "contentHash": "ae34c9147a6782f316c212e8e0f99d0cd7002d400a58b0c4b1370427a2d98f47",
+      "values": [
+        0,
+        1,
+        1
+      ]
+    }
+  ],
+  "sampling": {
+    "samplesPerCase": 3,
+    "additionalKVGetCallsPerSample": 1,
+    "additionalKVWritesPerSample": 0,
+    "explicitAlarmOrSyncMethodsPerSample": 0,
+    "diagnosticMeterRPCsPerMeasuredSample": 2,
+    "resumedMeters": {
+      "before": {
+        "get": 1,
+        "put": 0,
+        "delete": 0,
+        "list": 0,
+        "deleteAll": 0,
+        "getAlarm": 0,
+        "setAlarm": 0,
+        "deleteAlarm": 0,
+        "sync": 0
+      },
+      "after": {
+        "get": 1,
+        "put": 0,
+        "delete": 0,
+        "list": 0,
+        "deleteAll": 0,
+        "getAlarm": 0,
+        "setAlarm": 0,
+        "deleteAlarm": 0,
+        "sync": 0
+      }
+    },
+    "beforeLossMeters": {
+      "before": {
+        "get": 1,
+        "put": 0,
+        "delete": 0,
+        "list": 0,
+        "deleteAll": 0,
+        "getAlarm": 0,
+        "setAlarm": 0,
+        "deleteAlarm": 0,
+        "sync": 0
+      },
+      "after": {
+        "get": 1,
+        "put": 0,
+        "delete": 0,
+        "list": 0,
+        "deleteAll": 0,
+        "getAlarm": 0,
+        "setAlarm": 0,
+        "deleteAlarm": 0,
+        "sync": 0
+      }
+    },
+    "afterLossMeters": {
+      "before": {
+        "get": 1,
+        "put": 0,
+        "delete": 0,
+        "list": 0,
+        "deleteAll": 0,
+        "getAlarm": 0,
+        "setAlarm": 0,
+        "deleteAlarm": 0,
+        "sync": 0
+      },
+      "after": {
+        "get": 2,
+        "put": 1,
+        "delete": 0,
+        "list": 0,
+        "deleteAll": 0,
+        "getAlarm": 0,
+        "setAlarm": 0,
+        "deleteAlarm": 0,
+        "sync": 0
+      }
+    },
+    "scope": "Attempted logical storage methods, not SQL rows or billed work"
+  },
+  "negativeControl": {
+    "kind": "intentional-memory-only-substitute",
+    "separateRuntime": true,
+    "valueBeforeEviction": 1,
+    "valueAfterEviction": 0,
+    "persistenceRequirementSatisfied": false,
+    "upstreamDefect": false
+  },
+  "boundaries": {
+    "externalAuthoredExample": true,
+    "originalMutationSourceUnchanged": true,
+    "realLocalNetworkLoss": true,
+    "actualForcedEviction": true,
+    "offlineInspectorNetworkBlocked": true,
+    "retries": 0,
+    "productionOrAccountCalls": 0,
+    "nativeCommitTimestamp": null,
+    "deterministicReexecution": false,
+    "perCommandAttribution": false,
+    "exactlyOnceExecution": false,
+    "externalAdoption": false,
+    "fasterDiagnosisMeasured": false
+  },
+  "testedSources": [
+    {
+      "path": "examples/counter-evidence/adapter.mjs",
+      "sha256": "989f3258d347200a6246c4ef72c786268fdd0c434b50b202a4d504969514aa5a"
+    },
+    {
+      "path": "examples/counter-evidence/codec.mjs",
+      "sha256": "286dd7cee069d900a71d5aa342f88e388ee262dc24b7166eaf1b672c15dbd098"
+    },
+    {
+      "path": "examples/counter-evidence/inspect.mjs",
+      "sha256": "59d582f876e5c658d0dc0259517cc9041cd2f286dba7e8488cbdee546174b306"
+    },
+    {
+      "path": "examples/counter-evidence/memory-control.mjs",
+      "sha256": "a19e43aa26c6b8c8fbef7c8cf9703eb2900fb41fc377a023dcdac2426c9724f4"
+    },
+    {
+      "path": "examples/counter-evidence/upstream/counter.js",
+      "sha256": "1c7c0f960a1f9b91b0b7488fc228208d8ec2a39fdfaf0d89b553184fae9151a6"
+    },
+    {
+      "path": "examples/counter-evidence/upstream/LICENSE-CODE",
+      "sha256": "246b89de9b9621800e31db8422c53fdcb41b942a0cc1f7733dc6736fe49e6670"
+    },
+    {
+      "path": "examples/counter-evidence/upstream/provenance.json",
+      "sha256": "7c05e42238aa46b2daa773ace01e93b3466dfbb9dfe92d7d7e1cb164f9b2ead2"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "eb1ab61089ac90d9fccec8713e8517d4d67474b6bf93b1ca4cfac4aff49e3d09"
+    },
+    {
+      "path": "package.json",
+      "sha256": "1bf8f860813f13e066a9d13cf4a1dc0383fecbf72978730fede6f57ed672e235"
+    },
+    {
+      "path": "scripts/counter-portability.mjs",
+      "sha256": "8a70d1fa987de13b560dd374fadce9fce42248f1326e26ad86e5d11f50e4ce15"
+    }
+  ],
+  "sourceHashesStableAfterDisposal": true,
+  "runtimesDisposed": true
+}

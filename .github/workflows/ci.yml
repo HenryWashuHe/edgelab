@@ -18,6 +18,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - run: node --test examples/counter-evidence/codec.test.mjs
+      - run: node scripts/counter-portability.mjs
       - run: npm run test:client-build
       - run: npm run test:lifecycle
       - run: npm run test:async-lifetime
