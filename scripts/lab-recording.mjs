@@ -85,6 +85,7 @@ const {
 const { LAB_OBSERVER_PROTOCOL, LAB_OBSERVER_CAPABILITY_PREFIX, MAX_LAB_OBSERVER_FRAME_BYTES } =
   await import(pathToFileURL(resolve(bundles.protocol)).href);
 const packageVersion = JSON.parse(await readFile('package.json', 'utf8')).version;
+assert.equal(packageVersion, PRODUCER_VERSION, 'Recorder version matches the project release');
 const capability = randomUUID();
 const assertions = [];
 const errors = [];
@@ -180,6 +181,12 @@ try {
   const health = await mf.dispatchFetch(new URL('/api/health', ready));
   assert.equal(health.status, 200);
   const observedGatewayVersion = (await health.json()).version;
+  assert.equal(
+    observedGatewayVersion,
+    packageVersion,
+    'Actual gateway reports the project release',
+  );
+  proof('Project, recorder and actual gateway health versions agree.');
   const url = new URL('/api/observe', ready);
   url.protocol = ready.protocol === 'https:' ? 'wss:' : 'ws:';
   peer = new NetworkWebSocket(
