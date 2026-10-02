@@ -1,0 +1,1428 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-request-body-boundary",
+  "startedAt": "2026-10-02T09:46:09.310Z",
+  "measuredAt": "2026-10-02T09:46:31.253Z",
+  "projectVersion": "3.12.5",
+  "baselineCommit": "5d2f2714197d3c54f3f99f177ab6c511275ecce0",
+  "environment": {
+    "node": "v25.4.0",
+    "esbuild": "0.28.1",
+    "miniflare": "5.20260926.0-alpha",
+    "compatibilityDate": "2026-09-01",
+    "compatibilityFlags": [],
+    "connectedHTTPListener": "Miniflare unsafeDirectSockets native workerd loopback; Node http client",
+    "runtime": "actual local workerd with native Durable Objects/SQLite and native admission binding"
+  },
+  "bounds": {
+    "retainedBodyBytes": 4096,
+    "fullBodyDeadlineMs": 10000,
+    "normalOperationDeadlineMs": 8000,
+    "timeoutObservationDeadlineMs": 13000,
+    "baselinePendingObservationMs": 250,
+    "recipeDeadlineMs": 120000
+  },
+  "sources": {
+    "foundations": [
+      {
+        "path": "scripts/request-body.test.mjs",
+        "bytes": 30908,
+        "sha256": "342fb6c6a5cdb1b3b198334789064127ac8f19f676d721457af5ccb3ded98524"
+      },
+      {
+        "path": "package.json",
+        "bytes": 3303,
+        "sha256": "543c7117912c72809ed3f9f72efd8e9d070f094e86ad538d2732e05a6529899d"
+      },
+      {
+        "path": "package-lock.json",
+        "bytes": 102759,
+        "sha256": "0033bcb3a8da647d312efa476e4835e9e651a4d820dfff0f2670f6235880151a"
+      },
+      {
+        "path": "tsconfig.json",
+        "bytes": 447,
+        "sha256": "9affb71fa759689786bd82d7dbe343c7fbed45e403dbc6fbd658c578d1bdface"
+      }
+    ],
+    "current": [
+      {
+        "path": "package-lock.json",
+        "bytes": 102759,
+        "sha256": "0033bcb3a8da647d312efa476e4835e9e651a4d820dfff0f2670f6235880151a"
+      },
+      {
+        "path": "package.json",
+        "bytes": 3303,
+        "sha256": "543c7117912c72809ed3f9f72efd8e9d070f094e86ad538d2732e05a6529899d"
+      },
+      {
+        "path": "scripts/request-body.test.mjs",
+        "bytes": 30908,
+        "sha256": "342fb6c6a5cdb1b3b198334789064127ac8f19f676d721457af5ccb3ded98524"
+      },
+      {
+        "path": "tests/fixtures/request-body.ts",
+        "bytes": 6370,
+        "sha256": "b995c8eab5e5eef5ef2bb689fc79cf621bd441c8cc26646cf65771f68ca956d6"
+      },
+      {
+        "path": "tsconfig.json",
+        "bytes": 447,
+        "sha256": "9affb71fa759689786bd82d7dbe343c7fbed45e403dbc6fbd658c578d1bdface"
+      },
+      {
+        "path": "worker/bounded-json.ts",
+        "bytes": 4230,
+        "sha256": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1"
+      },
+      {
+        "path": "worker/budget-signals.ts",
+        "bytes": 8063,
+        "sha256": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15"
+      },
+      {
+        "path": "worker/burn-rate.ts",
+        "bytes": 7472,
+        "sha256": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c"
+      },
+      {
+        "path": "worker/engine.ts",
+        "bytes": 7107,
+        "sha256": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f"
+      },
+      {
+        "path": "worker/incident-brief-ai.ts",
+        "bytes": 3721,
+        "sha256": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b"
+      },
+      {
+        "path": "worker/incident-brief-domain.ts",
+        "bytes": 28826,
+        "sha256": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1"
+      },
+      {
+        "path": "worker/incident-briefs.ts",
+        "bytes": 21706,
+        "sha256": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d"
+      },
+      {
+        "path": "worker/incident-evidence.ts",
+        "bytes": 15413,
+        "sha256": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2"
+      },
+      {
+        "path": "worker/index.ts",
+        "bytes": 23106,
+        "sha256": "a655c09a5df7ff91bac389970890922e5f441f52f8cfa679c52b2c6f374a543f"
+      },
+      {
+        "path": "worker/lab-admission.ts",
+        "bytes": 3810,
+        "sha256": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc"
+      },
+      {
+        "path": "worker/lab-observer.ts",
+        "bytes": 8257,
+        "sha256": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08"
+      },
+      {
+        "path": "worker/metadata-cleanup.ts",
+        "bytes": 4888,
+        "sha256": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee"
+      },
+      {
+        "path": "worker/monitor-check-cache.ts",
+        "bytes": 9871,
+        "sha256": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1"
+      },
+      {
+        "path": "worker/monitor-domain.ts",
+        "bytes": 5281,
+        "sha256": "cf18d92b220815742326fb8bb93e9a2866e46a8cff649163fb1306ab46e12af5"
+      },
+      {
+        "path": "worker/monitor-forwarder.ts",
+        "bytes": 3099,
+        "sha256": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e"
+      },
+      {
+        "path": "worker/monitor-probe.ts",
+        "bytes": 1380,
+        "sha256": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752"
+      },
+      {
+        "path": "worker/monitor-readiness.ts",
+        "bytes": 4245,
+        "sha256": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c"
+      },
+      {
+        "path": "worker/monitor-version-retention.ts",
+        "bytes": 9863,
+        "sha256": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455"
+      },
+      {
+        "path": "worker/monitor.ts",
+        "bytes": 30887,
+        "sha256": "2e00d15cbfed9fef66c92e1a94bee3abbdc6983d338762e736f7f95c39b992cc"
+      },
+      {
+        "path": "worker/origin-client.ts",
+        "bytes": 1181,
+        "sha256": "1c92a87dc002fa309e032f2b3ebd569c58fa012929db7d9d9be596d2a9e18e59"
+      },
+      {
+        "path": "worker/origin.ts",
+        "bytes": 2274,
+        "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8"
+      },
+      {
+        "path": "worker/request-body.ts",
+        "bytes": 3325,
+        "sha256": "f0e8fe931433e142d556ef891e18d1afb95f7ea9f7cc7a2692ef2be82e31ad28"
+      },
+      {
+        "path": "worker/status-view-cache.ts",
+        "bytes": 6670,
+        "sha256": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158"
+      }
+    ],
+    "baselineIndex": {
+      "path": "worker/index.ts",
+      "commit": "5d2f2714197d3c54f3f99f177ab6c511275ecce0",
+      "bytes": 23311,
+      "sha256": "accc1b54cc6c1262c544e261432cddc2da85b09abb39d37c19a60db80d84ac95"
+    },
+    "graphs": {
+      "baseline": [
+        {
+          "path": "tests/fixtures/request-body.ts",
+          "bytes": 6370,
+          "sha256": "b995c8eab5e5eef5ef2bb689fc79cf621bd441c8cc26646cf65771f68ca956d6",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/bounded-json.ts",
+          "bytes": 4230,
+          "sha256": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/budget-signals.ts",
+          "bytes": 8063,
+          "sha256": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/burn-rate.ts",
+          "bytes": 7472,
+          "sha256": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/engine.ts",
+          "bytes": 7107,
+          "sha256": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/incident-brief-ai.ts",
+          "bytes": 3721,
+          "sha256": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/incident-brief-domain.ts",
+          "bytes": 28826,
+          "sha256": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/incident-briefs.ts",
+          "bytes": 21706,
+          "sha256": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/incident-evidence.ts",
+          "bytes": 15413,
+          "sha256": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/index.ts",
+          "bytes": 23311,
+          "sha256": "accc1b54cc6c1262c544e261432cddc2da85b09abb39d37c19a60db80d84ac95",
+          "source": "pinned-git-index"
+        },
+        {
+          "path": "worker/lab-admission.ts",
+          "bytes": 3810,
+          "sha256": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/lab-observer.ts",
+          "bytes": 8257,
+          "sha256": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/metadata-cleanup.ts",
+          "bytes": 4888,
+          "sha256": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor-check-cache.ts",
+          "bytes": 9871,
+          "sha256": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor-domain.ts",
+          "bytes": 5281,
+          "sha256": "cf18d92b220815742326fb8bb93e9a2866e46a8cff649163fb1306ab46e12af5",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor-forwarder.ts",
+          "bytes": 3099,
+          "sha256": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor-probe.ts",
+          "bytes": 1380,
+          "sha256": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor-readiness.ts",
+          "bytes": 4245,
+          "sha256": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor-version-retention.ts",
+          "bytes": 9863,
+          "sha256": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor.ts",
+          "bytes": 30887,
+          "sha256": "2e00d15cbfed9fef66c92e1a94bee3abbdc6983d338762e736f7f95c39b992cc",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/origin-client.ts",
+          "bytes": 1181,
+          "sha256": "1c92a87dc002fa309e032f2b3ebd569c58fa012929db7d9d9be596d2a9e18e59",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/origin.ts",
+          "bytes": 2274,
+          "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/status-view-cache.ts",
+          "bytes": 6670,
+          "sha256": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158",
+          "source": "maintained-working-tree"
+        }
+      ],
+      "maintained": [
+        {
+          "path": "tests/fixtures/request-body.ts",
+          "bytes": 6370,
+          "sha256": "b995c8eab5e5eef5ef2bb689fc79cf621bd441c8cc26646cf65771f68ca956d6",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/bounded-json.ts",
+          "bytes": 4230,
+          "sha256": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/budget-signals.ts",
+          "bytes": 8063,
+          "sha256": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/burn-rate.ts",
+          "bytes": 7472,
+          "sha256": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/engine.ts",
+          "bytes": 7107,
+          "sha256": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/incident-brief-ai.ts",
+          "bytes": 3721,
+          "sha256": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/incident-brief-domain.ts",
+          "bytes": 28826,
+          "sha256": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/incident-briefs.ts",
+          "bytes": 21706,
+          "sha256": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/incident-evidence.ts",
+          "bytes": 15413,
+          "sha256": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/index.ts",
+          "bytes": 23106,
+          "sha256": "a655c09a5df7ff91bac389970890922e5f441f52f8cfa679c52b2c6f374a543f",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/lab-admission.ts",
+          "bytes": 3810,
+          "sha256": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/lab-observer.ts",
+          "bytes": 8257,
+          "sha256": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/metadata-cleanup.ts",
+          "bytes": 4888,
+          "sha256": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor-check-cache.ts",
+          "bytes": 9871,
+          "sha256": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor-domain.ts",
+          "bytes": 5281,
+          "sha256": "cf18d92b220815742326fb8bb93e9a2866e46a8cff649163fb1306ab46e12af5",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor-forwarder.ts",
+          "bytes": 3099,
+          "sha256": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor-probe.ts",
+          "bytes": 1380,
+          "sha256": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor-readiness.ts",
+          "bytes": 4245,
+          "sha256": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor-version-retention.ts",
+          "bytes": 9863,
+          "sha256": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/monitor.ts",
+          "bytes": 30887,
+          "sha256": "2e00d15cbfed9fef66c92e1a94bee3abbdc6983d338762e736f7f95c39b992cc",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/origin-client.ts",
+          "bytes": 1181,
+          "sha256": "1c92a87dc002fa309e032f2b3ebd569c58fa012929db7d9d9be596d2a9e18e59",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/origin.ts",
+          "bytes": 2274,
+          "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/request-body.ts",
+          "bytes": 3325,
+          "sha256": "f0e8fe931433e142d556ef891e18d1afb95f7ea9f7cc7a2692ef2be82e31ad28",
+          "source": "maintained-working-tree"
+        },
+        {
+          "path": "worker/status-view-cache.ts",
+          "bytes": 6670,
+          "sha256": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158",
+          "source": "maintained-working-tree"
+        }
+      ]
+    },
+    "bundles": {
+      "baseline": {
+        "bytes": 168979,
+        "sha256": "529b97ad6f6767c7af181d3b72a6b433f4eba8e9c3877da6ae403058faba4af7"
+      },
+      "maintained": {
+        "bytes": 171272,
+        "sha256": "6b8574c3663bd8df17b50d348aa4e49de08cac81f6a721f1fceca302a4ec43f4"
+      }
+    },
+    "stableAfterDisposal": true,
+    "substitution": "Only worker/index.ts is replaced by its pinned old bytes; all other reached dependencies use the same current buffers. The new reader is reached only by the maintained index."
+  },
+  "proofGroups": [
+    "pinned baseline waits for held cancellation on lab and authorized operations",
+    "maintained overflow does not await held or throwing cancellation before rejection",
+    "read and signal faults return sanitized400 before delegation; late supplied bytes cannot mutate",
+    "exact4096-byte controls and splitUTF8/tiny/empty chunks preserve native state and JSON validation",
+    "real loopback partialHTTP baseline stays pending then completed valid body reaches native actor",
+    "real loopback partialHTTP returns408 at absolute10s despite additional bytes before deadline",
+    "cooperative yields let absolute10s deadline reject a constructed stream of empty chunks"
+  ],
+  "observations": [
+    {
+      "profile": "baseline",
+      "case": "held-cancellation",
+      "route": "lab",
+      "input": "constructed-stream",
+      "overflowBytes": 4097,
+      "observedPendingForMs": 250,
+      "statusAfterRelease": 413,
+      "dispatchWhileHeld": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 1,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "held-cancellation",
+      "route": "ops",
+      "input": "constructed-stream",
+      "overflowBytes": 4097,
+      "observedPendingForMs": 250,
+      "statusAfterRelease": 413,
+      "dispatchWhileHeld": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 1,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "overflow-hold",
+      "route": "lab",
+      "input": "constructed-stream",
+      "overflowBytes": 4097,
+      "status": 413,
+      "dispatchAtRejection": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 1,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "overflow-throw",
+      "route": "lab",
+      "input": "constructed-stream",
+      "overflowBytes": 4097,
+      "status": 413,
+      "dispatchAtRejection": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 1,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "overflow-hold",
+      "route": "ops",
+      "input": "constructed-stream",
+      "overflowBytes": 4097,
+      "status": 413,
+      "dispatchAtRejection": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 1,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "overflow-throw",
+      "route": "ops",
+      "input": "constructed-stream",
+      "overflowBytes": 4097,
+      "status": 413,
+      "dispatchAtRejection": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 1,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "read-error",
+      "route": "lab",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatchAfterLateRelease": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "abort-before",
+      "route": "lab",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatchAfterLateRelease": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "abort-late",
+      "route": "lab",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatchAfterLateRelease": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 1,
+        "cancelCompleted": 1,
+        "lateSupplyAttempts": 1,
+        "lateSupplyRejected": 1
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "read-error",
+      "route": "ops",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatchAfterLateRelease": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "abort-before",
+      "route": "ops",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatchAfterLateRelease": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "abort-late",
+      "route": "ops",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatchAfterLateRelease": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 1,
+        "cancelCompleted": 1,
+        "lateSupplyAttempts": 1,
+        "lateSupplyRejected": 1
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "exact",
+      "route": "lab",
+      "input": "constructed-stream",
+      "bytes": 4096,
+      "status": 200,
+      "dispatch": {
+        "labNames": 1,
+        "labGets": 1,
+        "labFetches": 1,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 1,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "tiny-empty",
+      "route": "lab",
+      "input": "constructed-stream",
+      "bytes": 4096,
+      "status": 200,
+      "dispatch": {
+        "labNames": 1,
+        "labGets": 1,
+        "labFetches": 1,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 1,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "split-utf8",
+      "route": "ops",
+      "input": "constructed-stream",
+      "bytes": 4096,
+      "status": 201,
+      "unicodePreservedInNativeSQLite": true,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 1,
+        "monitorGets": 1,
+        "monitorFetches": 1,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "overflow-finite",
+      "route": "lab",
+      "input": "constructed-stream",
+      "bytes": 4097,
+      "status": 413,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "empty",
+      "route": "lab",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 1,
+        "labGets": 1,
+        "labFetches": 1,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 1,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "no-body",
+      "route": "lab",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 1,
+        "labGets": 1,
+        "labFetches": 1,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 1,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "invalid-json",
+      "route": "lab",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 1,
+        "labGets": 1,
+        "labFetches": 1,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 1,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "array-json",
+      "route": "lab",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 1,
+        "labGets": 1,
+        "labFetches": 1,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 1,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "overflow-finite",
+      "route": "ops",
+      "input": "constructed-stream",
+      "bytes": 4097,
+      "status": 413,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 1,
+        "cancelCompleted": 1,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "empty",
+      "route": "ops",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "no-body",
+      "route": "ops",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "invalid-json",
+      "route": "ops",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "array-json",
+      "route": "ops",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "exact",
+      "route": "lab",
+      "input": "constructed-stream",
+      "bytes": 4096,
+      "status": 200,
+      "dispatch": {
+        "labNames": 1,
+        "labGets": 1,
+        "labFetches": 1,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 1,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "tiny-empty",
+      "route": "lab",
+      "input": "constructed-stream",
+      "bytes": 4096,
+      "status": 200,
+      "dispatch": {
+        "labNames": 1,
+        "labGets": 1,
+        "labFetches": 1,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 1,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "split-utf8",
+      "route": "ops",
+      "input": "constructed-stream",
+      "bytes": 4096,
+      "status": 201,
+      "unicodePreservedInNativeSQLite": true,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 1,
+        "monitorGets": 1,
+        "monitorFetches": 1,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "overflow-finite",
+      "route": "lab",
+      "input": "constructed-stream",
+      "bytes": 4097,
+      "status": 413,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "empty",
+      "route": "lab",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 1,
+        "labGets": 1,
+        "labFetches": 1,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 1,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "no-body",
+      "route": "lab",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 1,
+        "labGets": 1,
+        "labFetches": 1,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 1,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "invalid-json",
+      "route": "lab",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 1,
+        "labGets": 1,
+        "labFetches": 1,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 1,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "array-json",
+      "route": "lab",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 1,
+        "labGets": 1,
+        "labFetches": 1,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 1,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "overflow-finite",
+      "route": "ops",
+      "input": "constructed-stream",
+      "bytes": 4097,
+      "status": 413,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 1,
+        "cancelCompleted": 1,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "empty",
+      "route": "ops",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "no-body",
+      "route": "ops",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "invalid-json",
+      "route": "ops",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "array-json",
+      "route": "ops",
+      "input": "constructed-stream",
+      "status": 400,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "baseline",
+      "case": "partial-connected-http",
+      "input": "actual-node-http-loopback",
+      "observedPendingForMs": 250,
+      "statusAfterCompletingValidBody": 200,
+      "dispatchWhileHeld": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "partial-connected-http",
+      "input": "actual-node-http-loopback",
+      "extraBytesScheduledAfterMs": 6000,
+      "extraBytesSentAtMs": 6002.389916,
+      "status": 408,
+      "elapsedMs": 10005.7205,
+      "deadlineMs": 10000,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 0,
+        "cancelCompleted": 0,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    },
+    {
+      "profile": "maintained",
+      "case": "empty-forever",
+      "route": "ops",
+      "input": "constructed-stream",
+      "status": 408,
+      "elapsedMs": 10002.657667000001,
+      "deadlineMs": 10000,
+      "dispatch": {
+        "labNames": 0,
+        "labGets": 0,
+        "labFetches": 0,
+        "monitorNames": 0,
+        "monitorGets": 0,
+        "monitorFetches": 0,
+        "ownerAdmission": 0,
+        "observerAdmission": 0,
+        "cancelCalls": 1,
+        "cancelCompleted": 1,
+        "lateSupplyAttempts": 0,
+        "lateSupplyRejected": 0
+      }
+    }
+  ],
+  "runtimes": [
+    {
+      "profile": "baseline",
+      "disposed": true,
+      "originCalls": 0,
+      "socketsOpened": 1,
+      "socketsClosed": 1
+    },
+    {
+      "profile": "maintained",
+      "disposed": true,
+      "originCalls": 0,
+      "socketsOpened": 1,
+      "socketsClosed": 1
+    }
+  ],
+  "privacy": {
+    "operatorToken": "synthetic local fixture only; not serialized",
+    "capabilities": "synthetic local fixture only; not serialized",
+    "rejectedErrors": "exact static error JSON verified; private injected error strings absent"
+  },
+  "limitations": [
+    "Held/throwing cancellation, body read faults, abort signals, late data and infinite empty chunks are constructed streams inside workerd, with controlled Node HOLD service bindings.",
+    "The connected partial upload uses actual Node HTTP to the native workerd unsafeDirectSockets loopback listener. It uses the production fixed ten-second deadline, not an injected clock or timeout; it bypasses Miniflare's Node front transport.",
+    "Constructed AbortController faults do not establish incoming network disconnect signaling. No enable_request_signal compatibility flag was added.",
+    "This reproduces local controlled boundaries, not naturally observed production faults, account costs, demand, rendered UI or universal transport behavior.",
+    "Dispatch counters wrap and delegate actual native namespaces, stubs and rate limiters; they are not actor decisions or billing counters.",
+    "Native runtime package and source buffers are pinned; the installed workerd binary is exercised through Miniflare, not independently attested."
+  ],
+  "externalCalls": {
+    "cloudflareAccount": 0,
+    "production": 0,
+    "browser": 0
+  }
+}

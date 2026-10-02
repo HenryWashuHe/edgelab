@@ -1,0 +1,59 @@
+TAP version 13
+# Subtest: bounded request bodies through actual maintained and pinned baseline gateway
+    # Subtest: pinned baseline waits for held cancellation on lab and authorized operations
+    ok 1 - pinned baseline waits for held cancellation on lab and authorized operations
+      ---
+      duration_ms: 595.23
+      type: 'test'
+      ...
+    # Subtest: maintained overflow does not await held or throwing cancellation before rejection
+    ok 2 - maintained overflow does not await held or throwing cancellation before rejection
+      ---
+      duration_ms: 47.62875
+      type: 'test'
+      ...
+    # Subtest: read and signal faults return sanitized400 before delegation; late supplied bytes cannot mutate
+    ok 3 - read and signal faults return sanitized400 before delegation; late supplied bytes cannot mutate
+      ---
+      duration_ms: 136.16325
+      type: 'test'
+      ...
+    # Subtest: exact4096-byte controls and splitUTF8/tiny/empty chunks preserve native state and JSON validation
+    ok 4 - exact4096-byte controls and splitUTF8/tiny/empty chunks preserve native state and JSON validation
+      ---
+      duration_ms: 546.596209
+      type: 'test'
+      ...
+    # Subtest: real loopback partialHTTP baseline stays pending then completed valid body reaches native actor
+    ok 5 - real loopback partialHTTP baseline stays pending then completed valid body reaches native actor
+      ---
+      duration_ms: 270.564625
+      type: 'test'
+      ...
+    # Subtest: real loopback partialHTTP returns408 at absolute10s despite additional bytes before deadline
+    ok 6 - real loopback partialHTTP returns408 at absolute10s despite additional bytes before deadline
+      ---
+      duration_ms: 10013.543333
+      type: 'test'
+      ...
+    # Subtest: cooperative yields let absolute10s deadline reject a constructed stream of empty chunks
+    ok 7 - cooperative yields let absolute10s deadline reject a constructed stream of empty chunks
+      ---
+      duration_ms: 10007.161375
+      type: 'test'
+      ...
+    1..7
+ok 1 - bounded request bodies through actual maintained and pinned baseline gateway
+  ---
+  duration_ms: 21943.519166
+  type: 'test'
+  ...
+1..1
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 22258.556042

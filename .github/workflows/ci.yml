@@ -37,6 +37,7 @@ jobs:
       - run: npm run test:monitor
       - run: npm run test:monitor-targets
       - run: node --test scripts/monitor-enrollment.test.mjs
+      - run: node --test scripts/request-body.test.mjs
       - run: npm run test:incident
       - run: npm run test:upgrade
       - run: npm run test:budget

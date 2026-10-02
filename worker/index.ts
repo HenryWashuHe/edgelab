@@ -1,5 +1,6 @@
 import { MonitorStore, operatorAuthorized, type MonitorEnv } from './monitor';
 import { createLabForwarder, createMonitorForwarder } from './monitor-forwarder';
+import { readRequestBody, type RequestBodyResult } from './request-body';
 export { MonitorStore };
 const forwardMonitor = createMonitorForwarder();
 const forwardLab = createLabForwarder();
@@ -400,28 +401,10 @@ function observerRequestFailure(request: Request, url: URL): Response | null {
     return json({ error: 'Exact observer protocol pair required' }, 400);
   return null;
 }
-async function boundedBody(request: Request): Promise<string> {
-  if (!request.body) return '';
-  const reader = request.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    size += value.byteLength;
-    if (size > 4096) {
-      await reader.cancel();
-      throw new Error('Body too large');
-    }
-    chunks.push(value);
-  }
-  const bytes = new Uint8Array(size);
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset);
-    offset += chunk.length;
-  }
-  return new TextDecoder().decode(bytes);
+function requestBodyFailure(result: Exclude<RequestBodyResult, { kind: 'body' }>): Response {
+  if (result.kind === 'too-large') return json({ error: 'Request exceeds 4 KB' }, 413);
+  if (result.kind === 'timeout') return json({ error: 'Request body timed out' }, 408);
+  return json({ error: 'Request body could not be read' }, 400);
 }
 export default {
   async scheduled(controller: ScheduledController, env: Env): Promise<void> {
@@ -444,7 +427,7 @@ export default {
         ok: true,
         colo: colo(request),
         platform: 'Cloudflare Workers + Durable Objects',
-        version: '3.12.4',
+        version: '3.12.5',
         origin: 'service-binding',
       });
     if (url.pathname === '/api/ready') {
@@ -496,11 +479,9 @@ export default {
         return json({ error: 'Operator token required' }, 401, { 'WWW-Authenticate': 'Bearer' });
       let body: string | undefined;
       if (method === 'POST') {
-        try {
-          body = await boundedBody(request);
-        } catch {
-          return json({ error: 'Request exceeds 4 KB' }, 413);
-        }
+        const result = await readRequestBody(request);
+        if (result.kind !== 'body') return requestBodyFailure(result);
+        body = result.body;
         try {
           JSON.parse(body);
         } catch {
@@ -589,11 +570,9 @@ export default {
       return json({ error: 'Method not allowed' }, 405, { Allow: allowed });
     let body: string | undefined;
     if (request.method === 'POST') {
-      try {
-        body = await boundedBody(request);
-      } catch {
-        return json({ error: 'Request exceeds 4 KB' }, 413);
-      }
+      const result = await readRequestBody(request);
+      if (result.kind !== 'body') return requestBodyFailure(result);
+      body = result.body;
     }
     const admission = await admitLabRequest(env, 'owner');
     if (admission) return admission;

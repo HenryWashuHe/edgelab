@@ -1,11 +1,16 @@
 openapi: 3.1.0
 info:
   title: EdgeLab Reliability Operations
-  version: 3.12.1
+  version: 3.12.5
   description: |
     Public monitoring read model and single-owner operator control plane.
     HTTP laboratory controls are documented in LAB.md; the observer upgrade and message schema are below.
-    This describes deployed 3.12.1, preserving the additive 3.7.0 view contract.
+    Version 3.12.5 bounds POST body consumption to 4096 bytes and a 10000 ms completion deadline.
+    Oversized input returns 413, input timeout 408, and unreadable input a sanitized 400,
+    before actor lookup or lab admission. Route/method/Origin/authentication checks can reject earlier.
+    Cleanup is best effort; late body reads cannot forward a mutation. This is separate from
+    a dispatched write whose response becomes uncertain. The additive 3.7.0 view contract is preserved.
+    Historical deployed 3.12.1 evidence follows:
     The evidence JSON patch adds no endpoint or HTTP shape: duplicate decoded names reject in offline imports/raw capture inputs.
     Local validation passes 295 unit tests, 18 counter codec tests and eight asset fault tests.
     Complete CI passes for `76a5277283da6b214de90f61ef614c5a5a56fe0f`; gateway deployment is 3462b0f8-6d81-4cd6-8706-13fe5c360dae.
@@ -313,7 +318,8 @@ paths:
         the same incident and note returns the original note without a second audit event, including
         when the note limit has been reached. Reusing the requestId with changed content returns 409.
         Notes do not acknowledge or resolve an incident. Note text must contain a non-whitespace
-        character and must be at most 500 UTF-16 code units. Bodies are limited to 4096 bytes.
+        character and must be at most 500 UTF-16 code units. Bodies are limited to 4096 bytes
+        and a ten-second completion deadline.
       security: [{ operatorToken: [] }]
       requestBody:
         required: true
@@ -350,6 +356,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+        '408': { $ref: '#/components/responses/Error' }
         '413': { $ref: '#/components/responses/Error' }
         '503': { $ref: '#/components/responses/MonitoringUnavailable' }
   /api/ops/incident-brief:
@@ -401,6 +408,7 @@ paths:
         '404': { $ref: '#/components/responses/Error' }
         '405': { $ref: '#/components/responses/Error' }
         '409': { $ref: '#/components/responses/Error' }
+        '408': { $ref: '#/components/responses/Error' }
         '413': { $ref: '#/components/responses/Error' }
         '422':
           description: Model-input preparation failure retained without dispatch, or new frozen record exceeds the storage byte limit with no row or attempt created
@@ -557,6 +565,7 @@ paths:
         '403': { $ref: '#/components/responses/Error' }
         '405': { $ref: '#/components/responses/Error' }
         '409': { $ref: '#/components/responses/Error' }
+        '408': { $ref: '#/components/responses/Error' }
         '413': { $ref: '#/components/responses/Error' }
         '503': { $ref: '#/components/responses/MonitoringUnavailable' }
   /api/ops/acknowledge:
@@ -591,6 +600,7 @@ paths:
         '404': { $ref: '#/components/responses/Error' }
         '405': { $ref: '#/components/responses/Error' }
         '409': { $ref: '#/components/responses/Error' }
+        '408': { $ref: '#/components/responses/Error' }
         '413': { $ref: '#/components/responses/Error' }
         '503': { $ref: '#/components/responses/MonitoringUnavailable' }
 components:
@@ -615,10 +625,10 @@ components:
           schema: { $ref: '#/components/schemas/MonitoringUnavailable' }
     Error:
       description: |
-        400 validation; 401 absent/invalid credential; 403 Origin mismatch;
+        400 validation or unreadable request body; 401 absent/invalid credential; 403 Origin mismatch;
         404 missing route/incident or removed service; 405 method with Allow header;
         409 revision/resolved conflict, changed note retry, or note limit;
-        413 request body over 4096 bytes.
+        408 request body completion exceeded ten seconds; 413 request body over 4096 bytes.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }

@@ -159,6 +159,8 @@ Use the signal to investigate intermittent failure that may never reach the cons
 
 ## Policy and maintenance
 
+Operator POST bodies are limited to 4,096 bytes and have a ten-second completion deadline. HTTP 413 means oversized input, 408 means input timed out, and 400 can mean the input could not be read. These gateway body failures occur before monitor lookup or mutation; route, Origin and authentication checks can reject earlier. A completed body can still reach an uncertain write response, so retain the existing exact-payload/UUID retry rules for dispatched writes.
+
 Edit the latency objective, timeout, good-check target, failure threshold, and recovery threshold in Operator or service detail. Writes include the last observed revision and return 409 if another operator changed it. Refresh and reopen the form before retrying. Each saved policy invalidates in-flight old-revision results and resets streaks. Existing incidents remain open.
 
 Pause records maintenance observations each minute without touching the upstream while the target remains configured and scheduled checks run. Those observations are excluded from the SLO and coverage denominator. Unobserved minutes during a scheduler outage or deployment removal remain missing, including during a pause. Resume explicitly; there is no automatic maintenance end. An active incident during maintenance still needs subsequent successful probes to recover.

@@ -1,6 +1,6 @@
 # Product value assessment
 
-Assessed October 1, 2026 against current primary documentation and the shipped EdgeLab implementation. This is a scope decision, not customer research or a claim that the market search is exhaustive.
+Assessed October 1, 2026, with an October 2 baseline follow-up, against current primary documentation and the shipped EdgeLab implementation. This is a scope decision, not customer research or a claim that the market search is exhaustive.
 
 EdgeLab has demonstrated engineering and portfolio value. It has not demonstrated an unmet monitoring market or demand for a standalone product. Continued development should test one developer workflow before expanding feature breadth.
 
@@ -19,6 +19,8 @@ Cloudflare warns that agent traces are incomplete and payloads may truncate. Edg
 
 Browser replay also belongs in the baseline. [rrweb custom events](https://rrweb.com/docs/recipes/custom-event) can record tagged application payloads alongside replay events; its [library guide](https://rrweb.com/docs/guide) includes UI masking and blocking controls. My inference is that an application could instrument server/client positions and fixed statuses into that existing workflow. UI masking does not by itself establish safe custom payloads: allowlisting remains application work. No rrweb integration or handoff comparison was executed. A small strict artifact may simplify that work, but neither a new diagnostic answer nor reduced redaction/handoff effort has been measured.
 
+The October 2 follow-up also includes [Cloudflare Browser Run session recording](https://developers.cloudflare.com/browser-run/features/session-recording/): opted-in automation sessions expose rrweb JSON through an API for self-hosted replay, plus network JSON or HAR containing available headers and payloads. Portable replay and network export are therefore existing capabilities. These recordings concern Browser Run sessions, not automatic capture of arbitrary end-user browsers. Input masking does not establish that network payloads or custom state are sanitized; a measured allowlisting/handoff advantage remains a hypothesis. No browser session or account capability was executed for this comparison.
+
 The October 1 comparison includes Local Explorer documentation updated September 4 and Workers Issues documentation updated September 30. Include these native capabilities when assessing a developer's baseline. Record whether they were enabled and usable for the actual problem; a local-versus-production boundary, missing permissions or disabled instrumentation does not by itself establish an unmet product need. No account capability was enabled or trialed for this comparison.
 
 ## Demonstrated value
@@ -34,6 +36,8 @@ This supports a reliability reference application and a concrete interview discu
 Help a Workers developer answer: **what committed when an asynchronous operation timed out, a reset occurred or a response was lost, and how can I share that evidence without exposing sensitive payloads or secrets, or granting account access?**
 
 The proposed benefit is a small, allowlisted committed-state recording that another developer can inspect offline, paired with a reproducible failure test. This is an inference to validate. Existing logs, custom telemetry and OTel exports can also support this workflow.
+
+Freeze existing command receipts in that baseline too. Cloudflare's [Durable Object error guidance](https://developers.cloudflare.com/durable-objects/best-practices/error-handling/) makes retry safety conditional on application idempotency; [Workflows](https://developers.cloudflare.com/workflows/) already supplies durable steps and retries for applications using that execution model. A current-state sample cannot attribute a concurrent command or replace an existing request-ID result lookup. If the application already exposes the needed retained receipt, an export adds no outcome answer; evaluate only its sharing burden. Neither these platform mechanisms nor EdgeLab's sample establishes exactly-once external side effects.
 
 There is a concrete adjacent request: [workers-sdk issue #15614](https://github.com/cloudflare/workers-sdk/issues/15614), opened September 11 and still open when checked, reports difficulty inspecting deployed DO data written through the key-value API. [Data Studio documentation](https://developers.cloudflare.com/durable-objects/observability/data-studio/) confirms that it currently exposes SQL API data and describes key-value inspection as future work. This is evidence of one reported inspection problem, not widespread demand. EdgeLab does not currently solve it, and a proposed native feature makes a standalone KV browser a fragile differentiation strategy.
 
