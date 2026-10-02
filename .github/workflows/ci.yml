@@ -24,6 +24,7 @@ jobs:
       - run: node scripts/counter-portability.mjs
       - run: npm ci --prefix examples/subscription-evidence --ignore-scripts --no-audit --no-fund
       - run: npm --prefix examples/subscription-evidence test
+      - run: node --test examples/subscription-server/server.test.mjs examples/subscription-server/paired.test.mjs
       - run: npm run test:client-build
       - run: npm run test:lifecycle
       - run: npm run test:async-lifetime

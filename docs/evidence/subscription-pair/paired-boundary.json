@@ -1,0 +1,2047 @@
+{
+  "schemaVersion": 1,
+  "kind": "controlled-native-storage-and-ot-consumer-pair",
+  "startedAt": "2026-10-02T02:21:55.484Z",
+  "finishedAt": "2026-10-02T02:21:56.560Z",
+  "sourceBaseCommit": "abcd46b6abbb18e1d32438d36be6cc79e4392565",
+  "sourceState": "Reviewed working-tree inputs pinned below; base commit predates this experiment.",
+  "command": "node --test --test-reporter=tap examples/subscription-server/server.test.mjs examples/subscription-server/paired.test.mjs",
+  "workingDirectory": "repository root",
+  "testSummary": {
+    "tests": 10,
+    "pass": 10,
+    "fail": 0,
+    "skipped": 0
+  },
+  "executedEvidence": {
+    "schemaVersion": 1,
+    "kind": "controlled-paired-native-producer-ot-model-boundary",
+    "startedAt": "2026-10-02T02:21:55.831Z",
+    "finishedAt": "2026-10-02T02:21:56.482Z",
+    "sourceBaseCommit": "abcd46b6abbb18e1d32438d36be6cc79e4392565",
+    "sourceTree": "maintained-worktree-with-explicit-file-pins",
+    "upstreamCommit": "1ef6020a42fbabb6d27dd1063db3a075ba95c974",
+    "runnerPin": {
+      "path": "examples/subscription-server/paired.test.mjs",
+      "bytes": 20742,
+      "sha256": "ce275d82051187d1d062dc5a630394b1739082bb4215c9efd7b60156174b75d1"
+    },
+    "casesCompleted": 4,
+    "nativeFixturesDisposed": 4,
+    "consumersDisposed": 5,
+    "runtimeDisposed": true,
+    "runnerBytesStableAfterExecution": true,
+    "consumer": {
+      "kind": "controlled-node-ot-model-boundary",
+      "environment": {
+        "node": "25.4.0",
+        "platform": "darwin",
+        "esbuild": "0.28.1"
+      },
+      "upstreamCommit": "1ef6020a42fbabb6d27dd1063db3a075ba95c974",
+      "unchangedSource": [
+        {
+          "path": "upstream/otClient.ts",
+          "bytes": 39828,
+          "sha256": "e0463eb179c8d2e5052a171554a9d6bffdfc887ba205e9e9ce698beefdc2022b"
+        },
+        {
+          "path": "upstream/code-change.ts",
+          "bytes": 33243,
+          "sha256": "f5e05b64b37c90c4a5cd2eda181c7c27b6e42dc58dff71fdb69d4ec4f86f3bd7"
+        },
+        {
+          "path": "upstream/LICENSE",
+          "bytes": 10174,
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+        }
+      ],
+      "foundations": [
+        {
+          "path": "fixture.mjs",
+          "bytes": 12428,
+          "sha256": "a8ae01468ac221dd79c19039c4659e13b65111f6c53bd09079377e7db8a7b238"
+        },
+        {
+          "path": "consumer.test.mjs",
+          "bytes": 13530,
+          "sha256": "fe6b7e73109fc21d8a245a057611a7962b75704017d0b3420d6ff5d077de9359"
+        },
+        {
+          "path": "package.json",
+          "bytes": 349,
+          "sha256": "5f06b29fdda35a5ea8b014370cbe6d88957d1ae2e19c0cf13518f186e6e828d2"
+        },
+        {
+          "path": "package-lock.json",
+          "bytes": 1376,
+          "sha256": "5de35c44843cafa801d66eae61b4774b0ddaf014a2c56165963985a932758109"
+        },
+        {
+          "path": "upstream/provenance.json",
+          "bytes": 1721,
+          "sha256": "25d8448017e00895b338d5abcfb674c49895d0e099d5ce3f58e006e1d75a86d7"
+        },
+        {
+          "path": "../../package.json",
+          "bytes": 3227,
+          "sha256": "a894dd40824f3169389821911148c3955dcea9e27812034beed6f9c47931d91a"
+        },
+        {
+          "path": "../../package-lock.json",
+          "bytes": 102759,
+          "sha256": "b027f60e8fa207ddd34a04036d4d3bf1477bc9b8d9548fed12408d3bf5afcf25"
+        }
+      ],
+      "dependencies": [
+        {
+          "name": "@codemirror/state",
+          "version": "6.7.1",
+          "integrity": "sha512-9QzNDgE4EYDnAHfrTlR2lwiPciiOymLtwKK+8yHQzCc7GXhAP9xdEbEJFy2IWB1j9UGUl9BsgMmTo/ImA02T7A==",
+          "package": {
+            "path": "node_modules/@codemirror/state/package.json",
+            "bytes": 888,
+            "sha256": "a89462af5f5cae9f586483ecb08f82657796c1c2fb418a923d96e4b5e3aa440e"
+          }
+        },
+        {
+          "name": "fast-diff",
+          "version": "1.3.0",
+          "integrity": "sha512-VxPP4NqbUjj6MaAOafWeUn2cXWLcCtljklUtZf0Ind4XQ+QPtmA0b18zZy0jIQx+ExRVCR/ZQpBmik5lXshNsw==",
+          "package": {
+            "path": "node_modules/fast-diff/package.json",
+            "bytes": 596,
+            "sha256": "3708975601d7e7356bd1465db2c952f1957ed0c3b2fb4050405f4e22570a535f"
+          }
+        },
+        {
+          "name": "@marijn/find-cluster-break",
+          "version": "1.0.3",
+          "integrity": "sha512-FY+MKLBoTsLNJF/eLWaOsXGdz6uh3Iu1axjPf6TUq92IYumcTcXWHoS747JARLkcdlJ/Waiaxc5wQfFO8jC6NA==",
+          "package": {
+            "path": "node_modules/@codemirror/state/node_modules/@marijn/find-cluster-break/package.json",
+            "bytes": 870,
+            "sha256": "84760329ba72e2746181d1e0fc0d1dc94f927d13c971af9da41d8055ebe9cfc5"
+          }
+        }
+      ],
+      "buildOptions": {
+        "bundle": true,
+        "platform": "node",
+        "format": "esm",
+        "target": "es2022",
+        "treeShaking": true,
+        "minify": false,
+        "sourcemap": false,
+        "legalComments": "none",
+        "write": false,
+        "tsconfigRaw": {
+          "compilerOptions": {}
+        }
+      },
+      "adaptation": {
+        "methods": ["__evidenceSnapshot", "__evidenceDrain"],
+        "queueObservationMaxTurns": 64,
+        "privateStateWrites": false,
+        "additiveBytes": 475
+      },
+      "graph": [
+        {
+          "path": "node_modules/@codemirror/state/dist/index.js",
+          "bytes": 145680,
+          "sha256": "dd5fe354220f9fde94c1449fad2aec0ec3d56be3da949a85df8ca4d84af92866",
+          "suppliedBytes": 145680,
+          "suppliedSha256": "dd5fe354220f9fde94c1449fad2aec0ec3d56be3da949a85df8ca4d84af92866",
+          "package": "@codemirror/state",
+          "imports": [
+            {
+              "path": "node_modules/@codemirror/state/node_modules/@marijn/find-cluster-break/src/index.js",
+              "kind": "import-statement",
+              "original": "@marijn/find-cluster-break"
+            }
+          ]
+        },
+        {
+          "path": "node_modules/@codemirror/state/node_modules/@marijn/find-cluster-break/src/index.js",
+          "bytes": 4241,
+          "sha256": "ceb85d7dfdf2447d558fa651633f59a355829eefd74792072a28f80362f74807",
+          "suppliedBytes": 4241,
+          "suppliedSha256": "ceb85d7dfdf2447d558fa651633f59a355829eefd74792072a28f80362f74807",
+          "package": "@marijn/find-cluster-break",
+          "imports": []
+        },
+        {
+          "path": "node_modules/fast-diff/diff.js",
+          "bytes": 38838,
+          "sha256": "d1da88e1a0e46b4e0c44d25b39c6940c8305810b92446333331b45226a0601e0",
+          "suppliedBytes": 38838,
+          "suppliedSha256": "d1da88e1a0e46b4e0c44d25b39c6940c8305810b92446333331b45226a0601e0",
+          "package": "fast-diff",
+          "imports": []
+        },
+        {
+          "path": "upstream/code-change.ts",
+          "bytes": 33243,
+          "sha256": "f5e05b64b37c90c4a5cd2eda181c7c27b6e42dc58dff71fdb69d4ec4f86f3bd7",
+          "suppliedBytes": 33243,
+          "suppliedSha256": "f5e05b64b37c90c4a5cd2eda181c7c27b6e42dc58dff71fdb69d4ec4f86f3bd7",
+          "package": null,
+          "imports": [
+            {
+              "path": "node_modules/@codemirror/state/dist/index.js",
+              "kind": "import-statement",
+              "original": "@codemirror/state"
+            },
+            {
+              "path": "node_modules/fast-diff/diff.js",
+              "kind": "import-statement",
+              "original": "fast-diff"
+            }
+          ]
+        },
+        {
+          "path": "upstream/otClient.ts",
+          "bytes": 39828,
+          "sha256": "e0463eb179c8d2e5052a171554a9d6bffdfc887ba205e9e9ce698beefdc2022b",
+          "suppliedBytes": 40303,
+          "suppliedSha256": "7fe6efdea551fa4f7e46102c72eb4f71d87e151ff89b3ce97ce169fd6aea0d82",
+          "package": null,
+          "imports": [
+            {
+              "path": "upstream/code-change.ts",
+              "kind": "import-statement",
+              "original": "@gadgets/workshop-shared/code-change"
+            }
+          ]
+        }
+      ],
+      "bundle": {
+        "bytes": 173942,
+        "sha256": "c9d0928be711d745bafdd56c00a0fb0c5cb65b07b393f47fc213b67d34f5db81"
+      },
+      "runtimeApiImports": 0,
+      "domProvided": false,
+      "limitations": [
+        "No full application, rendering, server, transport or remote execution.",
+        "Applied revision observes the internal OT model, not downstream application acknowledgement.",
+        "Controlled delegate callbacks and queue observation do not establish production timing or incident frequency."
+      ],
+      "sourceHashesStableAfterRunAndDisposal": true,
+      "tempBundleDisposed": true
+    },
+    "native": [
+      {
+        "case": "held-base",
+        "kind": "controlled-native-sqlite-accepted-producer-replay",
+        "upstreamCommit": "1ef6020a42fbabb6d27dd1063db3a075ba95c974",
+        "environment": {
+          "node": "25.4.0",
+          "platform": "darwin",
+          "esbuild": "0.28.1",
+          "miniflare": "5.20260926.0-alpha",
+          "workerd": "1.20260926.1"
+        },
+        "runtimePackages": [
+          {
+            "name": "miniflare",
+            "version": "5.20260926.0-alpha",
+            "integrity": "sha512-m/M3rpLnaouw6QSoKzylfw6Z1dnOwRM48idnZ7kc5ivRqBXANFQ8XqKCyQ/V+xqQ9Rg1L99j4WkZGVU9uT4L2w==",
+            "path": "../../node_modules/miniflare/package.json",
+            "bytes": 4185,
+            "sha256": "f5d5db79c6ce382bd760076d7ff2eef1b7f394bbbe95cff352423b961ba72ea8"
+          },
+          {
+            "name": "workerd",
+            "version": "1.20260926.1",
+            "integrity": "sha512-YojhsWBuZwk3Jk9OC0QfTgVbLeQOD1tK1olC9ZXAUcmeip8z4NE/xtttpxCsuTvQBRqppvy7Tkac0kxPYMjIXA==",
+            "path": "../../node_modules/workerd/package.json",
+            "bytes": 676,
+            "sha256": "726bbe70e3b62e136dbfac7c36e61b912f111f5a271eb44ea72b88d17199eb18"
+          },
+          {
+            "name": "esbuild",
+            "version": "0.28.1",
+            "integrity": "sha512-HrJrvZv5ayxBzPfwphOoNzkzOIIlifzk0KJrGK2c8R4+LKpMtpYLQeUdjnwjWv/LZlkH2laZk+4w78pi99D4Vw==",
+            "path": "../../node_modules/esbuild/package.json",
+            "bytes": 3980,
+            "sha256": "d55d1d19fcc5b6079e4a71dd4111340c79c682bc36835ac7058a0c364c7db58a"
+          }
+        ],
+        "unchangedSource": [
+          {
+            "path": "upstream/overseer.ts",
+            "bytes": 503604,
+            "sha256": "673fa94a612b886ac38aebbe41478d69a7f77f47e62105129ba2ce0f21cfebdc"
+          },
+          {
+            "path": "upstream/typed-storage.ts",
+            "bytes": 21120,
+            "sha256": "852ebbf6a279bb77829b05e6d7ee0672db89ffcfde3f9a63b70c5a3495de0d73"
+          },
+          {
+            "path": "upstream/LICENSE",
+            "bytes": 10174,
+            "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+          }
+        ],
+        "inputs": [
+          {
+            "path": "fixture.mjs",
+            "bytes": 18188,
+            "sha256": "6a2761093380159e9943c82d43272e5dc39037e9a7ebcd343d5b5a7b12d162fe"
+          },
+          {
+            "path": "controller.ts",
+            "bytes": 8408,
+            "sha256": "632c8710f3d0e3215b683dc69acc47d110d9bc3634915a7b4bbace6340ab4ccc"
+          },
+          {
+            "path": "server.test.mjs",
+            "bytes": 8271,
+            "sha256": "50d1483bd375483c6ce68917322fd2ac9855a76821acb2928217fdb03ea3fc98"
+          },
+          {
+            "path": "paired.test.mjs",
+            "bytes": 20742,
+            "sha256": "ce275d82051187d1d062dc5a630394b1739082bb4215c9efd7b60156174b75d1"
+          },
+          {
+            "path": "README.md",
+            "bytes": 2983,
+            "sha256": "e972f638a7f692f927285f24485bbc6d8a1e64c0ef18827125f6382615019c50"
+          },
+          {
+            "path": "package.json",
+            "bytes": 213,
+            "sha256": "0159c678e14ba92b2c378faeb08172cc0b03865a4dc7a958cb1dfe72e0865f29"
+          },
+          {
+            "path": "upstream/provenance.json",
+            "bytes": 2195,
+            "sha256": "d816abf8b74d650518dc061aaaac8f4ba85fb50d432d27d4a878fc7d6dbff8ab"
+          },
+          {
+            "path": "../../package.json",
+            "bytes": 3227,
+            "sha256": "a894dd40824f3169389821911148c3955dcea9e27812034beed6f9c47931d91a"
+          },
+          {
+            "path": "../../package-lock.json",
+            "bytes": 102759,
+            "sha256": "b027f60e8fa207ddd34a04036d4d3bf1477bc9b8d9548fed12408d3bf5afcf25"
+          }
+        ],
+        "extraction": [
+          {
+            "name": "streamGeneration",
+            "startLine": 1357,
+            "endLine": 1357,
+            "byteStart": 62523,
+            "byteEnd": 62565,
+            "bytes": 42,
+            "sha256": "585034c6ed38e69bd2e43307014c412c824b7b429ec2813e166c5958002acf9c"
+          },
+          {
+            "name": "#chatSubscribers",
+            "startLine": 1379,
+            "endLine": 1379,
+            "byteStart": 63422,
+            "byteEnd": 63486,
+            "bytes": 64,
+            "sha256": "c3b7577153f44a3bcd1696ae165d0ac62d6f1982d3c138e203d3271d6e95d4c4"
+          },
+          {
+            "name": "#chatContentCache",
+            "startLine": 2448,
+            "endLine": 2449,
+            "byteStart": 114131,
+            "byteEnd": 114273,
+            "bytes": 142,
+            "sha256": "295df26dbe866373b11b1056fcea770370f5fa8003ad1e27b4db80db91788ddf"
+          },
+          {
+            "name": "#lastChatTimestamp",
+            "startLine": 4917,
+            "endLine": 4917,
+            "byteStart": 233607,
+            "byteEnd": 233636,
+            "bytes": 29,
+            "sha256": "03a859acf315a401a07ea19a1b8992b0fa268b4c9f41f9ba4b577250da63b240"
+          },
+          {
+            "name": "chatCodeBase",
+            "startLine": 2377,
+            "endLine": 2379,
+            "byteStart": 110389,
+            "byteEnd": 110514,
+            "bytes": 125,
+            "sha256": "a5ad1aa582350419c445a983b1fdc1257a2758a5ebea6dacfab5701c3b6a1849"
+          },
+          {
+            "name": "addChatSubscriber",
+            "startLine": 1400,
+            "endLine": 1402,
+            "byteStart": 64504,
+            "byteEnd": 64612,
+            "bytes": 108,
+            "sha256": "b92d1d6b2756b11b0b84ce89b5ffebca754e0f84e3e43287bd60fbacb3797dd3"
+          },
+          {
+            "name": "removeChatSubscriber",
+            "startLine": 1404,
+            "endLine": 1406,
+            "byteStart": 64613,
+            "byteEnd": 64727,
+            "bytes": 114,
+            "sha256": "e58aac5ee79452251363ded692d87e24db7ed2160b3568998ed7722e53921933"
+          },
+          {
+            "name": "listLiveChatChanges",
+            "startLine": 2517,
+            "endLine": 2521,
+            "byteStart": 117679,
+            "byteEnd": 117911,
+            "bytes": 232,
+            "sha256": "cd503fe3d2a47dada25ba721a2f8d89e39f662be7454270baa556b74efb8fa00"
+          },
+          {
+            "name": "emitChatChangeApplied",
+            "startLine": 2524,
+            "endLine": 2532,
+            "byteStart": 118002,
+            "byteEnd": 118375,
+            "bytes": 373,
+            "sha256": "67c0f1a5ea49e56bec6ac3e803cf34c4f521cb7ae1891427bea30475bd6cc82b"
+          },
+          {
+            "name": "#appendChatChangeRow",
+            "startLine": 2539,
+            "endLine": 2573,
+            "byteStart": 118831,
+            "byteEnd": 120047,
+            "bytes": 1216,
+            "sha256": "467f6e230725f45fd7959f31e11fbc3f10a0f70fbcb8c74f9dffbb57479993b7"
+          },
+          {
+            "name": "#retireChatChanges",
+            "startLine": 2578,
+            "endLine": 2583,
+            "byteStart": 120258,
+            "byteEnd": 120418,
+            "bytes": 160,
+            "sha256": "dd60bc9f32f418e7b079cd4097a2529f2d1b2496b9a64b98147122144b177c97"
+          },
+          {
+            "name": "getChatTimestamp",
+            "startLine": 4921,
+            "endLine": 4951,
+            "byteStart": 233761,
+            "byteEnd": 234971,
+            "bytes": 1210,
+            "sha256": "24a95236090b32b2f528a38576108e834c4eed8ac0b8dec306a5f8a6c5959171"
+          },
+          {
+            "name": "subscribeToChat",
+            "startLine": 9874,
+            "endLine": 9974,
+            "byteStart": 449867,
+            "byteEnd": 453820,
+            "bytes": 3953,
+            "sha256": "dc48eb5b001538e38e11cb3648b0a774536fcad62294ab43a54abfeef98d8936"
+          },
+          {
+            "name": "actions",
+            "startLine": 1078,
+            "endLine": 1080,
+            "byteStart": 50395,
+            "byteEnd": 50474,
+            "bytes": 79,
+            "sha256": "bd13e88eb4d3988ff74427aaf7d09d0c3a3c0d6d60a8ac6d44648ce7f8177fa7"
+          },
+          {
+            "name": "chatMeta",
+            "startLine": 1093,
+            "endLine": 1100,
+            "byteStart": 50914,
+            "byteEnd": 51175,
+            "bytes": 261,
+            "sha256": "9f4611d0354195de60a958e172a8349bed7a4f038504f69ee6d9f7b501cbb263"
+          },
+          {
+            "name": "chats",
+            "startLine": 1143,
+            "endLine": 1150,
+            "byteStart": 52933,
+            "byteEnd": 53223,
+            "bytes": 290,
+            "sha256": "5cd11c222d4848a315366ce8dfda4b7f6650fac83b7859842062a4f448b15bad"
+          },
+          {
+            "name": "chatChanges",
+            "startLine": 1163,
+            "endLine": 1168,
+            "byteStart": 53828,
+            "byteEnd": 54071,
+            "bytes": 243,
+            "sha256": "a67470653e866f832cd589ee5bd00465c6bb43b2f09f583cba0ce51162236e60"
+          }
+        ],
+        "generated": {
+          "bytes": 10135,
+          "sha256": "2e75b7bf4f5bfec50ee4c11f3f448f9b331f6583ecbc6fa72fdc075ba553c8a3"
+        },
+        "graph": [
+          {
+            "path": "upstream/typed-storage.ts",
+            "bytes": 21120,
+            "sha256": "852ebbf6a279bb77829b05e6d7ee0672db89ffcfde3f9a63b70c5a3495de0d73",
+            "generated": false,
+            "imports": []
+          },
+          {
+            "path": "extracted.ts",
+            "bytes": 10135,
+            "sha256": "2e75b7bf4f5bfec50ee4c11f3f448f9b331f6583ecbc6fa72fdc075ba553c8a3",
+            "generated": true,
+            "imports": [
+              {
+                "path": "upstream/typed-storage.ts",
+                "kind": "import-statement",
+                "original": "./upstream/typed-storage.ts"
+              }
+            ]
+          },
+          {
+            "path": "controller.ts",
+            "bytes": 8408,
+            "sha256": "632c8710f3d0e3215b683dc69acc47d110d9bc3634915a7b4bbace6340ab4ccc",
+            "generated": false,
+            "imports": [
+              {
+                "path": "cloudflare:workers",
+                "kind": "import-statement",
+                "external": true
+              },
+              {
+                "path": "extracted.ts",
+                "kind": "import-statement",
+                "original": "./extracted.ts"
+              }
+            ]
+          }
+        ],
+        "buildOptions": {
+          "bundle": true,
+          "format": "esm",
+          "platform": "browser",
+          "target": "es2022",
+          "treeShaking": true,
+          "minify": false,
+          "sourcemap": false,
+          "write": false,
+          "external": ["cloudflare:workers"],
+          "tsconfigRaw": {
+            "compilerOptions": {}
+          }
+        },
+        "bundle": {
+          "bytes": 27023,
+          "sha256": "507a76dc4cbb72026d120d943b91c9ab34addb39367d4f6bf69bf14b15dcff18"
+        },
+        "runtimeOptions": {
+          "host": "127.0.0.1",
+          "port": 0,
+          "cf": false,
+          "telemetryEnabled": false,
+          "compatibilityDate": "2026-09-01",
+          "useSQLite": true,
+          "startupDeadlineMs": 15000,
+          "requestDeadlineMs": 10000
+        },
+        "storage": {
+          "implementation": "Pinned typed-storage.ts over native SQLite DurableObjectStorage.kv",
+          "transactionSync": "Native; not wrapped or substituted",
+          "synchronization": "Native storage.sync before responses and before actual eviction",
+          "persistence": "Ephemeral per fixture",
+          "eviction": "Miniflare.unsafeEvictDurableObject",
+          "instanceProof": "Constructor-only native-KV fixture instanceOrdinal; independent of streamGeneration timestamp"
+        },
+        "substitutions": [
+          "Checked byte-selected class members and collection schemas are assembled in fixture classes; unrelated application members are omitted.",
+          "appendControlled supplies fixed synthetic already-accepted rows, with no agent/tool entry point, Git reads, API validation, authorization or submission idempotency validation.",
+          "Synthetic initial metadata uses chat 1, durable generation 1, revision 0 and one fixed pin.",
+          "NativeRpcStub and subscriber are controlled in-process facades, not Capn Web or native RPC.",
+          "Callback fulfill/reject outcomes precede the separate Node bridge into the actual OT consumer; they do not acknowledge consumer completion.",
+          "External bumpLastActive user-DO propagation is a no-op; original monotonic getChatTimestamp is preserved.",
+          "Message hydration is a fixed non-action identity delegate; unsupported action hydration throws.",
+          "Retire/message commands exercise controlled retained-row and catch-up semantics, not actual materialization or generation transition.",
+          "Constructor instanceOrdinal and subscriber-count sampler are fixture instrumentation. No extracted body or typed-storage algorithm is modified."
+        ],
+        "limits": [
+          "No full upstream app, actual RPC transport, browser, Cloudflare account or production operation.",
+          "Successful accepted-row persistence is tested, not every error/rollback/output-gate failure or full producer validation.",
+          "Code-row positions do not prove editor/render completion or chat/tool delivery.",
+          "No issue305 reproduction, novel diagnostic answer, demand or speed improvement is established."
+        ],
+        "sourceStableAfterRunAndDisposal": true,
+        "tempRuntimeDisposed": true
+      },
+      {
+        "case": "cold-replay",
+        "kind": "controlled-native-sqlite-accepted-producer-replay",
+        "upstreamCommit": "1ef6020a42fbabb6d27dd1063db3a075ba95c974",
+        "environment": {
+          "node": "25.4.0",
+          "platform": "darwin",
+          "esbuild": "0.28.1",
+          "miniflare": "5.20260926.0-alpha",
+          "workerd": "1.20260926.1"
+        },
+        "runtimePackages": [
+          {
+            "name": "miniflare",
+            "version": "5.20260926.0-alpha",
+            "integrity": "sha512-m/M3rpLnaouw6QSoKzylfw6Z1dnOwRM48idnZ7kc5ivRqBXANFQ8XqKCyQ/V+xqQ9Rg1L99j4WkZGVU9uT4L2w==",
+            "path": "../../node_modules/miniflare/package.json",
+            "bytes": 4185,
+            "sha256": "f5d5db79c6ce382bd760076d7ff2eef1b7f394bbbe95cff352423b961ba72ea8"
+          },
+          {
+            "name": "workerd",
+            "version": "1.20260926.1",
+            "integrity": "sha512-YojhsWBuZwk3Jk9OC0QfTgVbLeQOD1tK1olC9ZXAUcmeip8z4NE/xtttpxCsuTvQBRqppvy7Tkac0kxPYMjIXA==",
+            "path": "../../node_modules/workerd/package.json",
+            "bytes": 676,
+            "sha256": "726bbe70e3b62e136dbfac7c36e61b912f111f5a271eb44ea72b88d17199eb18"
+          },
+          {
+            "name": "esbuild",
+            "version": "0.28.1",
+            "integrity": "sha512-HrJrvZv5ayxBzPfwphOoNzkzOIIlifzk0KJrGK2c8R4+LKpMtpYLQeUdjnwjWv/LZlkH2laZk+4w78pi99D4Vw==",
+            "path": "../../node_modules/esbuild/package.json",
+            "bytes": 3980,
+            "sha256": "d55d1d19fcc5b6079e4a71dd4111340c79c682bc36835ac7058a0c364c7db58a"
+          }
+        ],
+        "unchangedSource": [
+          {
+            "path": "upstream/overseer.ts",
+            "bytes": 503604,
+            "sha256": "673fa94a612b886ac38aebbe41478d69a7f77f47e62105129ba2ce0f21cfebdc"
+          },
+          {
+            "path": "upstream/typed-storage.ts",
+            "bytes": 21120,
+            "sha256": "852ebbf6a279bb77829b05e6d7ee0672db89ffcfde3f9a63b70c5a3495de0d73"
+          },
+          {
+            "path": "upstream/LICENSE",
+            "bytes": 10174,
+            "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+          }
+        ],
+        "inputs": [
+          {
+            "path": "fixture.mjs",
+            "bytes": 18188,
+            "sha256": "6a2761093380159e9943c82d43272e5dc39037e9a7ebcd343d5b5a7b12d162fe"
+          },
+          {
+            "path": "controller.ts",
+            "bytes": 8408,
+            "sha256": "632c8710f3d0e3215b683dc69acc47d110d9bc3634915a7b4bbace6340ab4ccc"
+          },
+          {
+            "path": "server.test.mjs",
+            "bytes": 8271,
+            "sha256": "50d1483bd375483c6ce68917322fd2ac9855a76821acb2928217fdb03ea3fc98"
+          },
+          {
+            "path": "paired.test.mjs",
+            "bytes": 20742,
+            "sha256": "ce275d82051187d1d062dc5a630394b1739082bb4215c9efd7b60156174b75d1"
+          },
+          {
+            "path": "README.md",
+            "bytes": 2983,
+            "sha256": "e972f638a7f692f927285f24485bbc6d8a1e64c0ef18827125f6382615019c50"
+          },
+          {
+            "path": "package.json",
+            "bytes": 213,
+            "sha256": "0159c678e14ba92b2c378faeb08172cc0b03865a4dc7a958cb1dfe72e0865f29"
+          },
+          {
+            "path": "upstream/provenance.json",
+            "bytes": 2195,
+            "sha256": "d816abf8b74d650518dc061aaaac8f4ba85fb50d432d27d4a878fc7d6dbff8ab"
+          },
+          {
+            "path": "../../package.json",
+            "bytes": 3227,
+            "sha256": "a894dd40824f3169389821911148c3955dcea9e27812034beed6f9c47931d91a"
+          },
+          {
+            "path": "../../package-lock.json",
+            "bytes": 102759,
+            "sha256": "b027f60e8fa207ddd34a04036d4d3bf1477bc9b8d9548fed12408d3bf5afcf25"
+          }
+        ],
+        "extraction": [
+          {
+            "name": "streamGeneration",
+            "startLine": 1357,
+            "endLine": 1357,
+            "byteStart": 62523,
+            "byteEnd": 62565,
+            "bytes": 42,
+            "sha256": "585034c6ed38e69bd2e43307014c412c824b7b429ec2813e166c5958002acf9c"
+          },
+          {
+            "name": "#chatSubscribers",
+            "startLine": 1379,
+            "endLine": 1379,
+            "byteStart": 63422,
+            "byteEnd": 63486,
+            "bytes": 64,
+            "sha256": "c3b7577153f44a3bcd1696ae165d0ac62d6f1982d3c138e203d3271d6e95d4c4"
+          },
+          {
+            "name": "#chatContentCache",
+            "startLine": 2448,
+            "endLine": 2449,
+            "byteStart": 114131,
+            "byteEnd": 114273,
+            "bytes": 142,
+            "sha256": "295df26dbe866373b11b1056fcea770370f5fa8003ad1e27b4db80db91788ddf"
+          },
+          {
+            "name": "#lastChatTimestamp",
+            "startLine": 4917,
+            "endLine": 4917,
+            "byteStart": 233607,
+            "byteEnd": 233636,
+            "bytes": 29,
+            "sha256": "03a859acf315a401a07ea19a1b8992b0fa268b4c9f41f9ba4b577250da63b240"
+          },
+          {
+            "name": "chatCodeBase",
+            "startLine": 2377,
+            "endLine": 2379,
+            "byteStart": 110389,
+            "byteEnd": 110514,
+            "bytes": 125,
+            "sha256": "a5ad1aa582350419c445a983b1fdc1257a2758a5ebea6dacfab5701c3b6a1849"
+          },
+          {
+            "name": "addChatSubscriber",
+            "startLine": 1400,
+            "endLine": 1402,
+            "byteStart": 64504,
+            "byteEnd": 64612,
+            "bytes": 108,
+            "sha256": "b92d1d6b2756b11b0b84ce89b5ffebca754e0f84e3e43287bd60fbacb3797dd3"
+          },
+          {
+            "name": "removeChatSubscriber",
+            "startLine": 1404,
+            "endLine": 1406,
+            "byteStart": 64613,
+            "byteEnd": 64727,
+            "bytes": 114,
+            "sha256": "e58aac5ee79452251363ded692d87e24db7ed2160b3568998ed7722e53921933"
+          },
+          {
+            "name": "listLiveChatChanges",
+            "startLine": 2517,
+            "endLine": 2521,
+            "byteStart": 117679,
+            "byteEnd": 117911,
+            "bytes": 232,
+            "sha256": "cd503fe3d2a47dada25ba721a2f8d89e39f662be7454270baa556b74efb8fa00"
+          },
+          {
+            "name": "emitChatChangeApplied",
+            "startLine": 2524,
+            "endLine": 2532,
+            "byteStart": 118002,
+            "byteEnd": 118375,
+            "bytes": 373,
+            "sha256": "67c0f1a5ea49e56bec6ac3e803cf34c4f521cb7ae1891427bea30475bd6cc82b"
+          },
+          {
+            "name": "#appendChatChangeRow",
+            "startLine": 2539,
+            "endLine": 2573,
+            "byteStart": 118831,
+            "byteEnd": 120047,
+            "bytes": 1216,
+            "sha256": "467f6e230725f45fd7959f31e11fbc3f10a0f70fbcb8c74f9dffbb57479993b7"
+          },
+          {
+            "name": "#retireChatChanges",
+            "startLine": 2578,
+            "endLine": 2583,
+            "byteStart": 120258,
+            "byteEnd": 120418,
+            "bytes": 160,
+            "sha256": "dd60bc9f32f418e7b079cd4097a2529f2d1b2496b9a64b98147122144b177c97"
+          },
+          {
+            "name": "getChatTimestamp",
+            "startLine": 4921,
+            "endLine": 4951,
+            "byteStart": 233761,
+            "byteEnd": 234971,
+            "bytes": 1210,
+            "sha256": "24a95236090b32b2f528a38576108e834c4eed8ac0b8dec306a5f8a6c5959171"
+          },
+          {
+            "name": "subscribeToChat",
+            "startLine": 9874,
+            "endLine": 9974,
+            "byteStart": 449867,
+            "byteEnd": 453820,
+            "bytes": 3953,
+            "sha256": "dc48eb5b001538e38e11cb3648b0a774536fcad62294ab43a54abfeef98d8936"
+          },
+          {
+            "name": "actions",
+            "startLine": 1078,
+            "endLine": 1080,
+            "byteStart": 50395,
+            "byteEnd": 50474,
+            "bytes": 79,
+            "sha256": "bd13e88eb4d3988ff74427aaf7d09d0c3a3c0d6d60a8ac6d44648ce7f8177fa7"
+          },
+          {
+            "name": "chatMeta",
+            "startLine": 1093,
+            "endLine": 1100,
+            "byteStart": 50914,
+            "byteEnd": 51175,
+            "bytes": 261,
+            "sha256": "9f4611d0354195de60a958e172a8349bed7a4f038504f69ee6d9f7b501cbb263"
+          },
+          {
+            "name": "chats",
+            "startLine": 1143,
+            "endLine": 1150,
+            "byteStart": 52933,
+            "byteEnd": 53223,
+            "bytes": 290,
+            "sha256": "5cd11c222d4848a315366ce8dfda4b7f6650fac83b7859842062a4f448b15bad"
+          },
+          {
+            "name": "chatChanges",
+            "startLine": 1163,
+            "endLine": 1168,
+            "byteStart": 53828,
+            "byteEnd": 54071,
+            "bytes": 243,
+            "sha256": "a67470653e866f832cd589ee5bd00465c6bb43b2f09f583cba0ce51162236e60"
+          }
+        ],
+        "generated": {
+          "bytes": 10135,
+          "sha256": "2e75b7bf4f5bfec50ee4c11f3f448f9b331f6583ecbc6fa72fdc075ba553c8a3"
+        },
+        "graph": [
+          {
+            "path": "upstream/typed-storage.ts",
+            "bytes": 21120,
+            "sha256": "852ebbf6a279bb77829b05e6d7ee0672db89ffcfde3f9a63b70c5a3495de0d73",
+            "generated": false,
+            "imports": []
+          },
+          {
+            "path": "extracted.ts",
+            "bytes": 10135,
+            "sha256": "2e75b7bf4f5bfec50ee4c11f3f448f9b331f6583ecbc6fa72fdc075ba553c8a3",
+            "generated": true,
+            "imports": [
+              {
+                "path": "upstream/typed-storage.ts",
+                "kind": "import-statement",
+                "original": "./upstream/typed-storage.ts"
+              }
+            ]
+          },
+          {
+            "path": "controller.ts",
+            "bytes": 8408,
+            "sha256": "632c8710f3d0e3215b683dc69acc47d110d9bc3634915a7b4bbace6340ab4ccc",
+            "generated": false,
+            "imports": [
+              {
+                "path": "cloudflare:workers",
+                "kind": "import-statement",
+                "external": true
+              },
+              {
+                "path": "extracted.ts",
+                "kind": "import-statement",
+                "original": "./extracted.ts"
+              }
+            ]
+          }
+        ],
+        "buildOptions": {
+          "bundle": true,
+          "format": "esm",
+          "platform": "browser",
+          "target": "es2022",
+          "treeShaking": true,
+          "minify": false,
+          "sourcemap": false,
+          "write": false,
+          "external": ["cloudflare:workers"],
+          "tsconfigRaw": {
+            "compilerOptions": {}
+          }
+        },
+        "bundle": {
+          "bytes": 27023,
+          "sha256": "507a76dc4cbb72026d120d943b91c9ab34addb39367d4f6bf69bf14b15dcff18"
+        },
+        "runtimeOptions": {
+          "host": "127.0.0.1",
+          "port": 0,
+          "cf": false,
+          "telemetryEnabled": false,
+          "compatibilityDate": "2026-09-01",
+          "useSQLite": true,
+          "startupDeadlineMs": 15000,
+          "requestDeadlineMs": 10000
+        },
+        "storage": {
+          "implementation": "Pinned typed-storage.ts over native SQLite DurableObjectStorage.kv",
+          "transactionSync": "Native; not wrapped or substituted",
+          "synchronization": "Native storage.sync before responses and before actual eviction",
+          "persistence": "Ephemeral per fixture",
+          "eviction": "Miniflare.unsafeEvictDurableObject",
+          "instanceProof": "Constructor-only native-KV fixture instanceOrdinal; independent of streamGeneration timestamp"
+        },
+        "substitutions": [
+          "Checked byte-selected class members and collection schemas are assembled in fixture classes; unrelated application members are omitted.",
+          "appendControlled supplies fixed synthetic already-accepted rows, with no agent/tool entry point, Git reads, API validation, authorization or submission idempotency validation.",
+          "Synthetic initial metadata uses chat 1, durable generation 1, revision 0 and one fixed pin.",
+          "NativeRpcStub and subscriber are controlled in-process facades, not Capn Web or native RPC.",
+          "Callback fulfill/reject outcomes precede the separate Node bridge into the actual OT consumer; they do not acknowledge consumer completion.",
+          "External bumpLastActive user-DO propagation is a no-op; original monotonic getChatTimestamp is preserved.",
+          "Message hydration is a fixed non-action identity delegate; unsupported action hydration throws.",
+          "Retire/message commands exercise controlled retained-row and catch-up semantics, not actual materialization or generation transition.",
+          "Constructor instanceOrdinal and subscriber-count sampler are fixture instrumentation. No extracted body or typed-storage algorithm is modified."
+        ],
+        "limits": [
+          "No full upstream app, actual RPC transport, browser, Cloudflare account or production operation.",
+          "Successful accepted-row persistence is tested, not every error/rollback/output-gate failure or full producer validation.",
+          "Code-row positions do not prove editor/render completion or chat/tool delivery.",
+          "No issue305 reproduction, novel diagnostic answer, demand or speed improvement is established."
+        ],
+        "sourceStableAfterRunAndDisposal": true,
+        "tempRuntimeDisposed": true
+      },
+      {
+        "case": "subscriber-rejection",
+        "kind": "controlled-native-sqlite-accepted-producer-replay",
+        "upstreamCommit": "1ef6020a42fbabb6d27dd1063db3a075ba95c974",
+        "environment": {
+          "node": "25.4.0",
+          "platform": "darwin",
+          "esbuild": "0.28.1",
+          "miniflare": "5.20260926.0-alpha",
+          "workerd": "1.20260926.1"
+        },
+        "runtimePackages": [
+          {
+            "name": "miniflare",
+            "version": "5.20260926.0-alpha",
+            "integrity": "sha512-m/M3rpLnaouw6QSoKzylfw6Z1dnOwRM48idnZ7kc5ivRqBXANFQ8XqKCyQ/V+xqQ9Rg1L99j4WkZGVU9uT4L2w==",
+            "path": "../../node_modules/miniflare/package.json",
+            "bytes": 4185,
+            "sha256": "f5d5db79c6ce382bd760076d7ff2eef1b7f394bbbe95cff352423b961ba72ea8"
+          },
+          {
+            "name": "workerd",
+            "version": "1.20260926.1",
+            "integrity": "sha512-YojhsWBuZwk3Jk9OC0QfTgVbLeQOD1tK1olC9ZXAUcmeip8z4NE/xtttpxCsuTvQBRqppvy7Tkac0kxPYMjIXA==",
+            "path": "../../node_modules/workerd/package.json",
+            "bytes": 676,
+            "sha256": "726bbe70e3b62e136dbfac7c36e61b912f111f5a271eb44ea72b88d17199eb18"
+          },
+          {
+            "name": "esbuild",
+            "version": "0.28.1",
+            "integrity": "sha512-HrJrvZv5ayxBzPfwphOoNzkzOIIlifzk0KJrGK2c8R4+LKpMtpYLQeUdjnwjWv/LZlkH2laZk+4w78pi99D4Vw==",
+            "path": "../../node_modules/esbuild/package.json",
+            "bytes": 3980,
+            "sha256": "d55d1d19fcc5b6079e4a71dd4111340c79c682bc36835ac7058a0c364c7db58a"
+          }
+        ],
+        "unchangedSource": [
+          {
+            "path": "upstream/overseer.ts",
+            "bytes": 503604,
+            "sha256": "673fa94a612b886ac38aebbe41478d69a7f77f47e62105129ba2ce0f21cfebdc"
+          },
+          {
+            "path": "upstream/typed-storage.ts",
+            "bytes": 21120,
+            "sha256": "852ebbf6a279bb77829b05e6d7ee0672db89ffcfde3f9a63b70c5a3495de0d73"
+          },
+          {
+            "path": "upstream/LICENSE",
+            "bytes": 10174,
+            "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+          }
+        ],
+        "inputs": [
+          {
+            "path": "fixture.mjs",
+            "bytes": 18188,
+            "sha256": "6a2761093380159e9943c82d43272e5dc39037e9a7ebcd343d5b5a7b12d162fe"
+          },
+          {
+            "path": "controller.ts",
+            "bytes": 8408,
+            "sha256": "632c8710f3d0e3215b683dc69acc47d110d9bc3634915a7b4bbace6340ab4ccc"
+          },
+          {
+            "path": "server.test.mjs",
+            "bytes": 8271,
+            "sha256": "50d1483bd375483c6ce68917322fd2ac9855a76821acb2928217fdb03ea3fc98"
+          },
+          {
+            "path": "paired.test.mjs",
+            "bytes": 20742,
+            "sha256": "ce275d82051187d1d062dc5a630394b1739082bb4215c9efd7b60156174b75d1"
+          },
+          {
+            "path": "README.md",
+            "bytes": 2983,
+            "sha256": "e972f638a7f692f927285f24485bbc6d8a1e64c0ef18827125f6382615019c50"
+          },
+          {
+            "path": "package.json",
+            "bytes": 213,
+            "sha256": "0159c678e14ba92b2c378faeb08172cc0b03865a4dc7a958cb1dfe72e0865f29"
+          },
+          {
+            "path": "upstream/provenance.json",
+            "bytes": 2195,
+            "sha256": "d816abf8b74d650518dc061aaaac8f4ba85fb50d432d27d4a878fc7d6dbff8ab"
+          },
+          {
+            "path": "../../package.json",
+            "bytes": 3227,
+            "sha256": "a894dd40824f3169389821911148c3955dcea9e27812034beed6f9c47931d91a"
+          },
+          {
+            "path": "../../package-lock.json",
+            "bytes": 102759,
+            "sha256": "b027f60e8fa207ddd34a04036d4d3bf1477bc9b8d9548fed12408d3bf5afcf25"
+          }
+        ],
+        "extraction": [
+          {
+            "name": "streamGeneration",
+            "startLine": 1357,
+            "endLine": 1357,
+            "byteStart": 62523,
+            "byteEnd": 62565,
+            "bytes": 42,
+            "sha256": "585034c6ed38e69bd2e43307014c412c824b7b429ec2813e166c5958002acf9c"
+          },
+          {
+            "name": "#chatSubscribers",
+            "startLine": 1379,
+            "endLine": 1379,
+            "byteStart": 63422,
+            "byteEnd": 63486,
+            "bytes": 64,
+            "sha256": "c3b7577153f44a3bcd1696ae165d0ac62d6f1982d3c138e203d3271d6e95d4c4"
+          },
+          {
+            "name": "#chatContentCache",
+            "startLine": 2448,
+            "endLine": 2449,
+            "byteStart": 114131,
+            "byteEnd": 114273,
+            "bytes": 142,
+            "sha256": "295df26dbe866373b11b1056fcea770370f5fa8003ad1e27b4db80db91788ddf"
+          },
+          {
+            "name": "#lastChatTimestamp",
+            "startLine": 4917,
+            "endLine": 4917,
+            "byteStart": 233607,
+            "byteEnd": 233636,
+            "bytes": 29,
+            "sha256": "03a859acf315a401a07ea19a1b8992b0fa268b4c9f41f9ba4b577250da63b240"
+          },
+          {
+            "name": "chatCodeBase",
+            "startLine": 2377,
+            "endLine": 2379,
+            "byteStart": 110389,
+            "byteEnd": 110514,
+            "bytes": 125,
+            "sha256": "a5ad1aa582350419c445a983b1fdc1257a2758a5ebea6dacfab5701c3b6a1849"
+          },
+          {
+            "name": "addChatSubscriber",
+            "startLine": 1400,
+            "endLine": 1402,
+            "byteStart": 64504,
+            "byteEnd": 64612,
+            "bytes": 108,
+            "sha256": "b92d1d6b2756b11b0b84ce89b5ffebca754e0f84e3e43287bd60fbacb3797dd3"
+          },
+          {
+            "name": "removeChatSubscriber",
+            "startLine": 1404,
+            "endLine": 1406,
+            "byteStart": 64613,
+            "byteEnd": 64727,
+            "bytes": 114,
+            "sha256": "e58aac5ee79452251363ded692d87e24db7ed2160b3568998ed7722e53921933"
+          },
+          {
+            "name": "listLiveChatChanges",
+            "startLine": 2517,
+            "endLine": 2521,
+            "byteStart": 117679,
+            "byteEnd": 117911,
+            "bytes": 232,
+            "sha256": "cd503fe3d2a47dada25ba721a2f8d89e39f662be7454270baa556b74efb8fa00"
+          },
+          {
+            "name": "emitChatChangeApplied",
+            "startLine": 2524,
+            "endLine": 2532,
+            "byteStart": 118002,
+            "byteEnd": 118375,
+            "bytes": 373,
+            "sha256": "67c0f1a5ea49e56bec6ac3e803cf34c4f521cb7ae1891427bea30475bd6cc82b"
+          },
+          {
+            "name": "#appendChatChangeRow",
+            "startLine": 2539,
+            "endLine": 2573,
+            "byteStart": 118831,
+            "byteEnd": 120047,
+            "bytes": 1216,
+            "sha256": "467f6e230725f45fd7959f31e11fbc3f10a0f70fbcb8c74f9dffbb57479993b7"
+          },
+          {
+            "name": "#retireChatChanges",
+            "startLine": 2578,
+            "endLine": 2583,
+            "byteStart": 120258,
+            "byteEnd": 120418,
+            "bytes": 160,
+            "sha256": "dd60bc9f32f418e7b079cd4097a2529f2d1b2496b9a64b98147122144b177c97"
+          },
+          {
+            "name": "getChatTimestamp",
+            "startLine": 4921,
+            "endLine": 4951,
+            "byteStart": 233761,
+            "byteEnd": 234971,
+            "bytes": 1210,
+            "sha256": "24a95236090b32b2f528a38576108e834c4eed8ac0b8dec306a5f8a6c5959171"
+          },
+          {
+            "name": "subscribeToChat",
+            "startLine": 9874,
+            "endLine": 9974,
+            "byteStart": 449867,
+            "byteEnd": 453820,
+            "bytes": 3953,
+            "sha256": "dc48eb5b001538e38e11cb3648b0a774536fcad62294ab43a54abfeef98d8936"
+          },
+          {
+            "name": "actions",
+            "startLine": 1078,
+            "endLine": 1080,
+            "byteStart": 50395,
+            "byteEnd": 50474,
+            "bytes": 79,
+            "sha256": "bd13e88eb4d3988ff74427aaf7d09d0c3a3c0d6d60a8ac6d44648ce7f8177fa7"
+          },
+          {
+            "name": "chatMeta",
+            "startLine": 1093,
+            "endLine": 1100,
+            "byteStart": 50914,
+            "byteEnd": 51175,
+            "bytes": 261,
+            "sha256": "9f4611d0354195de60a958e172a8349bed7a4f038504f69ee6d9f7b501cbb263"
+          },
+          {
+            "name": "chats",
+            "startLine": 1143,
+            "endLine": 1150,
+            "byteStart": 52933,
+            "byteEnd": 53223,
+            "bytes": 290,
+            "sha256": "5cd11c222d4848a315366ce8dfda4b7f6650fac83b7859842062a4f448b15bad"
+          },
+          {
+            "name": "chatChanges",
+            "startLine": 1163,
+            "endLine": 1168,
+            "byteStart": 53828,
+            "byteEnd": 54071,
+            "bytes": 243,
+            "sha256": "a67470653e866f832cd589ee5bd00465c6bb43b2f09f583cba0ce51162236e60"
+          }
+        ],
+        "generated": {
+          "bytes": 10135,
+          "sha256": "2e75b7bf4f5bfec50ee4c11f3f448f9b331f6583ecbc6fa72fdc075ba553c8a3"
+        },
+        "graph": [
+          {
+            "path": "upstream/typed-storage.ts",
+            "bytes": 21120,
+            "sha256": "852ebbf6a279bb77829b05e6d7ee0672db89ffcfde3f9a63b70c5a3495de0d73",
+            "generated": false,
+            "imports": []
+          },
+          {
+            "path": "extracted.ts",
+            "bytes": 10135,
+            "sha256": "2e75b7bf4f5bfec50ee4c11f3f448f9b331f6583ecbc6fa72fdc075ba553c8a3",
+            "generated": true,
+            "imports": [
+              {
+                "path": "upstream/typed-storage.ts",
+                "kind": "import-statement",
+                "original": "./upstream/typed-storage.ts"
+              }
+            ]
+          },
+          {
+            "path": "controller.ts",
+            "bytes": 8408,
+            "sha256": "632c8710f3d0e3215b683dc69acc47d110d9bc3634915a7b4bbace6340ab4ccc",
+            "generated": false,
+            "imports": [
+              {
+                "path": "cloudflare:workers",
+                "kind": "import-statement",
+                "external": true
+              },
+              {
+                "path": "extracted.ts",
+                "kind": "import-statement",
+                "original": "./extracted.ts"
+              }
+            ]
+          }
+        ],
+        "buildOptions": {
+          "bundle": true,
+          "format": "esm",
+          "platform": "browser",
+          "target": "es2022",
+          "treeShaking": true,
+          "minify": false,
+          "sourcemap": false,
+          "write": false,
+          "external": ["cloudflare:workers"],
+          "tsconfigRaw": {
+            "compilerOptions": {}
+          }
+        },
+        "bundle": {
+          "bytes": 27023,
+          "sha256": "507a76dc4cbb72026d120d943b91c9ab34addb39367d4f6bf69bf14b15dcff18"
+        },
+        "runtimeOptions": {
+          "host": "127.0.0.1",
+          "port": 0,
+          "cf": false,
+          "telemetryEnabled": false,
+          "compatibilityDate": "2026-09-01",
+          "useSQLite": true,
+          "startupDeadlineMs": 15000,
+          "requestDeadlineMs": 10000
+        },
+        "storage": {
+          "implementation": "Pinned typed-storage.ts over native SQLite DurableObjectStorage.kv",
+          "transactionSync": "Native; not wrapped or substituted",
+          "synchronization": "Native storage.sync before responses and before actual eviction",
+          "persistence": "Ephemeral per fixture",
+          "eviction": "Miniflare.unsafeEvictDurableObject",
+          "instanceProof": "Constructor-only native-KV fixture instanceOrdinal; independent of streamGeneration timestamp"
+        },
+        "substitutions": [
+          "Checked byte-selected class members and collection schemas are assembled in fixture classes; unrelated application members are omitted.",
+          "appendControlled supplies fixed synthetic already-accepted rows, with no agent/tool entry point, Git reads, API validation, authorization or submission idempotency validation.",
+          "Synthetic initial metadata uses chat 1, durable generation 1, revision 0 and one fixed pin.",
+          "NativeRpcStub and subscriber are controlled in-process facades, not Capn Web or native RPC.",
+          "Callback fulfill/reject outcomes precede the separate Node bridge into the actual OT consumer; they do not acknowledge consumer completion.",
+          "External bumpLastActive user-DO propagation is a no-op; original monotonic getChatTimestamp is preserved.",
+          "Message hydration is a fixed non-action identity delegate; unsupported action hydration throws.",
+          "Retire/message commands exercise controlled retained-row and catch-up semantics, not actual materialization or generation transition.",
+          "Constructor instanceOrdinal and subscriber-count sampler are fixture instrumentation. No extracted body or typed-storage algorithm is modified."
+        ],
+        "limits": [
+          "No full upstream app, actual RPC transport, browser, Cloudflare account or production operation.",
+          "Successful accepted-row persistence is tested, not every error/rollback/output-gate failure or full producer validation.",
+          "Code-row positions do not prove editor/render completion or chat/tool delivery.",
+          "No issue305 reproduction, novel diagnostic answer, demand or speed improvement is established."
+        ],
+        "sourceStableAfterRunAndDisposal": true,
+        "tempRuntimeDisposed": true
+      },
+      {
+        "case": "downstream-failure",
+        "kind": "controlled-native-sqlite-accepted-producer-replay",
+        "upstreamCommit": "1ef6020a42fbabb6d27dd1063db3a075ba95c974",
+        "environment": {
+          "node": "25.4.0",
+          "platform": "darwin",
+          "esbuild": "0.28.1",
+          "miniflare": "5.20260926.0-alpha",
+          "workerd": "1.20260926.1"
+        },
+        "runtimePackages": [
+          {
+            "name": "miniflare",
+            "version": "5.20260926.0-alpha",
+            "integrity": "sha512-m/M3rpLnaouw6QSoKzylfw6Z1dnOwRM48idnZ7kc5ivRqBXANFQ8XqKCyQ/V+xqQ9Rg1L99j4WkZGVU9uT4L2w==",
+            "path": "../../node_modules/miniflare/package.json",
+            "bytes": 4185,
+            "sha256": "f5d5db79c6ce382bd760076d7ff2eef1b7f394bbbe95cff352423b961ba72ea8"
+          },
+          {
+            "name": "workerd",
+            "version": "1.20260926.1",
+            "integrity": "sha512-YojhsWBuZwk3Jk9OC0QfTgVbLeQOD1tK1olC9ZXAUcmeip8z4NE/xtttpxCsuTvQBRqppvy7Tkac0kxPYMjIXA==",
+            "path": "../../node_modules/workerd/package.json",
+            "bytes": 676,
+            "sha256": "726bbe70e3b62e136dbfac7c36e61b912f111f5a271eb44ea72b88d17199eb18"
+          },
+          {
+            "name": "esbuild",
+            "version": "0.28.1",
+            "integrity": "sha512-HrJrvZv5ayxBzPfwphOoNzkzOIIlifzk0KJrGK2c8R4+LKpMtpYLQeUdjnwjWv/LZlkH2laZk+4w78pi99D4Vw==",
+            "path": "../../node_modules/esbuild/package.json",
+            "bytes": 3980,
+            "sha256": "d55d1d19fcc5b6079e4a71dd4111340c79c682bc36835ac7058a0c364c7db58a"
+          }
+        ],
+        "unchangedSource": [
+          {
+            "path": "upstream/overseer.ts",
+            "bytes": 503604,
+            "sha256": "673fa94a612b886ac38aebbe41478d69a7f77f47e62105129ba2ce0f21cfebdc"
+          },
+          {
+            "path": "upstream/typed-storage.ts",
+            "bytes": 21120,
+            "sha256": "852ebbf6a279bb77829b05e6d7ee0672db89ffcfde3f9a63b70c5a3495de0d73"
+          },
+          {
+            "path": "upstream/LICENSE",
+            "bytes": 10174,
+            "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+          }
+        ],
+        "inputs": [
+          {
+            "path": "fixture.mjs",
+            "bytes": 18188,
+            "sha256": "6a2761093380159e9943c82d43272e5dc39037e9a7ebcd343d5b5a7b12d162fe"
+          },
+          {
+            "path": "controller.ts",
+            "bytes": 8408,
+            "sha256": "632c8710f3d0e3215b683dc69acc47d110d9bc3634915a7b4bbace6340ab4ccc"
+          },
+          {
+            "path": "server.test.mjs",
+            "bytes": 8271,
+            "sha256": "50d1483bd375483c6ce68917322fd2ac9855a76821acb2928217fdb03ea3fc98"
+          },
+          {
+            "path": "paired.test.mjs",
+            "bytes": 20742,
+            "sha256": "ce275d82051187d1d062dc5a630394b1739082bb4215c9efd7b60156174b75d1"
+          },
+          {
+            "path": "README.md",
+            "bytes": 2983,
+            "sha256": "e972f638a7f692f927285f24485bbc6d8a1e64c0ef18827125f6382615019c50"
+          },
+          {
+            "path": "package.json",
+            "bytes": 213,
+            "sha256": "0159c678e14ba92b2c378faeb08172cc0b03865a4dc7a958cb1dfe72e0865f29"
+          },
+          {
+            "path": "upstream/provenance.json",
+            "bytes": 2195,
+            "sha256": "d816abf8b74d650518dc061aaaac8f4ba85fb50d432d27d4a878fc7d6dbff8ab"
+          },
+          {
+            "path": "../../package.json",
+            "bytes": 3227,
+            "sha256": "a894dd40824f3169389821911148c3955dcea9e27812034beed6f9c47931d91a"
+          },
+          {
+            "path": "../../package-lock.json",
+            "bytes": 102759,
+            "sha256": "b027f60e8fa207ddd34a04036d4d3bf1477bc9b8d9548fed12408d3bf5afcf25"
+          }
+        ],
+        "extraction": [
+          {
+            "name": "streamGeneration",
+            "startLine": 1357,
+            "endLine": 1357,
+            "byteStart": 62523,
+            "byteEnd": 62565,
+            "bytes": 42,
+            "sha256": "585034c6ed38e69bd2e43307014c412c824b7b429ec2813e166c5958002acf9c"
+          },
+          {
+            "name": "#chatSubscribers",
+            "startLine": 1379,
+            "endLine": 1379,
+            "byteStart": 63422,
+            "byteEnd": 63486,
+            "bytes": 64,
+            "sha256": "c3b7577153f44a3bcd1696ae165d0ac62d6f1982d3c138e203d3271d6e95d4c4"
+          },
+          {
+            "name": "#chatContentCache",
+            "startLine": 2448,
+            "endLine": 2449,
+            "byteStart": 114131,
+            "byteEnd": 114273,
+            "bytes": 142,
+            "sha256": "295df26dbe866373b11b1056fcea770370f5fa8003ad1e27b4db80db91788ddf"
+          },
+          {
+            "name": "#lastChatTimestamp",
+            "startLine": 4917,
+            "endLine": 4917,
+            "byteStart": 233607,
+            "byteEnd": 233636,
+            "bytes": 29,
+            "sha256": "03a859acf315a401a07ea19a1b8992b0fa268b4c9f41f9ba4b577250da63b240"
+          },
+          {
+            "name": "chatCodeBase",
+            "startLine": 2377,
+            "endLine": 2379,
+            "byteStart": 110389,
+            "byteEnd": 110514,
+            "bytes": 125,
+            "sha256": "a5ad1aa582350419c445a983b1fdc1257a2758a5ebea6dacfab5701c3b6a1849"
+          },
+          {
+            "name": "addChatSubscriber",
+            "startLine": 1400,
+            "endLine": 1402,
+            "byteStart": 64504,
+            "byteEnd": 64612,
+            "bytes": 108,
+            "sha256": "b92d1d6b2756b11b0b84ce89b5ffebca754e0f84e3e43287bd60fbacb3797dd3"
+          },
+          {
+            "name": "removeChatSubscriber",
+            "startLine": 1404,
+            "endLine": 1406,
+            "byteStart": 64613,
+            "byteEnd": 64727,
+            "bytes": 114,
+            "sha256": "e58aac5ee79452251363ded692d87e24db7ed2160b3568998ed7722e53921933"
+          },
+          {
+            "name": "listLiveChatChanges",
+            "startLine": 2517,
+            "endLine": 2521,
+            "byteStart": 117679,
+            "byteEnd": 117911,
+            "bytes": 232,
+            "sha256": "cd503fe3d2a47dada25ba721a2f8d89e39f662be7454270baa556b74efb8fa00"
+          },
+          {
+            "name": "emitChatChangeApplied",
+            "startLine": 2524,
+            "endLine": 2532,
+            "byteStart": 118002,
+            "byteEnd": 118375,
+            "bytes": 373,
+            "sha256": "67c0f1a5ea49e56bec6ac3e803cf34c4f521cb7ae1891427bea30475bd6cc82b"
+          },
+          {
+            "name": "#appendChatChangeRow",
+            "startLine": 2539,
+            "endLine": 2573,
+            "byteStart": 118831,
+            "byteEnd": 120047,
+            "bytes": 1216,
+            "sha256": "467f6e230725f45fd7959f31e11fbc3f10a0f70fbcb8c74f9dffbb57479993b7"
+          },
+          {
+            "name": "#retireChatChanges",
+            "startLine": 2578,
+            "endLine": 2583,
+            "byteStart": 120258,
+            "byteEnd": 120418,
+            "bytes": 160,
+            "sha256": "dd60bc9f32f418e7b079cd4097a2529f2d1b2496b9a64b98147122144b177c97"
+          },
+          {
+            "name": "getChatTimestamp",
+            "startLine": 4921,
+            "endLine": 4951,
+            "byteStart": 233761,
+            "byteEnd": 234971,
+            "bytes": 1210,
+            "sha256": "24a95236090b32b2f528a38576108e834c4eed8ac0b8dec306a5f8a6c5959171"
+          },
+          {
+            "name": "subscribeToChat",
+            "startLine": 9874,
+            "endLine": 9974,
+            "byteStart": 449867,
+            "byteEnd": 453820,
+            "bytes": 3953,
+            "sha256": "dc48eb5b001538e38e11cb3648b0a774536fcad62294ab43a54abfeef98d8936"
+          },
+          {
+            "name": "actions",
+            "startLine": 1078,
+            "endLine": 1080,
+            "byteStart": 50395,
+            "byteEnd": 50474,
+            "bytes": 79,
+            "sha256": "bd13e88eb4d3988ff74427aaf7d09d0c3a3c0d6d60a8ac6d44648ce7f8177fa7"
+          },
+          {
+            "name": "chatMeta",
+            "startLine": 1093,
+            "endLine": 1100,
+            "byteStart": 50914,
+            "byteEnd": 51175,
+            "bytes": 261,
+            "sha256": "9f4611d0354195de60a958e172a8349bed7a4f038504f69ee6d9f7b501cbb263"
+          },
+          {
+            "name": "chats",
+            "startLine": 1143,
+            "endLine": 1150,
+            "byteStart": 52933,
+            "byteEnd": 53223,
+            "bytes": 290,
+            "sha256": "5cd11c222d4848a315366ce8dfda4b7f6650fac83b7859842062a4f448b15bad"
+          },
+          {
+            "name": "chatChanges",
+            "startLine": 1163,
+            "endLine": 1168,
+            "byteStart": 53828,
+            "byteEnd": 54071,
+            "bytes": 243,
+            "sha256": "a67470653e866f832cd589ee5bd00465c6bb43b2f09f583cba0ce51162236e60"
+          }
+        ],
+        "generated": {
+          "bytes": 10135,
+          "sha256": "2e75b7bf4f5bfec50ee4c11f3f448f9b331f6583ecbc6fa72fdc075ba553c8a3"
+        },
+        "graph": [
+          {
+            "path": "upstream/typed-storage.ts",
+            "bytes": 21120,
+            "sha256": "852ebbf6a279bb77829b05e6d7ee0672db89ffcfde3f9a63b70c5a3495de0d73",
+            "generated": false,
+            "imports": []
+          },
+          {
+            "path": "extracted.ts",
+            "bytes": 10135,
+            "sha256": "2e75b7bf4f5bfec50ee4c11f3f448f9b331f6583ecbc6fa72fdc075ba553c8a3",
+            "generated": true,
+            "imports": [
+              {
+                "path": "upstream/typed-storage.ts",
+                "kind": "import-statement",
+                "original": "./upstream/typed-storage.ts"
+              }
+            ]
+          },
+          {
+            "path": "controller.ts",
+            "bytes": 8408,
+            "sha256": "632c8710f3d0e3215b683dc69acc47d110d9bc3634915a7b4bbace6340ab4ccc",
+            "generated": false,
+            "imports": [
+              {
+                "path": "cloudflare:workers",
+                "kind": "import-statement",
+                "external": true
+              },
+              {
+                "path": "extracted.ts",
+                "kind": "import-statement",
+                "original": "./extracted.ts"
+              }
+            ]
+          }
+        ],
+        "buildOptions": {
+          "bundle": true,
+          "format": "esm",
+          "platform": "browser",
+          "target": "es2022",
+          "treeShaking": true,
+          "minify": false,
+          "sourcemap": false,
+          "write": false,
+          "external": ["cloudflare:workers"],
+          "tsconfigRaw": {
+            "compilerOptions": {}
+          }
+        },
+        "bundle": {
+          "bytes": 27023,
+          "sha256": "507a76dc4cbb72026d120d943b91c9ab34addb39367d4f6bf69bf14b15dcff18"
+        },
+        "runtimeOptions": {
+          "host": "127.0.0.1",
+          "port": 0,
+          "cf": false,
+          "telemetryEnabled": false,
+          "compatibilityDate": "2026-09-01",
+          "useSQLite": true,
+          "startupDeadlineMs": 15000,
+          "requestDeadlineMs": 10000
+        },
+        "storage": {
+          "implementation": "Pinned typed-storage.ts over native SQLite DurableObjectStorage.kv",
+          "transactionSync": "Native; not wrapped or substituted",
+          "synchronization": "Native storage.sync before responses and before actual eviction",
+          "persistence": "Ephemeral per fixture",
+          "eviction": "Miniflare.unsafeEvictDurableObject",
+          "instanceProof": "Constructor-only native-KV fixture instanceOrdinal; independent of streamGeneration timestamp"
+        },
+        "substitutions": [
+          "Checked byte-selected class members and collection schemas are assembled in fixture classes; unrelated application members are omitted.",
+          "appendControlled supplies fixed synthetic already-accepted rows, with no agent/tool entry point, Git reads, API validation, authorization or submission idempotency validation.",
+          "Synthetic initial metadata uses chat 1, durable generation 1, revision 0 and one fixed pin.",
+          "NativeRpcStub and subscriber are controlled in-process facades, not Capn Web or native RPC.",
+          "Callback fulfill/reject outcomes precede the separate Node bridge into the actual OT consumer; they do not acknowledge consumer completion.",
+          "External bumpLastActive user-DO propagation is a no-op; original monotonic getChatTimestamp is preserved.",
+          "Message hydration is a fixed non-action identity delegate; unsupported action hydration throws.",
+          "Retire/message commands exercise controlled retained-row and catch-up semantics, not actual materialization or generation transition.",
+          "Constructor instanceOrdinal and subscriber-count sampler are fixture instrumentation. No extracted body or typed-storage algorithm is modified."
+        ],
+        "limits": [
+          "No full upstream app, actual RPC transport, browser, Cloudflare account or production operation.",
+          "Successful accepted-row persistence is tested, not every error/rollback/output-gate failure or full producer validation.",
+          "Code-row positions do not prove editor/render completion or chat/tool delivery.",
+          "No issue305 reproduction, novel diagnostic answer, demand or speed improvement is established."
+        ],
+        "sourceStableAfterRunAndDisposal": true,
+        "tempRuntimeDisposed": true
+      }
+    ],
+    "observations": [
+      {
+        "kind": "paired-position-observation",
+        "phase": "native-row-saved-pushRow-returned-work-pending",
+        "native": {
+          "generation": 1,
+          "revision": 1,
+          "retainedRows": 1
+        },
+        "consumer": {
+          "generation": 0,
+          "appliedRevision": 0,
+          "ready": false,
+          "fatal": false,
+          "disposed": false,
+          "isReady": false
+        },
+        "controllerFacade": {
+          "fulfilled": 1,
+          "rejected": 0
+        },
+        "generationMatch": false,
+        "revisionMatch": false,
+        "clocks": {
+          "nativeSampleObservedAt": 1790907716114,
+          "consumerSampleObservedAt": 1790907716116,
+          "meaning": "observation-clocks-not-commit-times"
+        }
+      },
+      {
+        "kind": "paired-position-observation",
+        "phase": "held-base-released-stable-queue-model-match",
+        "native": {
+          "generation": 1,
+          "revision": 1,
+          "retainedRows": 1
+        },
+        "consumer": {
+          "generation": 1,
+          "appliedRevision": 1,
+          "ready": true,
+          "fatal": false,
+          "disposed": false,
+          "isReady": true
+        },
+        "controllerFacade": {
+          "fulfilled": 1,
+          "rejected": 0
+        },
+        "generationMatch": true,
+        "revisionMatch": true,
+        "clocks": {
+          "nativeSampleObservedAt": 1790907716114,
+          "consumerSampleObservedAt": 1790907716117,
+          "meaning": "observation-clocks-not-commit-times"
+        }
+      },
+      {
+        "kind": "paired-position-observation",
+        "phase": "cold-native-retained-row-replay-model-match",
+        "native": {
+          "generation": 1,
+          "revision": 2,
+          "retainedRows": 2
+        },
+        "consumer": {
+          "generation": 1,
+          "appliedRevision": 2,
+          "ready": true,
+          "fatal": false,
+          "disposed": false,
+          "isReady": true
+        },
+        "controllerFacade": {
+          "fulfilled": 2,
+          "rejected": 0
+        },
+        "generationMatch": true,
+        "revisionMatch": true,
+        "clocks": {
+          "nativeSampleObservedAt": 1790907716270,
+          "consumerSampleObservedAt": 1790907716273,
+          "meaning": "observation-clocks-not-commit-times"
+        }
+      },
+      {
+        "kind": "paired-position-observation",
+        "phase": "same-consumer-duplicate-replay-deduplicated",
+        "native": {
+          "generation": 1,
+          "revision": 2,
+          "retainedRows": 2
+        },
+        "consumer": {
+          "generation": 1,
+          "appliedRevision": 2,
+          "ready": true,
+          "fatal": false,
+          "disposed": false,
+          "isReady": true
+        },
+        "controllerFacade": {
+          "fulfilled": 2,
+          "rejected": 0
+        },
+        "generationMatch": true,
+        "revisionMatch": true,
+        "clocks": {
+          "nativeSampleObservedAt": 1790907716270,
+          "consumerSampleObservedAt": 1790907716275,
+          "meaning": "observation-clocks-not-commit-times"
+        }
+      },
+      {
+        "kind": "paired-position-observation",
+        "phase": "subscriber-facade-rejected-native-saved-consumer-behind",
+        "native": {
+          "generation": 1,
+          "revision": 1,
+          "retainedRows": 1
+        },
+        "consumer": {
+          "generation": 1,
+          "appliedRevision": 0,
+          "ready": true,
+          "fatal": false,
+          "disposed": false,
+          "isReady": true
+        },
+        "controllerFacade": {
+          "fulfilled": 0,
+          "rejected": 1
+        },
+        "generationMatch": true,
+        "revisionMatch": false,
+        "clocks": {
+          "nativeSampleObservedAt": 1790907716341,
+          "consumerSampleObservedAt": 1790907716341,
+          "meaning": "observation-clocks-not-commit-times"
+        }
+      },
+      {
+        "kind": "paired-position-observation",
+        "phase": "ordinary-resubscription-replay-model-match",
+        "native": {
+          "generation": 1,
+          "revision": 1,
+          "retainedRows": 1
+        },
+        "consumer": {
+          "generation": 1,
+          "appliedRevision": 1,
+          "ready": true,
+          "fatal": false,
+          "disposed": false,
+          "isReady": true
+        },
+        "controllerFacade": {
+          "fulfilled": 1,
+          "rejected": 0
+        },
+        "generationMatch": true,
+        "revisionMatch": true,
+        "clocks": {
+          "nativeSampleObservedAt": 1790907716341,
+          "consumerSampleObservedAt": 1790907716343,
+          "meaning": "observation-clocks-not-commit-times"
+        }
+      },
+      {
+        "kind": "paired-position-observation",
+        "phase": "equal-native-and-model-position-fatal-not-confirmed",
+        "native": {
+          "generation": 1,
+          "revision": 1,
+          "retainedRows": 1
+        },
+        "consumer": {
+          "generation": 1,
+          "appliedRevision": 1,
+          "ready": true,
+          "fatal": true,
+          "disposed": false,
+          "isReady": false
+        },
+        "controllerFacade": {
+          "fulfilled": 1,
+          "rejected": 0
+        },
+        "generationMatch": true,
+        "revisionMatch": true,
+        "clocks": {
+          "nativeSampleObservedAt": 1790907716408,
+          "consumerSampleObservedAt": 1790907716409,
+          "meaning": "observation-clocks-not-commit-times"
+        }
+      },
+      {
+        "kind": "paired-position-observation",
+        "phase": "cold-native-read-preserves-position-original-consumer-still-fatal",
+        "native": {
+          "generation": 1,
+          "revision": 1,
+          "retainedRows": 1
+        },
+        "consumer": {
+          "generation": 1,
+          "appliedRevision": 1,
+          "ready": true,
+          "fatal": true,
+          "disposed": false,
+          "isReady": false
+        },
+        "controllerFacade": {
+          "fulfilled": 0,
+          "rejected": 0
+        },
+        "generationMatch": true,
+        "revisionMatch": true,
+        "clocks": {
+          "nativeSampleObservedAt": 1790907716471,
+          "consumerSampleObservedAt": 1790907716472,
+          "meaning": "observation-clocks-not-commit-times"
+        }
+      },
+      {
+        "kind": "paired-position-observation",
+        "phase": "fresh-consumer-existing-replay-quiescent-model-match",
+        "native": {
+          "generation": 1,
+          "revision": 1,
+          "retainedRows": 1
+        },
+        "consumer": {
+          "generation": 1,
+          "appliedRevision": 1,
+          "ready": true,
+          "fatal": false,
+          "disposed": false,
+          "isReady": true
+        },
+        "controllerFacade": {
+          "fulfilled": 1,
+          "rejected": 0
+        },
+        "generationMatch": true,
+        "revisionMatch": true,
+        "clocks": {
+          "nativeSampleObservedAt": 1790907716471,
+          "consumerSampleObservedAt": 1790907716474,
+          "meaning": "observation-clocks-not-commit-times"
+        }
+      }
+    ],
+    "limitations": [
+      "Local controller HTTP and controlled subscriber facades, not actual RPC transport or the full application.",
+      "The unchanged OT consumer receives actual fixed native accepted rows through an explicit Node bridge and controlled base-file delegate.",
+      "A matching generation and revision with fatal=false, disposed=false and isReady=true after the stable queue establishes only the controlled quiescent internal OT state.",
+      "Observed clocks are sample clocks, not commit or rendering timestamps.",
+      "Existing fatal/readiness hooks, native retained-row reads and subscription replay already expose and recover these controlled boundaries.",
+      "No issue305 reproduction, new recovery, novel diagnostic answer, production incidence or demand is established."
+    ]
+  },
+  "tap": {
+    "path": "verification.tap",
+    "bytes": 74345,
+    "sha256": "789035368bda23220c24fb2559f23b7f6f7e75fdba7932646f7e813d44edf656",
+    "envelopeBytes": 47511,
+    "envelopeSha256": "df09439923f1f2159d1e88ac706d963e4c86a27edcdac11115345538fbc4ac20"
+  },
+  "verificationInputs": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 2593,
+      "sha256": "aacb326aa53b0941b30efc57af168d9b793630770f814df80b7a2d7fe419bd1c"
+    },
+    {
+      "path": ".prettierignore",
+      "bytes": 726,
+      "sha256": "afbab9558fd9bcddea169d625e3fab15bb20decf9211883d32edcb7a47c8e7b9"
+    },
+    {
+      "path": "package.json",
+      "bytes": 3227,
+      "sha256": "a894dd40824f3169389821911148c3955dcea9e27812034beed6f9c47931d91a"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 102759,
+      "sha256": "b027f60e8fa207ddd34a04036d4d3bf1477bc9b8d9548fed12408d3bf5afcf25"
+    },
+    {
+      "path": "examples/subscription-server/fixture.mjs",
+      "bytes": 18188,
+      "sha256": "6a2761093380159e9943c82d43272e5dc39037e9a7ebcd343d5b5a7b12d162fe"
+    },
+    {
+      "path": "examples/subscription-server/controller.ts",
+      "bytes": 8408,
+      "sha256": "632c8710f3d0e3215b683dc69acc47d110d9bc3634915a7b4bbace6340ab4ccc"
+    },
+    {
+      "path": "examples/subscription-server/server.test.mjs",
+      "bytes": 8271,
+      "sha256": "50d1483bd375483c6ce68917322fd2ac9855a76821acb2928217fdb03ea3fc98"
+    },
+    {
+      "path": "examples/subscription-server/paired.test.mjs",
+      "bytes": 20742,
+      "sha256": "ce275d82051187d1d062dc5a630394b1739082bb4215c9efd7b60156174b75d1"
+    },
+    {
+      "path": "examples/subscription-server/package.json",
+      "bytes": 213,
+      "sha256": "0159c678e14ba92b2c378faeb08172cc0b03865a4dc7a958cb1dfe72e0865f29"
+    },
+    {
+      "path": "examples/subscription-server/README.md",
+      "bytes": 2983,
+      "sha256": "e972f638a7f692f927285f24485bbc6d8a1e64c0ef18827125f6382615019c50"
+    },
+    {
+      "path": "examples/subscription-server/upstream/provenance.json",
+      "bytes": 2195,
+      "sha256": "d816abf8b74d650518dc061aaaac8f4ba85fb50d432d27d4a878fc7d6dbff8ab"
+    },
+    {
+      "path": "examples/subscription-server/upstream/overseer.ts",
+      "bytes": 503604,
+      "sha256": "673fa94a612b886ac38aebbe41478d69a7f77f47e62105129ba2ce0f21cfebdc"
+    },
+    {
+      "path": "examples/subscription-server/upstream/typed-storage.ts",
+      "bytes": 21120,
+      "sha256": "852ebbf6a279bb77829b05e6d7ee0672db89ffcfde3f9a63b70c5a3495de0d73"
+    },
+    {
+      "path": "examples/subscription-server/upstream/LICENSE",
+      "bytes": 10174,
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+    },
+    {
+      "path": "examples/subscription-evidence/fixture.mjs",
+      "bytes": 12428,
+      "sha256": "a8ae01468ac221dd79c19039c4659e13b65111f6c53bd09079377e7db8a7b238"
+    },
+    {
+      "path": "examples/subscription-evidence/consumer.test.mjs",
+      "bytes": 13530,
+      "sha256": "fe6b7e73109fc21d8a245a057611a7962b75704017d0b3420d6ff5d077de9359"
+    },
+    {
+      "path": "examples/subscription-evidence/package.json",
+      "bytes": 349,
+      "sha256": "5f06b29fdda35a5ea8b014370cbe6d88957d1ae2e19c0cf13518f186e6e828d2"
+    },
+    {
+      "path": "examples/subscription-evidence/package-lock.json",
+      "bytes": 1376,
+      "sha256": "5de35c44843cafa801d66eae61b4774b0ddaf014a2c56165963985a932758109"
+    },
+    {
+      "path": "examples/subscription-evidence/upstream/provenance.json",
+      "bytes": 1721,
+      "sha256": "25d8448017e00895b338d5abcfb674c49895d0e099d5ce3f58e006e1d75a86d7"
+    },
+    {
+      "path": "examples/subscription-evidence/upstream/otClient.ts",
+      "bytes": 39828,
+      "sha256": "e0463eb179c8d2e5052a171554a9d6bffdfc887ba205e9e9ce698beefdc2022b"
+    },
+    {
+      "path": "examples/subscription-evidence/upstream/code-change.ts",
+      "bytes": 33243,
+      "sha256": "f5e05b64b37c90c4a5cd2eda181c7c27b6e42dc58dff71fdb69d4ec4f86f3bd7"
+    },
+    {
+      "path": "examples/subscription-evidence/upstream/LICENSE",
+      "bytes": 10174,
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+    }
+  ],
+  "limits": [
+    "Selected pinned accepted-row/broadcast/complete subscription paths execute on native ephemeral local SQLite KV; full producer validation, Git and application are omitted.",
+    "Actual loopback HTTP plus controlled subscriber facade replaces application RPC/reconnect transport.",
+    "Stable controlled OT queue/model plus fatal/readiness/disposal status does not acknowledge editor or rendering completion.",
+    "Ordinary native reads, original client error/readiness signals and existing replay already expose the controlled answers.",
+    "No issue305 reproduction, external integration, additional diagnostic answer, sharing benefit, demand, timing or billing result."
+  ]
+}

@@ -24,6 +24,8 @@ The [product value assessment](docs/PRODUCT_VALUE.md) compares existing tools an
 
 A separate [local counter portability experiment](examples/counter-evidence/README.md) applies bounded evidence capture to unchanged Cloudflare example code. A metered fixture and a smaller wrapper using the existing read RPC each pass two actual response-loss cases, route parity and forced eviction; a memory-only control fails persistence. The smaller wrapper adds zero Durable Object methods or classes and declares its gateway observation clock separately. [Frozen proof](docs/evidence/counter-portability/rpc/manifest.json) and 22 codec tests preserve both profiles' boundaries. It adds no deployed feature and establishes no customer adoption.
 
+A [paired subscription experiment](docs/evidence/subscription-pair/README.md) connects pinned Cloudflare OS accepted-row/replay paths on actual local SQLite storage to its real OT client through a controlled HTTP bridge. It tests eviction, subscriber rejection and a downstream consumer failure while preserving existing replay recovery. Matching revisions alone cannot prove successful processing. The full application, RPC transport and rendering remain outside this regression proof; external usefulness remains unverified.
+
 ## What is implemented
 
 The counter experiment also has a [standalone offline inspector](docs/evidence/counter-inspector/README.md): a recipient can inspect either pinned sample profile with one copied file and Node, without installing this repository. Nine actual distribution test groups cover strict byte/privacy/hash bounds, copied/renamed/symlinked execution and safe FIFO rejection. Capturing evidence still requires an app-specific adapter; no external adoption or debugging speed improvement is claimed.

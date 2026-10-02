@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/cloudflare/cloudflare-os",
+  "commit": "1ef6020a42fbabb6d27dd1063db3a075ba95c974",
+  "license": "Apache-2.0",
+  "files": [
+    {
+      "path": "overseer.ts",
+      "upstreamPath": "packages/workshop-backend/src/overseer.ts",
+      "bytes": 503604,
+      "sha256": "673fa94a612b886ac38aebbe41478d69a7f77f47e62105129ba2ce0f21cfebdc",
+      "url": "https://github.com/cloudflare/cloudflare-os/blob/1ef6020a42fbabb6d27dd1063db3a075ba95c974/packages/workshop-backend/src/overseer.ts"
+    },
+    {
+      "path": "typed-storage.ts",
+      "upstreamPath": "packages/typed-storage/src/index.ts",
+      "bytes": 21120,
+      "sha256": "852ebbf6a279bb77829b05e6d7ee0672db89ffcfde3f9a63b70c5a3495de0d73",
+      "url": "https://github.com/cloudflare/cloudflare-os/blob/1ef6020a42fbabb6d27dd1063db3a075ba95c974/packages/typed-storage/src/index.ts"
+    },
+    {
+      "path": "LICENSE",
+      "upstreamPath": "LICENSE",
+      "bytes": 10174,
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+      "url": "https://github.com/cloudflare/cloudflare-os/blob/1ef6020a42fbabb6d27dd1063db3a075ba95c974/LICENSE"
+    }
+  ],
+  "scope": "Unchanged typed-storage on real ephemeral SQLite DO KV; exact checked byte-selected append/broadcast, timestamp, retained-row retirement, subscriber registration and COMPLETE subscribeToChat bodies and required collection schemas. The full application and transport are not executed.",
+  "extraction": "Source-file and fragment byte hashes, physical lines and byte spans are recorded per build. Selection uses hardcoded complete-member byte spans, lengths and SHA-256 values, guarded by the exact full-source hash.",
+  "substitutions": [
+    "Fixed synthetic already-accepted row commands and initial state; no full producer validation/Git/authorization path.",
+    "Controlled NativeRpcStub/subscriber facades and non-action message hydration; unsupported action hydration fails.",
+    "External bumpLastActive propagation is a no-op; native timestamp helper and storage operations remain unchanged.",
+    "Fixture-only instanceOrdinal, read sampler, controller commands and bounded local HTTP bridge."
+  ]
+}

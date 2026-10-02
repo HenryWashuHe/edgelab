@@ -1,0 +1,11 @@
+{
+  "name": "edgelab-subscription-server-fixture",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test server.test.mjs paired.test.mjs"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
