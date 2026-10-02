@@ -12,6 +12,8 @@ The wire test bypasses Miniflare's Node front transport. Earlier failed transpor
 
 The separate [client build archive](client-build.json), measured at 05:43:33 UTC, matches all sixteen maintained output files against its captured source graph. Its historical 3.10.0 baseline is reproduced. Direct client edits change release strings; generated module filenames also change. Browser rendering/loading, production fault behavior, resource cost, external usefulness and unmet demand remain unverified. See [ADR 016](../../../adr/016-request-body-lifetimes.md).
 
+Release source `c5b7727afa608f2db58b5359d90696949c8146fe` passes [complete CI](https://github.com/HenryWashuHe/edgelab/actions/runs/37007779868). Gateway `7ed6d99c-c0dd-40d9-a4d8-eaca6bdcda82` is deployed with the private origin unchanged. The separate [live record](../3.12.5-live-monitoring.json), 70,726 bytes / SHA-256 `b32d337b7b2587bb294fc85611fb931756569b2f0035cbfd265d1cfd8c7bb313`, passed at 13:59:02 UTC: two fresh autonomous good minutes per service, current budgets, healthy readiness and all sixteen exact assets. The local slow-input faults were not sent to production.
+
 | File                |  Bytes | SHA-256                                                            |
 | ------------------- | -----: | ------------------------------------------------------------------ |
 | `evidence.json`     | 42,284 | `e551bc0605194368c3c2c8166d4a3b0294e15072e93cb52f2818bdd4114dd2d3` |

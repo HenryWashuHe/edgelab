@@ -10,6 +10,10 @@ info:
     before actor lookup or lab admission. Route/method/Origin/authentication checks can reject earlier.
     Cleanup is best effort; late body reads cannot forward a mutation. This is separate from
     a dispatched write whose response becomes uncertain. The additive 3.7.0 view contract is preserved.
+    Release source c5b7727afa608f2db58b5359d90696949c8146fe passes complete CI;
+    gateway 7ed6d99c-c0dd-40d9-a4d8-eaca6bdcda82 is deployed with the private origin unchanged.
+    Live HTTP verification at 2026-10-02T13:59:02Z confirms healthy readiness, two new autonomous
+    good minutes per service and all sixteen exact assets. Production slow input, rendering and costs remain unverified.
     Historical deployed 3.12.1 evidence follows:
     The evidence JSON patch adds no endpoint or HTTP shape: duplicate decoded names reject in offline imports/raw capture inputs.
     Local validation passes 295 unit tests, 18 counter codec tests and eight asset fault tests.
