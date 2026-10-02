@@ -1,0 +1,365 @@
+{
+  "schemaVersion": 1,
+  "kind": "controlled-node-ot-consumer-boundary",
+  "startedAt": "2026-10-02T01:11:54.128326Z",
+  "finishedAt": "2026-10-02T01:11:54.499394Z",
+  "sourceBaseCommit": "56edffd11dcdc4ae0c42f3a30daaae571d2660eb",
+  "sourceState": "Reviewed working-tree files are pinned below; the base commit predates this experiment.",
+  "command": "node --test --test-reporter=tap consumer.test.mjs",
+  "workingDirectory": "examples/subscription-evidence",
+  "testSummary": {
+    "tests": 10,
+    "pass": 10,
+    "fail": 0,
+    "skipped": 0
+  },
+  "observations": [
+    {
+      "kind": "ot-model-observation",
+      "phase": "pushRow-returned-before-base-release",
+      "generation": 0,
+      "appliedRevision": 0,
+      "ready": false,
+      "fatal": false,
+      "disposed": false,
+      "isReady": false
+    },
+    {
+      "kind": "ot-model-observation",
+      "phase": "queue-drained-after-base-release",
+      "generation": 1,
+      "appliedRevision": 1,
+      "ready": true,
+      "fatal": false,
+      "disposed": false,
+      "isReady": true
+    },
+    {
+      "kind": "ot-model-observation",
+      "phase": "invalid-text-application-failed",
+      "generation": 1,
+      "appliedRevision": 1,
+      "ready": true,
+      "fatal": true,
+      "disposed": false,
+      "isReady": false
+    },
+    {
+      "kind": "ot-model-observation",
+      "phase": "downstream-callback-before-controlled-throw",
+      "generation": 1,
+      "appliedRevision": 1,
+      "ready": true,
+      "fatal": false,
+      "disposed": false,
+      "isReady": true
+    },
+    {
+      "kind": "ot-model-observation",
+      "phase": "downstream-callback-after-queue-catch",
+      "generation": 1,
+      "appliedRevision": 1,
+      "ready": true,
+      "fatal": true,
+      "disposed": false,
+      "isReady": false
+    },
+    {
+      "kind": "ot-model-observation",
+      "phase": "before-materialized-watermark-recovery",
+      "generation": 1,
+      "appliedRevision": 0,
+      "ready": true,
+      "fatal": false,
+      "disposed": false,
+      "isReady": true
+    },
+    {
+      "kind": "ot-model-observation",
+      "phase": "after-materialized-watermark-recovery",
+      "generation": 1,
+      "appliedRevision": 2,
+      "ready": true,
+      "fatal": false,
+      "disposed": false,
+      "isReady": true
+    }
+  ],
+  "build": {
+    "kind": "controlled-node-ot-model-boundary",
+    "environment": {
+      "node": "25.4.0",
+      "platform": "darwin",
+      "esbuild": "0.28.1"
+    },
+    "upstreamCommit": "1ef6020a42fbabb6d27dd1063db3a075ba95c974",
+    "unchangedSource": [
+      {
+        "path": "upstream/otClient.ts",
+        "bytes": 39828,
+        "sha256": "e0463eb179c8d2e5052a171554a9d6bffdfc887ba205e9e9ce698beefdc2022b"
+      },
+      {
+        "path": "upstream/code-change.ts",
+        "bytes": 33243,
+        "sha256": "f5e05b64b37c90c4a5cd2eda181c7c27b6e42dc58dff71fdb69d4ec4f86f3bd7"
+      },
+      {
+        "path": "upstream/LICENSE",
+        "bytes": 10174,
+        "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+      }
+    ],
+    "foundations": [
+      {
+        "path": "fixture.mjs",
+        "bytes": 12428,
+        "sha256": "a8ae01468ac221dd79c19039c4659e13b65111f6c53bd09079377e7db8a7b238"
+      },
+      {
+        "path": "consumer.test.mjs",
+        "bytes": 13530,
+        "sha256": "fe6b7e73109fc21d8a245a057611a7962b75704017d0b3420d6ff5d077de9359"
+      },
+      {
+        "path": "package.json",
+        "bytes": 349,
+        "sha256": "5f06b29fdda35a5ea8b014370cbe6d88957d1ae2e19c0cf13518f186e6e828d2"
+      },
+      {
+        "path": "package-lock.json",
+        "bytes": 1376,
+        "sha256": "5de35c44843cafa801d66eae61b4774b0ddaf014a2c56165963985a932758109"
+      },
+      {
+        "path": "upstream/provenance.json",
+        "bytes": 1721,
+        "sha256": "25d8448017e00895b338d5abcfb674c49895d0e099d5ce3f58e006e1d75a86d7"
+      },
+      {
+        "path": "../../package.json",
+        "bytes": 3227,
+        "sha256": "a894dd40824f3169389821911148c3955dcea9e27812034beed6f9c47931d91a"
+      },
+      {
+        "path": "../../package-lock.json",
+        "bytes": 102759,
+        "sha256": "b027f60e8fa207ddd34a04036d4d3bf1477bc9b8d9548fed12408d3bf5afcf25"
+      }
+    ],
+    "dependencies": [
+      {
+        "name": "@codemirror/state",
+        "version": "6.7.1",
+        "integrity": "sha512-9QzNDgE4EYDnAHfrTlR2lwiPciiOymLtwKK+8yHQzCc7GXhAP9xdEbEJFy2IWB1j9UGUl9BsgMmTo/ImA02T7A==",
+        "package": {
+          "path": "node_modules/@codemirror/state/package.json",
+          "bytes": 888,
+          "sha256": "a89462af5f5cae9f586483ecb08f82657796c1c2fb418a923d96e4b5e3aa440e"
+        }
+      },
+      {
+        "name": "fast-diff",
+        "version": "1.3.0",
+        "integrity": "sha512-VxPP4NqbUjj6MaAOafWeUn2cXWLcCtljklUtZf0Ind4XQ+QPtmA0b18zZy0jIQx+ExRVCR/ZQpBmik5lXshNsw==",
+        "package": {
+          "path": "node_modules/fast-diff/package.json",
+          "bytes": 596,
+          "sha256": "3708975601d7e7356bd1465db2c952f1957ed0c3b2fb4050405f4e22570a535f"
+        }
+      },
+      {
+        "name": "@marijn/find-cluster-break",
+        "version": "1.0.3",
+        "integrity": "sha512-FY+MKLBoTsLNJF/eLWaOsXGdz6uh3Iu1axjPf6TUq92IYumcTcXWHoS747JARLkcdlJ/Waiaxc5wQfFO8jC6NA==",
+        "package": {
+          "path": "node_modules/@codemirror/state/node_modules/@marijn/find-cluster-break/package.json",
+          "bytes": 870,
+          "sha256": "84760329ba72e2746181d1e0fc0d1dc94f927d13c971af9da41d8055ebe9cfc5"
+        }
+      }
+    ],
+    "buildOptions": {
+      "bundle": true,
+      "platform": "node",
+      "format": "esm",
+      "target": "es2022",
+      "treeShaking": true,
+      "minify": false,
+      "sourcemap": false,
+      "legalComments": "none",
+      "write": false,
+      "tsconfigRaw": {
+        "compilerOptions": {}
+      }
+    },
+    "adaptation": {
+      "methods": ["__evidenceSnapshot", "__evidenceDrain"],
+      "queueObservationMaxTurns": 64,
+      "privateStateWrites": false,
+      "additiveBytes": 475
+    },
+    "graph": [
+      {
+        "path": "node_modules/@codemirror/state/dist/index.js",
+        "bytes": 145680,
+        "sha256": "dd5fe354220f9fde94c1449fad2aec0ec3d56be3da949a85df8ca4d84af92866",
+        "suppliedBytes": 145680,
+        "suppliedSha256": "dd5fe354220f9fde94c1449fad2aec0ec3d56be3da949a85df8ca4d84af92866",
+        "package": "@codemirror/state",
+        "imports": [
+          {
+            "path": "node_modules/@codemirror/state/node_modules/@marijn/find-cluster-break/src/index.js",
+            "kind": "import-statement",
+            "original": "@marijn/find-cluster-break"
+          }
+        ]
+      },
+      {
+        "path": "node_modules/@codemirror/state/node_modules/@marijn/find-cluster-break/src/index.js",
+        "bytes": 4241,
+        "sha256": "ceb85d7dfdf2447d558fa651633f59a355829eefd74792072a28f80362f74807",
+        "suppliedBytes": 4241,
+        "suppliedSha256": "ceb85d7dfdf2447d558fa651633f59a355829eefd74792072a28f80362f74807",
+        "package": "@marijn/find-cluster-break",
+        "imports": []
+      },
+      {
+        "path": "node_modules/fast-diff/diff.js",
+        "bytes": 38838,
+        "sha256": "d1da88e1a0e46b4e0c44d25b39c6940c8305810b92446333331b45226a0601e0",
+        "suppliedBytes": 38838,
+        "suppliedSha256": "d1da88e1a0e46b4e0c44d25b39c6940c8305810b92446333331b45226a0601e0",
+        "package": "fast-diff",
+        "imports": []
+      },
+      {
+        "path": "upstream/code-change.ts",
+        "bytes": 33243,
+        "sha256": "f5e05b64b37c90c4a5cd2eda181c7c27b6e42dc58dff71fdb69d4ec4f86f3bd7",
+        "suppliedBytes": 33243,
+        "suppliedSha256": "f5e05b64b37c90c4a5cd2eda181c7c27b6e42dc58dff71fdb69d4ec4f86f3bd7",
+        "package": null,
+        "imports": [
+          {
+            "path": "node_modules/@codemirror/state/dist/index.js",
+            "kind": "import-statement",
+            "original": "@codemirror/state"
+          },
+          {
+            "path": "node_modules/fast-diff/diff.js",
+            "kind": "import-statement",
+            "original": "fast-diff"
+          }
+        ]
+      },
+      {
+        "path": "upstream/otClient.ts",
+        "bytes": 39828,
+        "sha256": "e0463eb179c8d2e5052a171554a9d6bffdfc887ba205e9e9ce698beefdc2022b",
+        "suppliedBytes": 40303,
+        "suppliedSha256": "7fe6efdea551fa4f7e46102c72eb4f71d87e151ff89b3ce97ce169fd6aea0d82",
+        "package": null,
+        "imports": [
+          {
+            "path": "upstream/code-change.ts",
+            "kind": "import-statement",
+            "original": "@gadgets/workshop-shared/code-change"
+          }
+        ]
+      }
+    ],
+    "bundle": {
+      "bytes": 173942,
+      "sha256": "c9d0928be711d745bafdd56c00a0fb0c5cb65b07b393f47fc213b67d34f5db81"
+    },
+    "runtimeApiImports": 0,
+    "domProvided": false,
+    "limitations": [
+      "No full application, rendering, server, transport or remote execution.",
+      "Applied revision observes the internal OT model, not downstream application acknowledgement.",
+      "Controlled delegate callbacks and queue observation do not establish production timing or incident frequency."
+    ],
+    "sourceHashesStableAfterRunAndDisposal": true,
+    "tempBundleDisposed": true
+  },
+  "verificationInputs": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 2478,
+      "sha256": "7843fba0a8410974568b8daf95065c32effc800c909d9840c9c1ce5a40797d4d"
+    },
+    {
+      "path": ".prettierignore",
+      "bytes": 575,
+      "sha256": "d52006a1da80e5d0fa757bb469cf6dcc893f6cd341774af399a2a12e55ff0a29"
+    },
+    {
+      "path": "examples/subscription-evidence/README.md",
+      "bytes": 3712,
+      "sha256": "5072a75182be77717d1a748bf1e00e8f88ea4015823fe53d5de0ee9c8503531a"
+    },
+    {
+      "path": "examples/subscription-evidence/consumer.test.mjs",
+      "bytes": 13530,
+      "sha256": "fe6b7e73109fc21d8a245a057611a7962b75704017d0b3420d6ff5d077de9359"
+    },
+    {
+      "path": "examples/subscription-evidence/fixture.mjs",
+      "bytes": 12428,
+      "sha256": "a8ae01468ac221dd79c19039c4659e13b65111f6c53bd09079377e7db8a7b238"
+    },
+    {
+      "path": "examples/subscription-evidence/package-lock.json",
+      "bytes": 1376,
+      "sha256": "5de35c44843cafa801d66eae61b4774b0ddaf014a2c56165963985a932758109"
+    },
+    {
+      "path": "examples/subscription-evidence/package.json",
+      "bytes": 349,
+      "sha256": "5f06b29fdda35a5ea8b014370cbe6d88957d1ae2e19c0cf13518f186e6e828d2"
+    },
+    {
+      "path": "examples/subscription-evidence/upstream/LICENSE",
+      "bytes": 10174,
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+    },
+    {
+      "path": "examples/subscription-evidence/upstream/code-change.ts",
+      "bytes": 33243,
+      "sha256": "f5e05b64b37c90c4a5cd2eda181c7c27b6e42dc58dff71fdb69d4ec4f86f3bd7"
+    },
+    {
+      "path": "examples/subscription-evidence/upstream/otClient.ts",
+      "bytes": 39828,
+      "sha256": "e0463eb179c8d2e5052a171554a9d6bffdfc887ba205e9e9ce698beefdc2022b"
+    },
+    {
+      "path": "examples/subscription-evidence/upstream/provenance.json",
+      "bytes": 1721,
+      "sha256": "25d8448017e00895b338d5abcfb674c49895d0e099d5ce3f58e006e1d75a86d7"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 102759,
+      "sha256": "b027f60e8fa207ddd34a04036d4d3bf1477bc9b8d9548fed12408d3bf5afcf25"
+    },
+    {
+      "path": "package.json",
+      "bytes": 3227,
+      "sha256": "a894dd40824f3169389821911148c3955dcea9e27812034beed6f9c47931d91a"
+    }
+  ],
+  "inputBytesUnchangedAfterRun": true,
+  "tap": {
+    "path": "verification.tap",
+    "bytes": 5604,
+    "sha256": "198d1fd51733a95ba6d172fe8036e3930cfcd8d0f91e58485f47aaee89cc3c6c"
+  },
+  "limits": [
+    "Exact pinned pure OT consumer under synthetic delegates only.",
+    "No full application, actual persisted producer, RPC transport, editor rendering or Cloudflare account execution.",
+    "Internal model revision does not prove downstream callback completion; existing fatal notification and recovery belong to upstream.",
+    "No new diagnostic answer, issue305 reproduction, external user benefit, adoption, speed improvement or unmet need is established."
+  ]
+}

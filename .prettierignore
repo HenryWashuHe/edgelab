@@ -5,6 +5,9 @@ output/
 package-lock.json
 examples/counter-evidence/upstream/counter.js
 examples/counter-evidence/upstream/LICENSE-CODE
+examples/subscription-evidence/upstream/otClient.ts
+examples/subscription-evidence/upstream/code-change.ts
+examples/subscription-evidence/upstream/LICENSE
 docs/evidence/counter-portability/
 docs/evidence/releases/3.12.1-evidence-json/*.json
 docs/evidence/releases/3.12.2-observer-terminal/*.json

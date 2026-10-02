@@ -22,6 +22,8 @@ jobs:
       - run: node scripts/build-counter-inspector.mjs
       - run: node --test scripts/counter-inspector.test.mjs
       - run: node scripts/counter-portability.mjs
+      - run: npm ci --prefix examples/subscription-evidence --ignore-scripts --no-audit --no-fund
+      - run: npm --prefix examples/subscription-evidence test
       - run: npm run test:client-build
       - run: npm run test:lifecycle
       - run: npm run test:async-lifetime

@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: The exact pinned pure modules run with a disclosed read-only probe and complete dependency graph
+ok 1 - The exact pinned pure modules run with a disclosed read-only probe and complete dependency graph
+  ---
+  duration_ms: 62.164333
+  type: 'test'
+  ...
+# Actual Node 25.4.0; platform darwin; esbuild 0.28.1; 5 runtime inputs; no runtime API import or DOM supplied.
+# Executed bundle 173942 bytes; SHA256 c9d0928be711d745bafdd56c00a0fb0c5cb65b07b393f47fc213b67d34f5db81; original upstream files are separately pinned.
+# Subtest: pushRow returns with work pending while the initial base fetch is held, then advances the actual model
+ok 2 - pushRow returns with work pending while the initial base fetch is held, then advances the actual model
+  ---
+  duration_ms: 1.289542
+  type: 'test'
+  ...
+# {"kind":"ot-model-observation","phase":"pushRow-returned-before-base-release","generation":0,"appliedRevision":0,"ready":false,"fatal":false,"disposed":false,"isReady":false}
+# {"kind":"ot-model-observation","phase":"queue-drained-after-base-release","generation":1,"appliedRevision":1,"ready":true,"fatal":false,"disposed":false,"isReady":true}
+# Signal barrier distinguishes pushRow returning with pending work from internal OT-model application; no RPC callback or rendering acknowledgement is inferred.
+# Subtest: A missing revision holds later rows; ordered replay fills the gap and identical redelivery is deduplicated
+ok 3 - A missing revision holds later rows; ordered replay fills the gap and identical redelivery is deduplicated
+  ---
+  duration_ms: 0.230292
+  type: 'test'
+  ...
+# Actual generation/revision queue drains 1 then 2; identical redelivery causes no extra remote callback. Conflicting duplicate authenticity is outside this proof.
+# Subtest: An invalid text operation fails before its revision advances and leaves the prior model fatal
+ok 4 - An invalid text operation fails before its revision advances and leaves the prior model fatal
+  ---
+  duration_ms: 0.313125
+  type: 'test'
+  ...
+# {"kind":"ot-model-observation","phase":"invalid-text-application-failed","generation":1,"appliedRevision":1,"ready":true,"fatal":true,"disposed":false,"isReady":false}
+# Real CodeMirror text-length validation fails; the prior model revision remains unchanged and the fatal client does not automatically apply another row.
+# Subtest: A downstream callback can fail after the internal model revision advanced; isReady then reports fatal
+ok 5 - A downstream callback can fail after the internal model revision advanced; isReady then reports fatal
+  ---
+  duration_ms: 0.221834
+  type: 'test'
+  ...
+# {"kind":"ot-model-observation","phase":"downstream-callback-before-controlled-throw","generation":1,"appliedRevision":1,"ready":true,"fatal":false,"disposed":false,"isReady":true}
+# {"kind":"ot-model-observation","phase":"downstream-callback-after-queue-catch","generation":1,"appliedRevision":1,"ready":true,"fatal":true,"disposed":false,"isReady":false}
+# appliedRevision is an internal model watermark, not proof that a downstream callback or renderer completed.
+# Subtest: A future-generation row waits for the corresponding generation metadata before application
+ok 6 - A future-generation row waits for the corresponding generation metadata before application
+  ---
+  duration_ms: 0.226209
+  type: 'test'
+  ...
+# The actual client holds the future-generation row; a controlled destructive-generation snapshot enables its later application.
+# Subtest: The existing materialized-watermark path rebuilds missing delivered rows without waiting for its grace timer
+ok 7 - The existing materialized-watermark path rebuilds missing delivered rows without waiting for its grace timer
+  ---
+  duration_ms: 0.281375
+  type: 'test'
+  ...
+# {"kind":"ot-model-observation","phase":"before-materialized-watermark-recovery","generation":1,"appliedRevision":0,"ready":true,"fatal":false,"disposed":false,"isReady":true}
+# {"kind":"ot-model-observation","phase":"after-materialized-watermark-recovery","generation":1,"appliedRevision":2,"ready":true,"fatal":false,"disposed":false,"isReady":true}
+# Existing upstream recovery consumes the supplied materialized snapshot immediately when no unsynced local edits are at risk; no synthetic row replay or sleep is used.
+# Subtest: A fresh client reconstructs the same materialized model without receiving individual rows
+ok 8 - A fresh client reconstructs the same materialized model without receiving individual rows
+  ---
+  duration_ms: 0.091
+  type: 'test'
+  ...
+# New-client rebuild is an existing upstream mechanism under controlled metadata/base delegates; this is not an EdgeLab-added recovery feature.
+# Subtest: Disposal during a held fetch prevents a late base result from making the model ready
+ok 9 - Disposal during a held fetch prevents a late base result from making the model ready
+  ---
+  duration_ms: 0.105542
+  type: 'test'
+  ...
+# Every controlled client is disposed; held delegates are released through owned barriers and observed with a bounded queue drain.
+# Subtest: All exact upstream, dependency, recipe and foundation input bytes remain unchanged after consumer execution
+ok 10 - All exact upstream, dependency, recipe and foundation input bytes remain unchanged after consumer execution
+  ---
+  duration_ms: 2.523625
+  type: 'test'
+  ...
+# Byte-for-byte source stability is checked after execution and again after temporary-bundle disposal in the final hook; no full app, server or network path was run.
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 151.256125
