@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-10-02T03:15:21.471Z",
+  "sourceBase": "b8118c2d462470925d4898a3c1d0a84a18af590b",
+  "sourcePins": {
+    "tests/fixtures/monitor-clock.ts": "cbd261c81e692668dd6cc15690e5b677b7f8814367c7a9c038f5d4c3a61afbb5",
+    "worker/index.ts": "accc1b54cc6c1262c544e261432cddc2da85b09abb39d37c19a60db80d84ac95",
+    "worker/monitor.ts": "26efdb7465c257a268fc54d69fac184225541cdc8961b671a37e4d6f9c56a4ce",
+    "worker/monitor-forwarder.ts": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e",
+    "worker/engine.ts": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+    "worker/lab-admission.ts": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc",
+    "worker/lab-observer.ts": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+    "worker/origin-client.ts": "1c92a87dc002fa309e032f2b3ebd569c58fa012929db7d9d9be596d2a9e18e59",
+    "worker/bounded-json.ts": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1",
+    "worker/origin.ts": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+    "worker/metadata-cleanup.ts": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee",
+    "worker/incident-briefs.ts": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d",
+    "worker/monitor-check-cache.ts": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1",
+    "worker/monitor-domain.ts": "cf18d92b220815742326fb8bb93e9a2866e46a8cff649163fb1306ab46e12af5",
+    "worker/status-view-cache.ts": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158",
+    "worker/monitor-readiness.ts": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c",
+    "worker/monitor-version-retention.ts": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455",
+    "worker/budget-signals.ts": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15",
+    "worker/incident-evidence.ts": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2",
+    "worker/monitor-probe.ts": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752",
+    "worker/incident-brief-ai.ts": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b",
+    "worker/incident-brief-domain.ts": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1",
+    "worker/burn-rate.ts": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c"
+  },
+  "recipePins": {
+    "scripts/monitor-enrollment.test.mjs": "51d56caad6e87e61e118b9c37a00c674b06f6c34fb710cea722ebce803a8fceb",
+    "package.json": "41aa23246d75eae859b7bfbcc1a05bb3e280f29c19d73a98cc805e0f67a02e84",
+    "package-lock.json": "8b79ac8c916bff9ed11b7a357f609f82b1782afa961f0a28a1b3727f56ec872a",
+    "tsconfig.json": "9affb71fa759689786bd82d7dbe343c7fbed45e403dbc6fbd658c578d1bdface"
+  },
+  "bundle": {
+    "bytes": 164424,
+    "sha256": "e72c6cfef2cf9cf5e43303b717f2e0df9e47ac329107b244f347d2344561410e",
+    "inputs": [
+      "tests/fixtures/monitor-clock.ts",
+      "worker/bounded-json.ts",
+      "worker/budget-signals.ts",
+      "worker/burn-rate.ts",
+      "worker/engine.ts",
+      "worker/incident-brief-ai.ts",
+      "worker/incident-brief-domain.ts",
+      "worker/incident-briefs.ts",
+      "worker/incident-evidence.ts",
+      "worker/index.ts",
+      "worker/lab-admission.ts",
+      "worker/lab-observer.ts",
+      "worker/metadata-cleanup.ts",
+      "worker/monitor-check-cache.ts",
+      "worker/monitor-domain.ts",
+      "worker/monitor-forwarder.ts",
+      "worker/monitor-probe.ts",
+      "worker/monitor-readiness.ts",
+      "worker/monitor-version-retention.ts",
+      "worker/monitor.ts",
+      "worker/origin-client.ts",
+      "worker/origin.ts",
+      "worker/status-view-cache.ts"
+    ],
+    "external": [
+      "cloudflare:workers"
+    ]
+  },
+  "sourceStableThroughDisposal": true,
+  "environment": {
+    "node": "v25.4.0",
+    "platform": "darwin",
+    "miniflare": "5.20260926.0-alpha",
+    "esbuild": "0.28.1",
+    "workerd": "1.20260926.1",
+    "nativeLocalSQLite": true,
+    "accountCalls": 0
+  },
+  "boundary": "The unchanged tracked monitor-clock fixture overrides only the clock through native SQLite. Actual maintained MonitorStore executes with controlled configuration, synthetic Node ORIGIN service responses and native SQLite. Gateway code is bundled/exported; its fetch routes are not exercised. Configuration reloads use Miniflare.setOptions and fresh handles; no live instance environment is mutated. Reads use native Durable Object stub.fetch exports/readiness, not rendered browser or external HTTP. Local forced eviction waited for the monitor timeout completion and did not prevent its check insert. The separate held-probe reload samples persisted checks after release and a 3100ms wait; a proxy rejection alone is not a native completion acknowledgement. These operations do not execute or measure Cloudflare deployment propagation, global partitions, natural failure frequency, account costs or customer value. Installed native binaries are identified by package versions/lock rather than independently hashed.",
+  "lifecycles": [
+    {
+      "case": "retained-incident-and-recovery-gap",
+      "reloads": 2,
+      "nativeEvictions": 0,
+      "disposed": true,
+      "tempRemoved": true,
+      "originCalls": 6
+    },
+    {
+      "case": "failure-gap",
+      "reloads": 2,
+      "nativeEvictions": 0,
+      "disposed": true,
+      "tempRemoved": true,
+      "originCalls": 3
+    },
+    {
+      "case": "target-revision-and-readiness",
+      "reloads": 2,
+      "nativeEvictions": 0,
+      "disposed": true,
+      "tempRemoved": true,
+      "originCalls": 2
+    },
+    {
+      "case": "held-probe-native-eviction-drain",
+      "reloads": 0,
+      "nativeEvictions": 1,
+      "disposed": true,
+      "tempRemoved": true,
+      "originCalls": 2
+    },
+    {
+      "case": "held-probe-configuration-reload",
+      "reloads": 1,
+      "nativeEvictions": 0,
+      "disposed": true,
+      "tempRemoved": true,
+      "originCalls": 2
+    }
+  ],
+  "observations": [
+    {
+      "phase": "retained-incident-and-recovery-gap",
+      "revision": 2,
+      "retainedChecks": 3,
+      "absentMinutes": 2,
+      "absentProbeCalls": 0,
+      "recoveryStreakAfterGap": 1,
+      "finishedExpected": 8,
+      "finishedObserved": 6,
+      "finishedMissing": 2,
+      "finishedMaintenance": 0,
+      "coverage": 75,
+      "incidentRetained": true,
+      "originalCreatedPolicyHistoryRetained": true,
+      "resolvedAfterThreeConsecutiveChecks": true
+    },
+    {
+      "phase": "failure-gap",
+      "revision": 2,
+      "absentProbeCalls": 0,
+      "failureStreakAfterGap": 1,
+      "incidentOpenedAfterTwoConsecutiveChecks": true
+    },
+    {
+      "phase": "target-revision-and-readiness",
+      "originalRevision": 1,
+      "equivalentRevision": 1,
+      "changedRevision": 2,
+      "oldObservationReadyStatus": 503,
+      "oldObservationReadiness": "partial",
+      "currentObservationReadyStatus": 200,
+      "createdPolicyHistoryRetained": true
+    },
+    {
+      "phase": "held-probe-native-eviction-drain",
+      "claimedJobs": 1,
+      "oldInvocation": "response",
+      "oldOutcome": "timeout",
+      "originReturnedBeforeRelease": false,
+      "completedChecksAtEvictionReturn": 1,
+      "retainedCompletedJobs": 1,
+      "newObservationRevision": 1,
+      "recoveredReadyStatus": 200
+    },
+    {
+      "phase": "held-probe-configuration-reload",
+      "oldInvocation": "rejected",
+      "oldResult": "rejected",
+      "changedRevision": 2,
+      "checksAtReloadReturn": 0,
+      "checksAfterRelease": 0,
+      "observationWaitMs": 3100,
+      "currentRevisionChecksBeforeNewTick": 0,
+      "oldObservationReadyStatus": 503,
+      "newObservationRevision": 2,
+      "recoveredReadyStatus": 200
+    }
+  ]
+}

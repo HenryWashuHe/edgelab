@@ -161,7 +161,7 @@ Use the signal to investigate intermittent failure that may never reach the cons
 
 Edit the latency objective, timeout, good-check target, failure threshold, and recovery threshold in Operator or service detail. Writes include the last observed revision and return 409 if another operator changed it. Refresh and reopen the form before retrying. Each saved policy invalidates in-flight old-revision results and resets streaks. Existing incidents remain open.
 
-Pause records maintenance observations each minute without touching the upstream. Those observations are excluded from the SLO and coverage denominator. Unobserved minutes during a scheduler outage remain missing, including during a pause. Resume explicitly; there is no automatic maintenance end. An active incident during maintenance still needs subsequent successful probes to recover.
+Pause records maintenance observations each minute without touching the upstream while the target remains configured and scheduled checks run. Those observations are excluded from the SLO and coverage denominator. Unobserved minutes during a scheduler outage or deployment removal remain missing, including during a pause. Resume explicitly; there is no automatic maintenance end. An active incident during maintenance still needs subsequent successful probes to recover.
 
 Budget evaluation shows explicit maintenance when the current policy is paused or both rule windows contain only verified maintenance. Mixed maintenance still must meet the minimum non-maintenance sample gates. Any policy revision restarts full-window maturity; newly resumed or edited services can require up to three days before the gradual rule qualifies. Previously recorded firing evidence remains available under its original revision.
 

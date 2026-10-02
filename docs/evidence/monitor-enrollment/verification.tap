@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: native removal and unchanged re-enrollment retain an active incident and preserve missing minutes
+ok 1 - native removal and unchanged re-enrollment retain an active incident and preserve missing minutes
+  ---
+  duration_ms: 485.952792
+  type: 'test'
+  ...
+# Subtest: a genuinely absent minute resets consecutive failures after unchanged re-enrollment
+ok 2 - a genuinely absent minute resets consecutive failures after unchanged re-enrollment
+  ---
+  duration_ms: 212.775209
+  type: 'test'
+  ...
+# Subtest: normalized-equivalent targets preserve revision; a changed target requires a new observation for readiness
+ok 3 - normalized-equivalent targets preserve revision; a changed target requires a new observation for readiness
+  ---
+  duration_ms: 213.9495
+  type: 'test'
+  ...
+# Subtest: local forced eviction waits for the held monitor probe timeout and retains its completed check
+ok 4 - local forced eviction waits for the held monitor probe timeout and retains its completed check
+  ---
+  duration_ms: 3153.999584
+  type: 'test'
+  ...
+# Subtest: configuration reload during an actual held probe records its native lifecycle outcome
+ok 5 - configuration reload during an actual held probe records its native lifecycle outcome
+  ---
+  duration_ms: 3284.760666
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7727.473917

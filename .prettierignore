@@ -18,3 +18,4 @@ docs/evidence/releases/3.12.3-outcome-scope/*.json
 docs/evidence/counter-inspector/*.mjs
 docs/evidence/counter-inspector/*.json
 docs/evidence/releases/3.12.4-target-strings/*.json
+docs/evidence/monitor-enrollment/*.json

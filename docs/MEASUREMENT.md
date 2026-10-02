@@ -8,7 +8,9 @@ The scheduled slot is a UTC minute, not an observation timestamp. Only a tick fo
 
 [Cloudflare's cron documentation](https://developers.cloudflare.com/workers/configuration/cron-triggers/) describes UTC execution and up to 15 minutes for trigger changes to propagate. That configuration propagation delay is distinct from the timing of an individual invocation; neither permits historical backfill in EdgeLab.
 
-Reports use finished UTC minutes: from the later of the reporting-window start and the first complete minute after enrollment, through the minute before the snapshot. The current minute can appear in recent history but is excluded from aggregates until it finishes.
+Reports use finished UTC minutes: from the later of the reporting-window start and the first complete minute after original enrollment, through the minute before the snapshot. The current minute can appear in recent history but is excluded from aggregates until it finishes.
+
+Removing and later restoring the same service ID does not restart its reporting interval. Minutes without recorded checks remain missing, including periods when the target was absent from deployment configuration; removal is not recorded maintenance. Restoring an unchanged target preserves its policy revision. Changing its normalized configuration creates a new revision.
 
 - Verified observations are retained checks with a known actual `observedAt` start timestamp.
 - Eligible minutes = expected minutes − verified maintenance minutes.
