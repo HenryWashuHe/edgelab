@@ -83,6 +83,36 @@ describe('monitoring incident state machine', () => {
       expect(() => parseTargets(JSON.stringify([{ ...target, ...patch }]))).toThrow();
     expect(() => parseTargets(JSON.stringify([target, target]))).toThrow();
   });
+  it('rejects coerced monitor identities before enrollment', () => {
+    for (const id of [undefined, null, 7, 0, true, false, [], ['catalog'], {}]) {
+      expect(() => parseTargets(JSON.stringify([{ ...target, id }]))).toThrow(
+        'Invalid or duplicate monitor identity',
+      );
+    }
+    expect(() =>
+      parseTargets(
+        JSON.stringify([
+          { ...target, id: 7 },
+          { ...target, id: '7' },
+        ]),
+      ),
+    ).toThrow('Invalid or duplicate monitor identity');
+    const stringTargets = [
+      { ...target, id: '7' },
+      { ...target, id: '8' },
+    ];
+    expect(parseTargets(JSON.stringify(stringTargets))).toEqual(stringTargets);
+  });
+  it('requires a URL string without changing valid HTTPS normalization', () => {
+    for (const url of [undefined, null, 7, true, [], ['https://origin.internal/health'], {}]) {
+      expect(() => parseTargets(JSON.stringify([{ ...target, url }]))).toThrow(
+        'Monitor target URL must be a string',
+      );
+    }
+    expect(
+      parseTargets(JSON.stringify([{ ...target, url: 'https://origin.internal:443/health' }])),
+    ).toEqual([{ ...target, url: 'https://origin.internal/health' }]);
+  });
 });
 describe('bounded monitor probes', () => {
   it('requires the advertised JSON contract', async () => {

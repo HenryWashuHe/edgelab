@@ -121,7 +121,7 @@ export function LabObserver() {
     if (previous?.end) return;
     const next = previous
       ? appendLabRecording(previous, frame, Date.now())
-      : beginLabRecording(frame, Date.now(), '3.12.3');
+      : beginLabRecording(frame, Date.now(), '3.12.4');
     recordingRef.current = next;
     setRecording(next);
     if (next.end?.reason === 'frame-limit' || next.end?.reason === 'byte-limit')

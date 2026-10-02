@@ -35,6 +35,7 @@ jobs:
       - run: npm run test:lab-admission
       - run: npm run test:benchmark-compatibility
       - run: npm run test:monitor
+      - run: npm run test:monitor-targets
       - run: npm run test:incident
       - run: npm run test:upgrade
       - run: npm run test:budget

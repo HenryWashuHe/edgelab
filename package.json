@@ -1,6 +1,6 @@
 {
   "name": "edgelab",
-  "version": "3.12.3",
+  "version": "3.12.4",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,6 +15,7 @@
     "dev:workers": "wrangler dev --local -c wrangler.jsonc -c wrangler.origin.jsonc --port 8787 --var AI_BRIEFS_ENABLED:false --var LAB_ADMISSION_ENABLED:false",
     "test:lifecycle": "node scripts/lifecycle.mjs",
     "test:monitor": "node scripts/monitor-integration.mjs",
+    "test:monitor-targets": "node --test scripts/monitor-targets.test.mjs",
     "benchmark": "node scripts/benchmark.mjs",
     "operator:setup": "node scripts/operator-setup.mjs",
     "operator": "node scripts/operator.mjs",

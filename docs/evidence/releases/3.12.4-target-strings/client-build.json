@@ -1,0 +1,2101 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-client-build-evidence",
+  "measuredAt": "2026-10-02T02:44:35.012Z",
+  "sourceProjectVersion": "3.12.4",
+  "environment": {
+    "node": "v25.4.0",
+    "vite": "8.3.1",
+    "rolldown": "1.2.11",
+    "gzip": "node:zlib.gzipSync default options, independently for each file",
+    "remoteCalls": 0,
+    "browserCalls": 0,
+    "applicationRuntimeCalls": 0,
+    "accountCalls": 0
+  },
+  "buildSettings": {
+    "target": "es2022",
+    "write": false,
+    "configFile": false,
+    "envFile": false,
+    "manifest": false
+  },
+  "provenance": {
+    "baselineCommit": "a55bbe8750ac6d3e225d80aaeeee4143da702dee",
+    "publishedBaseline": {
+      "publicationCommit": "4bde8b6b160dd04ee66fe62af743dabfe5d21c3d",
+      "archivePath": "docs/evidence/releases/3.10.0-live-monitoring.json",
+      "archiveBytes": 62508,
+      "archiveSHA256": "22ac4aa67663b79cc299be53676819bab5446916bdde1e604964eabee505ac20",
+      "sourceCommit": "a55bbe8750ac6d3e225d80aaeeee4143da702dee",
+      "archivedAssets": [
+        {
+          "file": "assets/index-BJC7jps7.js",
+          "bytes": 474938,
+          "sha256": "0efe27057805433993e392a90cbeed21d459c10e882e04ddb030b714782a7982"
+        },
+        {
+          "file": "assets/index-BnCFBdz0.css",
+          "bytes": 70555,
+          "sha256": "5ff90331f3ec4c65d7fd71c7d2e7fd24f7418fb292528fc67d2bafd491210942"
+        },
+        {
+          "file": "index.html",
+          "bytes": 712,
+          "sha256": "b609e99b0a24a4fb3fc3771d0ae9e885269a2fa2c145dd13abede6aa938e206d"
+        }
+      ],
+      "generatedAssetBytesAndHashesMatch": true
+    },
+    "inputsCapturedBeforeBuildAt": "2026-10-02T02:44:34.689Z",
+    "dependencies": {
+      "currentVersion": "3.12.4",
+      "baselineVersion": "3.10.0",
+      "currentRawLockSHA256": "8b79ac8c916bff9ed11b7a357f609f82b1782afa961f0a28a1b3727f56ec872a",
+      "baselineRawLockSHA256": "3dd1880dcea0769260f845f19a403a7ca21dccacf0219630c40981973e513924",
+      "normalizedDependencyLockSHA256": "4174f084766d539dc5ff6f47e51db89c63ebc156a6c2a21d55fefd08d56d3c5b",
+      "allowedLockVersionFields": [
+        "version",
+        "packages[''].version"
+      ],
+      "allOtherLockFieldsEqual": true,
+      "pinnedCompilerConfigIdentical": true,
+      "packageDependenciesAndOtherNonScriptMetadataEqual": true,
+      "existingPackageScriptsEqualExceptApprovedCheckAddition": true,
+      "approvedPackageScriptChanges": {
+        "check": {
+          "before": "npm run format:check && npm test && npm run build && wrangler deploy --dry-run -c wrangler.origin.jsonc --outdir output/origin && wrangler deploy --dry-run -c wrangler.jsonc --outdir output/worker",
+          "after": "npm run format:check && npm test && npm run test:assets-unit && npm run test:operator && npm run build && wrangler deploy --dry-run -c wrangler.origin.jsonc --outdir output/origin && wrangler deploy --dry-run -c wrangler.jsonc --outdir output/worker",
+          "inserted": "npm run test:assets-unit && npm run test:operator"
+        }
+      },
+      "addedPackageScripts": [
+        "test:assets",
+        "test:assets-unit",
+        "test:async-lifetime",
+        "test:client-build",
+        "test:monitor-targets",
+        "test:operator"
+      ]
+    },
+    "currentSource": {
+      "sourceSHA256": {
+        "index.html": "96969d7271f3743d6fd4b69317a00919fc5275bdfda85448f287a90a3bcaf9b7",
+        "package-lock.json": "8b79ac8c916bff9ed11b7a357f609f82b1782afa961f0a28a1b3727f56ec872a",
+        "package.json": "41aa23246d75eae859b7bfbcc1a05bb3e280f29c19d73a98cc805e0f67a02e84",
+        "public/favicon.svg": "0dec07404a28b08f86562d48e90946ff62f4cccf38cd55e412c1a378b4317bb1",
+        "src/BriefExamples.tsx": "813b90642e409942118485a1e207a63ae4e82f02af9a1b6040eb03fecbab5419",
+        "src/BudgetSignalsPanel.tsx": "57d832c9d67e5725cd34fd70da41c96c4b7e4df1d6e1f0fd4764e51bd063d67d",
+        "src/Guide.tsx": "72a5e39f03ca396a5e268735d1e7a396d3ee883bbafe4ea4a40824970b2efbed",
+        "src/IncidentBriefPanel.tsx": "8f181cae37919eb267dfd03db66190bfbdbb42ea229f36187a856833b2e32777",
+        "src/IncidentWorkspace.tsx": "636a14ed2d598e8f01db4f11388b1b75164ff29f684f67a6e3d820475890e822",
+        "src/LabObserver.tsx": "01a4d030f548e58616ec8db53514f73a8b9d84fdb291c2c40d6ec00cc520d039",
+        "src/LabReplay.tsx": "b40ba6383fa40665320aed4f31d174862f8885cd72034ee515a959d602a1aa9c",
+        "src/MetadataCleanup.tsx": "91520775d142f379ed07a93e7701b5e0a61c9b29337faaec437910e717ae67c0",
+        "src/Operations.tsx": "037d3eb62a4a14b3628dcbc30baa45e59f1b9b7b8c96444685758a9a1e9eee45",
+        "src/ReplayRoute.tsx": "f309783198a474b060b9aa28ed6c05bca6535f2baad1dddb36985517bcc5b18f",
+        "src/RequestInspector.tsx": "0ce2eaab965044d2e44caa095aa6e763e0dadc79d5453111d3f5ed30283b9b27",
+        "src/RouteBoundary.tsx": "d852ef67c9521a12f63d56dc924f4f6860128132890c6a27d1671f568157b4c3",
+        "src/RuntimeEvidence.tsx": "2fa3cfce521f31494cfda2af42ee9e8b0f961db9b2e6527cfd704c382bbc6012",
+        "src/brief-examples-data.json": "d9248221a2f2dafb0f0d58a7ebbd1c2bf6a1cf8f129eb0e1c4f25611cb54247c",
+        "src/brief-examples.css": "8650166cced57d903a047d99daeb1c132f779bcfa11abdd8bb0dc750fa435a56",
+        "src/brief-examples.ts": "cc405b2fd95886714f24b11ad7b94721de33f808fd0ad73e485d0873d1bfc94b",
+        "src/budget-signals.css": "5af13a76bd5366cf8a6203c0c372a182eb1242de283e7b5f4fd0d63813e2ae5b",
+        "src/data/lab-recording-example.json": "6694f04816374db3c2924e55e84e862855ef017d8d7cb667af1e2afae3177a34",
+        "src/data/status-reuse-evidence.json": "37c97d0597a34bfba3081097ef2f3e06a7a952ee6258bb998404644d2cd2a287",
+        "src/incident-brief.css": "2f47d41081c6dce422917dc2def9e9443a0dbbfae9b65ab1b2d5b06ace558a9b",
+        "src/incident-workspace.css": "b5f0591662077416faabbfa5358ad243600833c473a60fd736d4f5489353b6e0",
+        "src/lab-observer.css": "d6723ef8643c680e08ece713f0786ca140eb4a3f23e3f983b493431c6d47c8d4",
+        "src/lab-recording.ts": "48eb16bb97214fc42041f1196fcf7a6ab7c227b3da1a6db71f70973b4617f715",
+        "src/lab-replay.css": "571ee87d87ac04aff3b069ce9bb86001657f8f6c8bb3a5b439d9e6a76076fb6e",
+        "src/lab-request-control.ts": "c94cbe21856aba5f98144b195fc191bb0ffa3d72e1159187a77ff2b3a4d851b5",
+        "src/lab-run-control.ts": "080c3d8c53e63a066fd81ab211d388073d7c4ee0ebc8881fa1360c7080e6818e",
+        "src/lab-session.ts": "fda5a9c5ee0303dfbf5330fd8583d47ed364ad29efb2cedce3dc8c8c6afb857e",
+        "src/main.tsx": "9ba0c81cd8f251561339385cbcd702a2989feef2394a88da27ed737b81c89b15",
+        "src/operations.css": "36dd1957d5fe3b99d8e8a7cbbf0d2b602f1061bb5b355de5e92d69eb079d46fc",
+        "src/replay-tour.ts": "45ced369b301f79d5c1006a730219647048cf29b0d756cc5829c4c667ce280db",
+        "src/reports.ts": "b3cb7d8faac96dd52d7a6fb3ad3082e56734a9cd1d71684614a03af5e40eff03",
+        "src/route-boundary.css": "d226862867c1f9def7c91359bf080e7b8f947b02fa035236dd9cbb773d322038",
+        "src/routes.ts": "3efabd8a66d443109386ad665fde1149c7e7e69633080f69888d70b58e64be8a",
+        "src/runtime-evidence.css": "5128f416c0f58c0ee7d8782dcca9372097e7cc6cd9f9b4321fcdb89110fb415f",
+        "src/runtime-evidence.ts": "71e11b86f9995fa5b5fc5452ae4c2eaebfcf644ce73366bc1d66379a698bb5c2",
+        "src/status-view-timing.ts": "c52c7438d01038becb2a526849ac0527c1524b8b809deffd67524e2b89c3c4f2",
+        "src/style.css": "011e33d45f3cceb13f394a8b0c0e6846362c33edf2ec69a51a323756e872e95b",
+        "tsconfig.json": "9affb71fa759689786bd82d7dbe343c7fbed45e403dbc6fbd658c578d1bdface",
+        "vite.config.ts": "15278ca80f3616858cd79eb1950d68d100067701ead630fd8c5529f44fdd56f3",
+        "worker/bounded-json.ts": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1",
+        "worker/budget-signals.ts": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15",
+        "worker/burn-rate.ts": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c",
+        "worker/engine.ts": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+        "worker/incident-brief-ai.ts": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b",
+        "worker/incident-brief-domain.ts": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1",
+        "worker/incident-briefs.ts": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d",
+        "worker/incident-evidence.ts": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2",
+        "worker/index.ts": "accc1b54cc6c1262c544e261432cddc2da85b09abb39d37c19a60db80d84ac95",
+        "worker/lab-admission.ts": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc",
+        "worker/lab-observer.ts": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+        "worker/metadata-cleanup.ts": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee",
+        "worker/monitor-check-cache.ts": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1",
+        "worker/monitor-domain.ts": "cf18d92b220815742326fb8bb93e9a2866e46a8cff649163fb1306ab46e12af5",
+        "worker/monitor-forwarder.ts": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e",
+        "worker/monitor-probe.ts": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752",
+        "worker/monitor-readiness.ts": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c",
+        "worker/monitor-version-retention.ts": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455",
+        "worker/monitor.ts": "26efdb7465c257a268fc54d69fac184225541cdc8961b671a37e4d6f9c56a4ce",
+        "worker/origin-client.ts": "1c92a87dc002fa309e032f2b3ebd569c58fa012929db7d9d9be596d2a9e18e59",
+        "worker/origin.ts": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+        "worker/status-view-cache.ts": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158",
+        "worker/unique-json.d.mts": "484758ae0e674ebab17bf96347664bf9b353393b058733edd690e90d15e31843",
+        "worker/unique-json.mjs": "e3fbbc48550a7e035f2caebd5bd37cf544d6535b477dd63b54ec7ff2c7763c6a"
+      },
+      "fileCount": 67,
+      "totalBytes": 797491
+    },
+    "baselineSource": {
+      "sourceSHA256": {
+        "index.html": "96969d7271f3743d6fd4b69317a00919fc5275bdfda85448f287a90a3bcaf9b7",
+        "package-lock.json": "3dd1880dcea0769260f845f19a403a7ca21dccacf0219630c40981973e513924",
+        "package.json": "3b92be2263c09f722920e9107036a32a7cb36d8a32d15acc163b85b747306ffb",
+        "public/favicon.svg": "0dec07404a28b08f86562d48e90946ff62f4cccf38cd55e412c1a378b4317bb1",
+        "src/BriefExamples.tsx": "813b90642e409942118485a1e207a63ae4e82f02af9a1b6040eb03fecbab5419",
+        "src/BudgetSignalsPanel.tsx": "57d832c9d67e5725cd34fd70da41c96c4b7e4df1d6e1f0fd4764e51bd063d67d",
+        "src/Guide.tsx": "72a5e39f03ca396a5e268735d1e7a396d3ee883bbafe4ea4a40824970b2efbed",
+        "src/IncidentBriefPanel.tsx": "8f181cae37919eb267dfd03db66190bfbdbb42ea229f36187a856833b2e32777",
+        "src/IncidentWorkspace.tsx": "636a14ed2d598e8f01db4f11388b1b75164ff29f684f67a6e3d820475890e822",
+        "src/LabObserver.tsx": "ec95d05827ddaef8f661e7ec34300739ff62c1b6d7aefb6835bf9149b4a57c33",
+        "src/LabReplay.tsx": "c71a27f9b7bd75251bbefabc7e465b22c43dd64644b070824819e637ce53c401",
+        "src/MetadataCleanup.tsx": "91520775d142f379ed07a93e7701b5e0a61c9b29337faaec437910e717ae67c0",
+        "src/Operations.tsx": "037d3eb62a4a14b3628dcbc30baa45e59f1b9b7b8c96444685758a9a1e9eee45",
+        "src/RequestInspector.tsx": "0ce2eaab965044d2e44caa095aa6e763e0dadc79d5453111d3f5ed30283b9b27",
+        "src/RuntimeEvidence.tsx": "2fa3cfce521f31494cfda2af42ee9e8b0f961db9b2e6527cfd704c382bbc6012",
+        "src/brief-examples-data.json": "d9248221a2f2dafb0f0d58a7ebbd1c2bf6a1cf8f129eb0e1c4f25611cb54247c",
+        "src/brief-examples.css": "8650166cced57d903a047d99daeb1c132f779bcfa11abdd8bb0dc750fa435a56",
+        "src/brief-examples.ts": "cc405b2fd95886714f24b11ad7b94721de33f808fd0ad73e485d0873d1bfc94b",
+        "src/budget-signals.css": "5af13a76bd5366cf8a6203c0c372a182eb1242de283e7b5f4fd0d63813e2ae5b",
+        "src/data/lab-recording-example.json": "6694f04816374db3c2924e55e84e862855ef017d8d7cb667af1e2afae3177a34",
+        "src/data/status-reuse-evidence.json": "37c97d0597a34bfba3081097ef2f3e06a7a952ee6258bb998404644d2cd2a287",
+        "src/incident-brief.css": "2f47d41081c6dce422917dc2def9e9443a0dbbfae9b65ab1b2d5b06ace558a9b",
+        "src/incident-workspace.css": "b5f0591662077416faabbfa5358ad243600833c473a60fd736d4f5489353b6e0",
+        "src/lab-observer.css": "d6723ef8643c680e08ece713f0786ca140eb4a3f23e3f983b493431c6d47c8d4",
+        "src/lab-recording.ts": "206a8956f3a2fef987f75e1a271372f03f3f57923121392a2fde0896ceecff7e",
+        "src/lab-replay.css": "571ee87d87ac04aff3b069ce9bb86001657f8f6c8bb3a5b439d9e6a76076fb6e",
+        "src/lab-request-control.ts": "c94cbe21856aba5f98144b195fc191bb0ffa3d72e1159187a77ff2b3a4d851b5",
+        "src/lab-session.ts": "fda5a9c5ee0303dfbf5330fd8583d47ed364ad29efb2cedce3dc8c8c6afb857e",
+        "src/main.tsx": "d4d7bcaeecb6adba884d45a79d28df1e61afdc8477f143b89ddf49d693e59838",
+        "src/operations.css": "36dd1957d5fe3b99d8e8a7cbbf0d2b602f1061bb5b355de5e92d69eb079d46fc",
+        "src/replay-tour.ts": "45ced369b301f79d5c1006a730219647048cf29b0d756cc5829c4c667ce280db",
+        "src/reports.ts": "b3cb7d8faac96dd52d7a6fb3ad3082e56734a9cd1d71684614a03af5e40eff03",
+        "src/runtime-evidence.css": "5128f416c0f58c0ee7d8782dcca9372097e7cc6cd9f9b4321fcdb89110fb415f",
+        "src/runtime-evidence.ts": "71e11b86f9995fa5b5fc5452ae4c2eaebfcf644ce73366bc1d66379a698bb5c2",
+        "src/status-view-timing.ts": "c52c7438d01038becb2a526849ac0527c1524b8b809deffd67524e2b89c3c4f2",
+        "src/style.css": "011e33d45f3cceb13f394a8b0c0e6846362c33edf2ec69a51a323756e872e95b",
+        "tsconfig.json": "9affb71fa759689786bd82d7dbe343c7fbed45e403dbc6fbd658c578d1bdface",
+        "vite.config.ts": "15278ca80f3616858cd79eb1950d68d100067701ead630fd8c5529f44fdd56f3",
+        "worker/budget-signals.ts": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15",
+        "worker/burn-rate.ts": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c",
+        "worker/engine.ts": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f",
+        "worker/incident-brief-ai.ts": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b",
+        "worker/incident-brief-domain.ts": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1",
+        "worker/incident-briefs.ts": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d",
+        "worker/incident-evidence.ts": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2",
+        "worker/index.ts": "dc12359b046b1bc1c7ff0e0334884a8bfc948dc03dbe21835b427e2c43572b66",
+        "worker/lab-admission.ts": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc",
+        "worker/lab-observer.ts": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08",
+        "worker/metadata-cleanup.ts": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee",
+        "worker/monitor-check-cache.ts": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1",
+        "worker/monitor-domain.ts": "15ed1d9218b5c0baeea4061f20077ded6350d02c6b3bb71b2906fc595f16a003",
+        "worker/monitor-forwarder.ts": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e",
+        "worker/monitor-probe.ts": "e06fa750a0a9888b74d32e03848fe966edbe67ae331c73d303d6c4046a87f034",
+        "worker/monitor-readiness.ts": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c",
+        "worker/monitor-version-retention.ts": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455",
+        "worker/monitor.ts": "eeb75cf37d789b800ee3b3cf9f009298059fb2fae41f70b7086b7325eab9f450",
+        "worker/origin-client.ts": "4db923944019dd24d3da2e19c1d54cac7247a2d5819db3016cde047374a91548",
+        "worker/origin.ts": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+        "worker/status-view-cache.ts": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158"
+      },
+      "fileCount": 59,
+      "totalBytes": 784579
+    },
+    "additionalSourceSHA256": {
+      "scripts/client-build.mjs": "02747270841d063516dee0e43be5162dad8ab66dc0d71ba0f11e47da01ec3ff6",
+      "scripts/asset-verification.mjs": "c193d0ed7163ff22d6165e654b3c7f846011a336fe5db7feb5c08066a7b78225",
+      "scripts/verify-assets.mjs": "1943334d4b407a3f089f4430037c2d91c20219d57615a9a0e0e82b2533c5e00f"
+    },
+    "additionalInputsBoundary": "Recipe and any asset-verifier source hashes identify release evidence tooling; they are not claimed as client build inputs.",
+    "sourceBoundary": "Complete bounded src/worker/public/index/config/package/lock inventories hashed before both builds and checked afterward; actual loaded project input graph is listed separately. Both builds use the same installed runtime/dependencies through normal parent resolution. Installed binaries are not independently hashed."
+  },
+  "pinnedRecording": {
+    "sourcePath": "src/data/lab-recording-example.json",
+    "bytes": 23558,
+    "sourceSHA256": "6694f04816374db3c2924e55e84e862855ef017d8d7cb667af1e2afae3177a34",
+    "contentHash": "ee884cdcefaedcd23c22eed275ec5088852beec2b6dd8ed323381d2cc908a082",
+    "producerVersion": "3.6.0",
+    "frames": 25,
+    "byteIdenticalToBaseline": true
+  },
+  "baseline": {
+    "entry": "assets/index-BJC7jps7.js",
+    "initialStatic": {
+      "javascript": {
+        "files": [
+          "assets/index-BJC7jps7.js"
+        ],
+        "bytes": 474938,
+        "gzipBytes": 132474
+      },
+      "css": {
+        "files": [
+          "assets/index-BnCFBdz0.css"
+        ],
+        "bytes": 70555,
+        "gzipBytes": 14409
+      },
+      "modules": [
+        "index.html",
+        "src/BriefExamples.tsx",
+        "src/BudgetSignalsPanel.tsx",
+        "src/Guide.tsx",
+        "src/IncidentBriefPanel.tsx",
+        "src/IncidentWorkspace.tsx",
+        "src/LabObserver.tsx",
+        "src/LabReplay.tsx",
+        "src/MetadataCleanup.tsx",
+        "src/Operations.tsx",
+        "src/RequestInspector.tsx",
+        "src/RuntimeEvidence.tsx",
+        "src/brief-examples-data.json",
+        "src/brief-examples.css",
+        "src/brief-examples.ts",
+        "src/budget-signals.css",
+        "src/data/lab-recording-example.json?raw",
+        "src/data/status-reuse-evidence.json",
+        "src/incident-brief.css",
+        "src/incident-workspace.css",
+        "src/lab-observer.css",
+        "src/lab-recording.ts",
+        "src/lab-replay.css",
+        "src/lab-request-control.ts",
+        "src/lab-session.ts",
+        "src/main.tsx",
+        "src/operations.css",
+        "src/replay-tour.ts",
+        "src/reports.ts",
+        "src/runtime-evidence.css",
+        "src/runtime-evidence.ts",
+        "src/status-view-timing.ts",
+        "src/style.css",
+        "virtual:rolldown/runtime.js",
+        "virtual:vite/modulepreload-polyfill.js",
+        "worker/budget-signals.ts",
+        "worker/burn-rate.ts",
+        "worker/engine.ts",
+        "worker/incident-brief-domain.ts",
+        "worker/lab-observer.ts",
+        "worker/metadata-cleanup.ts",
+        "worker/monitor-domain.ts",
+        "worker/monitor-readiness.ts",
+        "worker/status-view-cache.ts"
+      ]
+    },
+    "fullReachable": {
+      "javascript": {
+        "files": [
+          "assets/index-BJC7jps7.js"
+        ],
+        "bytes": 474938,
+        "gzipBytes": 132474
+      },
+      "css": {
+        "files": [
+          "assets/index-BnCFBdz0.css"
+        ],
+        "bytes": 70555,
+        "gzipBytes": 14409
+      },
+      "modules": [
+        "index.html",
+        "src/BriefExamples.tsx",
+        "src/BudgetSignalsPanel.tsx",
+        "src/Guide.tsx",
+        "src/IncidentBriefPanel.tsx",
+        "src/IncidentWorkspace.tsx",
+        "src/LabObserver.tsx",
+        "src/LabReplay.tsx",
+        "src/MetadataCleanup.tsx",
+        "src/Operations.tsx",
+        "src/RequestInspector.tsx",
+        "src/RuntimeEvidence.tsx",
+        "src/brief-examples-data.json",
+        "src/brief-examples.css",
+        "src/brief-examples.ts",
+        "src/budget-signals.css",
+        "src/data/lab-recording-example.json?raw",
+        "src/data/status-reuse-evidence.json",
+        "src/incident-brief.css",
+        "src/incident-workspace.css",
+        "src/lab-observer.css",
+        "src/lab-recording.ts",
+        "src/lab-replay.css",
+        "src/lab-request-control.ts",
+        "src/lab-session.ts",
+        "src/main.tsx",
+        "src/operations.css",
+        "src/replay-tour.ts",
+        "src/reports.ts",
+        "src/runtime-evidence.css",
+        "src/runtime-evidence.ts",
+        "src/status-view-timing.ts",
+        "src/style.css",
+        "virtual:rolldown/runtime.js",
+        "virtual:vite/modulepreload-polyfill.js",
+        "worker/budget-signals.ts",
+        "worker/burn-rate.ts",
+        "worker/engine.ts",
+        "worker/incident-brief-domain.ts",
+        "worker/lab-observer.ts",
+        "worker/metadata-cleanup.ts",
+        "worker/monitor-domain.ts",
+        "worker/monitor-readiness.ts",
+        "worker/status-view-cache.ts"
+      ]
+    },
+    "routes": {
+      "operations": {
+        "routeModule": "src/Operations.tsx",
+        "ownerChunk": "assets/index-BJC7jps7.js",
+        "javascript": {
+          "files": [
+            "assets/index-BJC7jps7.js"
+          ],
+          "bytes": 474938,
+          "gzipBytes": 132474
+        },
+        "css": {
+          "files": [
+            "assets/index-BnCFBdz0.css"
+          ],
+          "bytes": 70555,
+          "gzipBytes": 14409
+        },
+        "modules": [
+          "index.html",
+          "src/BriefExamples.tsx",
+          "src/BudgetSignalsPanel.tsx",
+          "src/Guide.tsx",
+          "src/IncidentBriefPanel.tsx",
+          "src/IncidentWorkspace.tsx",
+          "src/LabObserver.tsx",
+          "src/LabReplay.tsx",
+          "src/MetadataCleanup.tsx",
+          "src/Operations.tsx",
+          "src/RequestInspector.tsx",
+          "src/RuntimeEvidence.tsx",
+          "src/brief-examples-data.json",
+          "src/brief-examples.css",
+          "src/brief-examples.ts",
+          "src/budget-signals.css",
+          "src/data/lab-recording-example.json?raw",
+          "src/data/status-reuse-evidence.json",
+          "src/incident-brief.css",
+          "src/incident-workspace.css",
+          "src/lab-observer.css",
+          "src/lab-recording.ts",
+          "src/lab-replay.css",
+          "src/lab-request-control.ts",
+          "src/lab-session.ts",
+          "src/main.tsx",
+          "src/operations.css",
+          "src/replay-tour.ts",
+          "src/reports.ts",
+          "src/runtime-evidence.css",
+          "src/runtime-evidence.ts",
+          "src/status-view-timing.ts",
+          "src/style.css",
+          "virtual:rolldown/runtime.js",
+          "virtual:vite/modulepreload-polyfill.js",
+          "worker/budget-signals.ts",
+          "worker/burn-rate.ts",
+          "worker/engine.ts",
+          "worker/incident-brief-domain.ts",
+          "worker/lab-observer.ts",
+          "worker/metadata-cleanup.ts",
+          "worker/monitor-domain.ts",
+          "worker/monitor-readiness.ts",
+          "worker/status-view-cache.ts"
+        ]
+      },
+      "replay": {
+        "routeModule": "src/LabReplay.tsx",
+        "ownerChunk": "assets/index-BJC7jps7.js",
+        "javascript": {
+          "files": [
+            "assets/index-BJC7jps7.js"
+          ],
+          "bytes": 474938,
+          "gzipBytes": 132474
+        },
+        "css": {
+          "files": [
+            "assets/index-BnCFBdz0.css"
+          ],
+          "bytes": 70555,
+          "gzipBytes": 14409
+        },
+        "modules": [
+          "index.html",
+          "src/BriefExamples.tsx",
+          "src/BudgetSignalsPanel.tsx",
+          "src/Guide.tsx",
+          "src/IncidentBriefPanel.tsx",
+          "src/IncidentWorkspace.tsx",
+          "src/LabObserver.tsx",
+          "src/LabReplay.tsx",
+          "src/MetadataCleanup.tsx",
+          "src/Operations.tsx",
+          "src/RequestInspector.tsx",
+          "src/RuntimeEvidence.tsx",
+          "src/brief-examples-data.json",
+          "src/brief-examples.css",
+          "src/brief-examples.ts",
+          "src/budget-signals.css",
+          "src/data/lab-recording-example.json?raw",
+          "src/data/status-reuse-evidence.json",
+          "src/incident-brief.css",
+          "src/incident-workspace.css",
+          "src/lab-observer.css",
+          "src/lab-recording.ts",
+          "src/lab-replay.css",
+          "src/lab-request-control.ts",
+          "src/lab-session.ts",
+          "src/main.tsx",
+          "src/operations.css",
+          "src/replay-tour.ts",
+          "src/reports.ts",
+          "src/runtime-evidence.css",
+          "src/runtime-evidence.ts",
+          "src/status-view-timing.ts",
+          "src/style.css",
+          "virtual:rolldown/runtime.js",
+          "virtual:vite/modulepreload-polyfill.js",
+          "worker/budget-signals.ts",
+          "worker/burn-rate.ts",
+          "worker/engine.ts",
+          "worker/incident-brief-domain.ts",
+          "worker/lab-observer.ts",
+          "worker/metadata-cleanup.ts",
+          "worker/monitor-domain.ts",
+          "worker/monitor-readiness.ts",
+          "worker/status-view-cache.ts"
+        ]
+      },
+      "observer": {
+        "routeModule": "src/LabObserver.tsx",
+        "ownerChunk": "assets/index-BJC7jps7.js",
+        "javascript": {
+          "files": [
+            "assets/index-BJC7jps7.js"
+          ],
+          "bytes": 474938,
+          "gzipBytes": 132474
+        },
+        "css": {
+          "files": [
+            "assets/index-BnCFBdz0.css"
+          ],
+          "bytes": 70555,
+          "gzipBytes": 14409
+        },
+        "modules": [
+          "index.html",
+          "src/BriefExamples.tsx",
+          "src/BudgetSignalsPanel.tsx",
+          "src/Guide.tsx",
+          "src/IncidentBriefPanel.tsx",
+          "src/IncidentWorkspace.tsx",
+          "src/LabObserver.tsx",
+          "src/LabReplay.tsx",
+          "src/MetadataCleanup.tsx",
+          "src/Operations.tsx",
+          "src/RequestInspector.tsx",
+          "src/RuntimeEvidence.tsx",
+          "src/brief-examples-data.json",
+          "src/brief-examples.css",
+          "src/brief-examples.ts",
+          "src/budget-signals.css",
+          "src/data/lab-recording-example.json?raw",
+          "src/data/status-reuse-evidence.json",
+          "src/incident-brief.css",
+          "src/incident-workspace.css",
+          "src/lab-observer.css",
+          "src/lab-recording.ts",
+          "src/lab-replay.css",
+          "src/lab-request-control.ts",
+          "src/lab-session.ts",
+          "src/main.tsx",
+          "src/operations.css",
+          "src/replay-tour.ts",
+          "src/reports.ts",
+          "src/runtime-evidence.css",
+          "src/runtime-evidence.ts",
+          "src/status-view-timing.ts",
+          "src/style.css",
+          "virtual:rolldown/runtime.js",
+          "virtual:vite/modulepreload-polyfill.js",
+          "worker/budget-signals.ts",
+          "worker/burn-rate.ts",
+          "worker/engine.ts",
+          "worker/incident-brief-domain.ts",
+          "worker/lab-observer.ts",
+          "worker/metadata-cleanup.ts",
+          "worker/monitor-domain.ts",
+          "worker/monitor-readiness.ts",
+          "worker/status-view-cache.ts"
+        ]
+      },
+      "guide": {
+        "routeModule": "src/Guide.tsx",
+        "ownerChunk": "assets/index-BJC7jps7.js",
+        "javascript": {
+          "files": [
+            "assets/index-BJC7jps7.js"
+          ],
+          "bytes": 474938,
+          "gzipBytes": 132474
+        },
+        "css": {
+          "files": [
+            "assets/index-BnCFBdz0.css"
+          ],
+          "bytes": 70555,
+          "gzipBytes": 14409
+        },
+        "modules": [
+          "index.html",
+          "src/BriefExamples.tsx",
+          "src/BudgetSignalsPanel.tsx",
+          "src/Guide.tsx",
+          "src/IncidentBriefPanel.tsx",
+          "src/IncidentWorkspace.tsx",
+          "src/LabObserver.tsx",
+          "src/LabReplay.tsx",
+          "src/MetadataCleanup.tsx",
+          "src/Operations.tsx",
+          "src/RequestInspector.tsx",
+          "src/RuntimeEvidence.tsx",
+          "src/brief-examples-data.json",
+          "src/brief-examples.css",
+          "src/brief-examples.ts",
+          "src/budget-signals.css",
+          "src/data/lab-recording-example.json?raw",
+          "src/data/status-reuse-evidence.json",
+          "src/incident-brief.css",
+          "src/incident-workspace.css",
+          "src/lab-observer.css",
+          "src/lab-recording.ts",
+          "src/lab-replay.css",
+          "src/lab-request-control.ts",
+          "src/lab-session.ts",
+          "src/main.tsx",
+          "src/operations.css",
+          "src/replay-tour.ts",
+          "src/reports.ts",
+          "src/runtime-evidence.css",
+          "src/runtime-evidence.ts",
+          "src/status-view-timing.ts",
+          "src/style.css",
+          "virtual:rolldown/runtime.js",
+          "virtual:vite/modulepreload-polyfill.js",
+          "worker/budget-signals.ts",
+          "worker/burn-rate.ts",
+          "worker/engine.ts",
+          "worker/incident-brief-domain.ts",
+          "worker/lab-observer.ts",
+          "worker/metadata-cleanup.ts",
+          "worker/monitor-domain.ts",
+          "worker/monitor-readiness.ts",
+          "worker/status-view-cache.ts"
+        ]
+      }
+    },
+    "graph": [
+      {
+        "file": "assets/index-BJC7jps7.js",
+        "entry": true,
+        "dynamicEntry": false,
+        "imports": [],
+        "dynamicImports": [],
+        "css": [
+          "assets/index-BnCFBdz0.css"
+        ],
+        "modules": [
+          "index.html",
+          "src/BriefExamples.tsx",
+          "src/BudgetSignalsPanel.tsx",
+          "src/Guide.tsx",
+          "src/IncidentBriefPanel.tsx",
+          "src/IncidentWorkspace.tsx",
+          "src/LabObserver.tsx",
+          "src/LabReplay.tsx",
+          "src/MetadataCleanup.tsx",
+          "src/Operations.tsx",
+          "src/RequestInspector.tsx",
+          "src/RuntimeEvidence.tsx",
+          "src/brief-examples-data.json",
+          "src/brief-examples.css",
+          "src/brief-examples.ts",
+          "src/budget-signals.css",
+          "src/data/lab-recording-example.json?raw",
+          "src/data/status-reuse-evidence.json",
+          "src/incident-brief.css",
+          "src/incident-workspace.css",
+          "src/lab-observer.css",
+          "src/lab-recording.ts",
+          "src/lab-replay.css",
+          "src/lab-request-control.ts",
+          "src/lab-session.ts",
+          "src/main.tsx",
+          "src/operations.css",
+          "src/replay-tour.ts",
+          "src/reports.ts",
+          "src/runtime-evidence.css",
+          "src/runtime-evidence.ts",
+          "src/status-view-timing.ts",
+          "src/style.css",
+          "virtual:rolldown/runtime.js",
+          "virtual:vite/modulepreload-polyfill.js",
+          "worker/budget-signals.ts",
+          "worker/burn-rate.ts",
+          "worker/engine.ts",
+          "worker/incident-brief-domain.ts",
+          "worker/lab-observer.ts",
+          "worker/metadata-cleanup.ts",
+          "worker/monitor-domain.ts",
+          "worker/monitor-readiness.ts",
+          "worker/status-view-cache.ts"
+        ]
+      }
+    ],
+    "inputModuleGraph": [
+      {
+        "id": "index.html",
+        "imports": [
+          "src/main.tsx",
+          "virtual:vite/modulepreload-polyfill.js"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/brief-examples-data.json",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/brief-examples.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/brief-examples.ts",
+        "imports": [
+          "src/brief-examples-data.json"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/BriefExamples.tsx",
+        "imports": [
+          "src/brief-examples.css",
+          "src/brief-examples.ts",
+          "worker/incident-brief-domain.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/budget-signals.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/BudgetSignalsPanel.tsx",
+        "imports": [
+          "src/budget-signals.css",
+          "worker/monitor-readiness.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/data/lab-recording-example.json?raw",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/data/status-reuse-evidence.json",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/Guide.tsx",
+        "imports": [
+          "src/BriefExamples.tsx",
+          "src/RuntimeEvidence.tsx"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/incident-brief.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/incident-workspace.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/IncidentBriefPanel.tsx",
+        "imports": [
+          "src/incident-brief.css"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/IncidentWorkspace.tsx",
+        "imports": [
+          "src/IncidentBriefPanel.tsx",
+          "src/incident-workspace.css"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/lab-observer.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/lab-recording.ts",
+        "imports": [
+          "worker/lab-observer.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/lab-replay.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/lab-request-control.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/lab-session.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/LabObserver.tsx",
+        "imports": [
+          "src/lab-observer.css",
+          "src/lab-recording.ts",
+          "src/lab-session.ts",
+          "src/reports.ts",
+          "worker/lab-observer.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/LabReplay.tsx",
+        "imports": [
+          "src/lab-recording.ts",
+          "src/lab-replay.css",
+          "src/replay-tour.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/main.tsx",
+        "imports": [
+          "src/Guide.tsx",
+          "src/LabObserver.tsx",
+          "src/LabReplay.tsx",
+          "src/Operations.tsx",
+          "src/RequestInspector.tsx",
+          "src/data/lab-recording-example.json?raw",
+          "src/lab-request-control.ts",
+          "src/lab-session.ts",
+          "src/reports.ts",
+          "src/style.css"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/MetadataCleanup.tsx",
+        "imports": [
+          "worker/metadata-cleanup.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/operations.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/Operations.tsx",
+        "imports": [
+          "src/BudgetSignalsPanel.tsx",
+          "src/IncidentWorkspace.tsx",
+          "src/MetadataCleanup.tsx",
+          "src/operations.css",
+          "src/status-view-timing.ts",
+          "worker/monitor-readiness.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/replay-tour.ts",
+        "imports": [
+          "src/lab-recording.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/reports.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/RequestInspector.tsx",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/runtime-evidence.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/runtime-evidence.ts",
+        "imports": [
+          "src/data/status-reuse-evidence.json"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/RuntimeEvidence.tsx",
+        "imports": [
+          "src/runtime-evidence.css",
+          "src/runtime-evidence.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/status-view-timing.ts",
+        "imports": [
+          "worker/status-view-cache.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/style.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "virtual:vite/modulepreload-polyfill.js",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/budget-signals.ts",
+        "imports": [
+          "worker/burn-rate.ts",
+          "worker/monitor-check-cache.ts",
+          "worker/monitor-domain.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/burn-rate.ts",
+        "imports": [
+          "worker/monitor-domain.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/engine.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/incident-brief-domain.ts",
+        "imports": [
+          "worker/monitor-domain.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/lab-observer.ts",
+        "imports": [
+          "worker/engine.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/metadata-cleanup.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/monitor-check-cache.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/monitor-domain.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/monitor-readiness.ts",
+        "imports": [
+          "worker/monitor-domain.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/status-view-cache.ts",
+        "imports": [
+          "worker/budget-signals.ts",
+          "worker/monitor-domain.ts",
+          "worker/monitor-readiness.ts"
+        ],
+        "dynamicImports": []
+      }
+    ],
+    "outputFiles": [
+      {
+        "file": "assets/index-BJC7jps7.js",
+        "kind": "javascript",
+        "bytes": 474938,
+        "gzipBytes": 132474,
+        "sha256": "0efe27057805433993e392a90cbeed21d459c10e882e04ddb030b714782a7982"
+      },
+      {
+        "file": "assets/index-BnCFBdz0.css",
+        "kind": "generated-asset",
+        "bytes": 70555,
+        "gzipBytes": 14409,
+        "sha256": "5ff90331f3ec4c65d7fd71c7d2e7fd24f7418fb292528fc67d2bafd491210942"
+      },
+      {
+        "file": "favicon.svg",
+        "kind": "public-asset",
+        "bytes": 173,
+        "gzipBytes": 159,
+        "sha256": "0dec07404a28b08f86562d48e90946ff62f4cccf38cd55e412c1a378b4317bb1"
+      },
+      {
+        "file": "index.html",
+        "kind": "generated-asset",
+        "bytes": 712,
+        "gzipBytes": 424,
+        "sha256": "b609e99b0a24a4fb3fc3771d0ae9e885269a2fa2c145dd13abede6aa938e206d"
+      }
+    ]
+  },
+  "current": {
+    "entry": "assets/index-CvKiV4w6.js",
+    "initialStatic": {
+      "javascript": {
+        "files": [
+          "assets/index-CvKiV4w6.js"
+        ],
+        "bytes": 268272,
+        "gzipBytes": 84079
+      },
+      "css": {
+        "files": [
+          "assets/index-DHjlISkN.css"
+        ],
+        "bytes": 28611,
+        "gzipBytes": 7032
+      },
+      "modules": [
+        "index.html",
+        "src/RequestInspector.tsx",
+        "src/RouteBoundary.tsx",
+        "src/lab-request-control.ts",
+        "src/lab-run-control.ts",
+        "src/lab-session.ts",
+        "src/main.tsx",
+        "src/reports.ts",
+        "src/route-boundary.css",
+        "src/routes.ts",
+        "src/style.css",
+        "virtual:rolldown/runtime.js",
+        "virtual:vite/modulepreload-polyfill.js",
+        "virtual:vite/preload-helper.js"
+      ]
+    },
+    "fullReachable": {
+      "javascript": {
+        "files": [
+          "assets/Guide-BbYQaJIy.js",
+          "assets/LabObserver-DAzn316_.js",
+          "assets/Operations-CENBYlWD.js",
+          "assets/ReplayRoute-DtUAYBqX.js",
+          "assets/file-text-DD8hmdDx.js",
+          "assets/fingerprint-pattern-Bjr0xt-A.js",
+          "assets/index-CvKiV4w6.js",
+          "assets/lab-recording-Bo1xWnb7.js",
+          "assets/monitor-domain-g5JLVs7-.js"
+        ],
+        "bytes": 481186,
+        "gzipBytes": 138705
+      },
+      "css": {
+        "files": [
+          "assets/Guide-DRkiraTD.css",
+          "assets/LabObserver-BpGRF3wj.css",
+          "assets/Operations-B2tVAsk_.css",
+          "assets/ReplayRoute-2MSXFVX3.css",
+          "assets/index-DHjlISkN.css"
+        ],
+        "bytes": 71626,
+        "gzipBytes": 17375
+      },
+      "modules": [
+        "index.html",
+        "src/BriefExamples.tsx",
+        "src/BudgetSignalsPanel.tsx",
+        "src/Guide.tsx",
+        "src/IncidentBriefPanel.tsx",
+        "src/IncidentWorkspace.tsx",
+        "src/LabObserver.tsx",
+        "src/LabReplay.tsx",
+        "src/MetadataCleanup.tsx",
+        "src/Operations.tsx",
+        "src/ReplayRoute.tsx",
+        "src/RequestInspector.tsx",
+        "src/RouteBoundary.tsx",
+        "src/RuntimeEvidence.tsx",
+        "src/brief-examples-data.json",
+        "src/brief-examples.css",
+        "src/brief-examples.ts",
+        "src/budget-signals.css",
+        "src/data/lab-recording-example.json?raw",
+        "src/data/status-reuse-evidence.json",
+        "src/incident-brief.css",
+        "src/incident-workspace.css",
+        "src/lab-observer.css",
+        "src/lab-recording.ts",
+        "src/lab-replay.css",
+        "src/lab-request-control.ts",
+        "src/lab-run-control.ts",
+        "src/lab-session.ts",
+        "src/main.tsx",
+        "src/operations.css",
+        "src/replay-tour.ts",
+        "src/reports.ts",
+        "src/route-boundary.css",
+        "src/routes.ts",
+        "src/runtime-evidence.css",
+        "src/runtime-evidence.ts",
+        "src/status-view-timing.ts",
+        "src/style.css",
+        "virtual:rolldown/runtime.js",
+        "virtual:vite/modulepreload-polyfill.js",
+        "virtual:vite/preload-helper.js",
+        "worker/budget-signals.ts",
+        "worker/burn-rate.ts",
+        "worker/engine.ts",
+        "worker/incident-brief-domain.ts",
+        "worker/lab-observer.ts",
+        "worker/metadata-cleanup.ts",
+        "worker/monitor-domain.ts",
+        "worker/monitor-readiness.ts",
+        "worker/status-view-cache.ts",
+        "worker/unique-json.mjs"
+      ]
+    },
+    "routes": {
+      "operations": {
+        "routeModule": "src/Operations.tsx",
+        "ownerChunk": "assets/Operations-CENBYlWD.js",
+        "javascript": {
+          "files": [
+            "assets/Operations-CENBYlWD.js",
+            "assets/file-text-DD8hmdDx.js",
+            "assets/index-CvKiV4w6.js",
+            "assets/monitor-domain-g5JLVs7-.js"
+          ],
+          "bytes": 348833,
+          "gzipBytes": 106850
+        },
+        "css": {
+          "files": [
+            "assets/Operations-B2tVAsk_.css",
+            "assets/index-DHjlISkN.css"
+          ],
+          "bytes": 52460,
+          "gzipBytes": 12459
+        },
+        "modules": [
+          "index.html",
+          "src/BudgetSignalsPanel.tsx",
+          "src/IncidentBriefPanel.tsx",
+          "src/IncidentWorkspace.tsx",
+          "src/MetadataCleanup.tsx",
+          "src/Operations.tsx",
+          "src/RequestInspector.tsx",
+          "src/RouteBoundary.tsx",
+          "src/budget-signals.css",
+          "src/incident-brief.css",
+          "src/incident-workspace.css",
+          "src/lab-request-control.ts",
+          "src/lab-run-control.ts",
+          "src/lab-session.ts",
+          "src/main.tsx",
+          "src/operations.css",
+          "src/reports.ts",
+          "src/route-boundary.css",
+          "src/routes.ts",
+          "src/status-view-timing.ts",
+          "src/style.css",
+          "virtual:rolldown/runtime.js",
+          "virtual:vite/modulepreload-polyfill.js",
+          "virtual:vite/preload-helper.js",
+          "worker/budget-signals.ts",
+          "worker/burn-rate.ts",
+          "worker/metadata-cleanup.ts",
+          "worker/monitor-domain.ts",
+          "worker/monitor-readiness.ts",
+          "worker/status-view-cache.ts"
+        ]
+      },
+      "replay": {
+        "routeModule": "src/ReplayRoute.tsx",
+        "ownerChunk": "assets/ReplayRoute-DtUAYBqX.js",
+        "javascript": {
+          "files": [
+            "assets/ReplayRoute-DtUAYBqX.js",
+            "assets/file-text-DD8hmdDx.js",
+            "assets/fingerprint-pattern-Bjr0xt-A.js",
+            "assets/index-CvKiV4w6.js",
+            "assets/lab-recording-Bo1xWnb7.js"
+          ],
+          "bytes": 321784,
+          "gzipBytes": 96002
+        },
+        "css": {
+          "files": [
+            "assets/ReplayRoute-2MSXFVX3.css",
+            "assets/index-DHjlISkN.css"
+          ],
+          "bytes": 35591,
+          "gzipBytes": 8811
+        },
+        "modules": [
+          "index.html",
+          "src/LabReplay.tsx",
+          "src/ReplayRoute.tsx",
+          "src/RequestInspector.tsx",
+          "src/RouteBoundary.tsx",
+          "src/data/lab-recording-example.json?raw",
+          "src/lab-recording.ts",
+          "src/lab-replay.css",
+          "src/lab-request-control.ts",
+          "src/lab-run-control.ts",
+          "src/lab-session.ts",
+          "src/main.tsx",
+          "src/replay-tour.ts",
+          "src/reports.ts",
+          "src/route-boundary.css",
+          "src/routes.ts",
+          "src/style.css",
+          "virtual:rolldown/runtime.js",
+          "virtual:vite/modulepreload-polyfill.js",
+          "virtual:vite/preload-helper.js",
+          "worker/engine.ts",
+          "worker/lab-observer.ts",
+          "worker/unique-json.mjs"
+        ]
+      },
+      "observer": {
+        "routeModule": "src/LabObserver.tsx",
+        "ownerChunk": "assets/LabObserver-DAzn316_.js",
+        "javascript": {
+          "files": [
+            "assets/LabObserver-DAzn316_.js",
+            "assets/index-CvKiV4w6.js",
+            "assets/lab-recording-Bo1xWnb7.js"
+          ],
+          "bytes": 291066,
+          "gzipBytes": 92022
+        },
+        "css": {
+          "files": [
+            "assets/LabObserver-BpGRF3wj.css",
+            "assets/index-DHjlISkN.css"
+          ],
+          "bytes": 34348,
+          "gzipBytes": 8510
+        },
+        "modules": [
+          "index.html",
+          "src/LabObserver.tsx",
+          "src/RequestInspector.tsx",
+          "src/RouteBoundary.tsx",
+          "src/lab-observer.css",
+          "src/lab-recording.ts",
+          "src/lab-request-control.ts",
+          "src/lab-run-control.ts",
+          "src/lab-session.ts",
+          "src/main.tsx",
+          "src/reports.ts",
+          "src/route-boundary.css",
+          "src/routes.ts",
+          "src/style.css",
+          "virtual:rolldown/runtime.js",
+          "virtual:vite/modulepreload-polyfill.js",
+          "virtual:vite/preload-helper.js",
+          "worker/engine.ts",
+          "worker/lab-observer.ts",
+          "worker/unique-json.mjs"
+        ]
+      },
+      "guide": {
+        "routeModule": "src/Guide.tsx",
+        "ownerChunk": "assets/Guide-BbYQaJIy.js",
+        "javascript": {
+          "files": [
+            "assets/Guide-BbYQaJIy.js",
+            "assets/file-text-DD8hmdDx.js",
+            "assets/fingerprint-pattern-Bjr0xt-A.js",
+            "assets/index-CvKiV4w6.js",
+            "assets/monitor-domain-g5JLVs7-.js"
+          ],
+          "bytes": 336340,
+          "gzipBytes": 100876
+        },
+        "css": {
+          "files": [
+            "assets/Guide-DRkiraTD.css",
+            "assets/index-DHjlISkN.css"
+          ],
+          "bytes": 35060,
+          "gzipBytes": 8691
+        },
+        "modules": [
+          "index.html",
+          "src/BriefExamples.tsx",
+          "src/Guide.tsx",
+          "src/RequestInspector.tsx",
+          "src/RouteBoundary.tsx",
+          "src/RuntimeEvidence.tsx",
+          "src/brief-examples-data.json",
+          "src/brief-examples.css",
+          "src/brief-examples.ts",
+          "src/data/status-reuse-evidence.json",
+          "src/lab-request-control.ts",
+          "src/lab-run-control.ts",
+          "src/lab-session.ts",
+          "src/main.tsx",
+          "src/reports.ts",
+          "src/route-boundary.css",
+          "src/routes.ts",
+          "src/runtime-evidence.css",
+          "src/runtime-evidence.ts",
+          "src/style.css",
+          "virtual:rolldown/runtime.js",
+          "virtual:vite/modulepreload-polyfill.js",
+          "virtual:vite/preload-helper.js",
+          "worker/incident-brief-domain.ts",
+          "worker/monitor-domain.ts"
+        ]
+      }
+    },
+    "graph": [
+      {
+        "file": "assets/file-text-DD8hmdDx.js",
+        "entry": false,
+        "dynamicEntry": false,
+        "imports": [
+          "assets/index-CvKiV4w6.js"
+        ],
+        "dynamicImports": [],
+        "css": [],
+        "modules": []
+      },
+      {
+        "file": "assets/fingerprint-pattern-Bjr0xt-A.js",
+        "entry": false,
+        "dynamicEntry": false,
+        "imports": [
+          "assets/index-CvKiV4w6.js"
+        ],
+        "dynamicImports": [],
+        "css": [],
+        "modules": []
+      },
+      {
+        "file": "assets/Guide-BbYQaJIy.js",
+        "entry": false,
+        "dynamicEntry": true,
+        "imports": [
+          "assets/file-text-DD8hmdDx.js",
+          "assets/fingerprint-pattern-Bjr0xt-A.js",
+          "assets/index-CvKiV4w6.js",
+          "assets/monitor-domain-g5JLVs7-.js"
+        ],
+        "dynamicImports": [],
+        "css": [
+          "assets/Guide-DRkiraTD.css"
+        ],
+        "modules": [
+          "src/BriefExamples.tsx",
+          "src/Guide.tsx",
+          "src/RuntimeEvidence.tsx",
+          "src/brief-examples-data.json",
+          "src/brief-examples.css",
+          "src/brief-examples.ts",
+          "src/data/status-reuse-evidence.json",
+          "src/runtime-evidence.css",
+          "src/runtime-evidence.ts",
+          "worker/incident-brief-domain.ts"
+        ]
+      },
+      {
+        "file": "assets/index-CvKiV4w6.js",
+        "entry": true,
+        "dynamicEntry": false,
+        "imports": [],
+        "dynamicImports": [
+          "assets/Guide-BbYQaJIy.js",
+          "assets/LabObserver-DAzn316_.js",
+          "assets/Operations-CENBYlWD.js",
+          "assets/ReplayRoute-DtUAYBqX.js"
+        ],
+        "css": [
+          "assets/index-DHjlISkN.css"
+        ],
+        "modules": [
+          "index.html",
+          "src/RequestInspector.tsx",
+          "src/RouteBoundary.tsx",
+          "src/lab-request-control.ts",
+          "src/lab-run-control.ts",
+          "src/lab-session.ts",
+          "src/main.tsx",
+          "src/reports.ts",
+          "src/route-boundary.css",
+          "src/routes.ts",
+          "src/style.css",
+          "virtual:rolldown/runtime.js",
+          "virtual:vite/modulepreload-polyfill.js",
+          "virtual:vite/preload-helper.js"
+        ]
+      },
+      {
+        "file": "assets/lab-recording-Bo1xWnb7.js",
+        "entry": false,
+        "dynamicEntry": false,
+        "imports": [],
+        "dynamicImports": [],
+        "css": [],
+        "modules": [
+          "src/lab-recording.ts",
+          "worker/engine.ts",
+          "worker/lab-observer.ts",
+          "worker/unique-json.mjs"
+        ]
+      },
+      {
+        "file": "assets/LabObserver-DAzn316_.js",
+        "entry": false,
+        "dynamicEntry": true,
+        "imports": [
+          "assets/index-CvKiV4w6.js",
+          "assets/lab-recording-Bo1xWnb7.js"
+        ],
+        "dynamicImports": [],
+        "css": [
+          "assets/LabObserver-BpGRF3wj.css"
+        ],
+        "modules": [
+          "src/LabObserver.tsx",
+          "src/lab-observer.css"
+        ]
+      },
+      {
+        "file": "assets/monitor-domain-g5JLVs7-.js",
+        "entry": false,
+        "dynamicEntry": false,
+        "imports": [
+          "assets/index-CvKiV4w6.js"
+        ],
+        "dynamicImports": [],
+        "css": [],
+        "modules": [
+          "worker/monitor-domain.ts"
+        ]
+      },
+      {
+        "file": "assets/Operations-CENBYlWD.js",
+        "entry": false,
+        "dynamicEntry": true,
+        "imports": [
+          "assets/file-text-DD8hmdDx.js",
+          "assets/index-CvKiV4w6.js",
+          "assets/monitor-domain-g5JLVs7-.js"
+        ],
+        "dynamicImports": [],
+        "css": [
+          "assets/Operations-B2tVAsk_.css"
+        ],
+        "modules": [
+          "src/BudgetSignalsPanel.tsx",
+          "src/IncidentBriefPanel.tsx",
+          "src/IncidentWorkspace.tsx",
+          "src/MetadataCleanup.tsx",
+          "src/Operations.tsx",
+          "src/budget-signals.css",
+          "src/incident-brief.css",
+          "src/incident-workspace.css",
+          "src/operations.css",
+          "src/status-view-timing.ts",
+          "worker/budget-signals.ts",
+          "worker/burn-rate.ts",
+          "worker/metadata-cleanup.ts",
+          "worker/monitor-readiness.ts",
+          "worker/status-view-cache.ts"
+        ]
+      },
+      {
+        "file": "assets/ReplayRoute-DtUAYBqX.js",
+        "entry": false,
+        "dynamicEntry": true,
+        "imports": [
+          "assets/file-text-DD8hmdDx.js",
+          "assets/fingerprint-pattern-Bjr0xt-A.js",
+          "assets/index-CvKiV4w6.js",
+          "assets/lab-recording-Bo1xWnb7.js"
+        ],
+        "dynamicImports": [],
+        "css": [
+          "assets/ReplayRoute-2MSXFVX3.css"
+        ],
+        "modules": [
+          "src/LabReplay.tsx",
+          "src/ReplayRoute.tsx",
+          "src/data/lab-recording-example.json?raw",
+          "src/lab-replay.css",
+          "src/replay-tour.ts"
+        ]
+      }
+    ],
+    "inputModuleGraph": [
+      {
+        "id": "index.html",
+        "imports": [
+          "src/main.tsx",
+          "virtual:vite/modulepreload-polyfill.js"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/brief-examples-data.json",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/brief-examples.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/brief-examples.ts",
+        "imports": [
+          "src/brief-examples-data.json"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/BriefExamples.tsx",
+        "imports": [
+          "src/brief-examples.css",
+          "src/brief-examples.ts",
+          "worker/incident-brief-domain.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/budget-signals.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/BudgetSignalsPanel.tsx",
+        "imports": [
+          "src/budget-signals.css",
+          "worker/monitor-readiness.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/data/lab-recording-example.json?raw",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/data/status-reuse-evidence.json",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/Guide.tsx",
+        "imports": [
+          "src/BriefExamples.tsx",
+          "src/RuntimeEvidence.tsx"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/incident-brief.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/incident-workspace.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/IncidentBriefPanel.tsx",
+        "imports": [
+          "src/incident-brief.css"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/IncidentWorkspace.tsx",
+        "imports": [
+          "src/IncidentBriefPanel.tsx",
+          "src/incident-workspace.css"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/lab-observer.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/lab-recording.ts",
+        "imports": [
+          "worker/lab-observer.ts",
+          "worker/unique-json.mjs"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/lab-replay.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/lab-request-control.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/lab-run-control.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/lab-session.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/LabObserver.tsx",
+        "imports": [
+          "src/lab-observer.css",
+          "src/lab-recording.ts",
+          "src/lab-session.ts",
+          "src/reports.ts",
+          "worker/lab-observer.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/LabReplay.tsx",
+        "imports": [
+          "src/lab-recording.ts",
+          "src/lab-replay.css",
+          "src/replay-tour.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/main.tsx",
+        "imports": [
+          "src/RequestInspector.tsx",
+          "src/RouteBoundary.tsx",
+          "src/lab-request-control.ts",
+          "src/lab-run-control.ts",
+          "src/lab-session.ts",
+          "src/reports.ts",
+          "src/route-boundary.css",
+          "src/routes.ts",
+          "src/style.css",
+          "virtual:vite/preload-helper.js"
+        ],
+        "dynamicImports": [
+          "src/Guide.tsx",
+          "src/LabObserver.tsx",
+          "src/Operations.tsx",
+          "src/ReplayRoute.tsx"
+        ]
+      },
+      {
+        "id": "src/MetadataCleanup.tsx",
+        "imports": [
+          "worker/metadata-cleanup.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/operations.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/Operations.tsx",
+        "imports": [
+          "src/BudgetSignalsPanel.tsx",
+          "src/IncidentWorkspace.tsx",
+          "src/MetadataCleanup.tsx",
+          "src/operations.css",
+          "src/status-view-timing.ts",
+          "worker/monitor-readiness.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/replay-tour.ts",
+        "imports": [
+          "src/lab-recording.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/ReplayRoute.tsx",
+        "imports": [
+          "src/LabReplay.tsx",
+          "src/data/lab-recording-example.json?raw"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/reports.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/RequestInspector.tsx",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/route-boundary.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/RouteBoundary.tsx",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/routes.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/runtime-evidence.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/runtime-evidence.ts",
+        "imports": [
+          "src/data/status-reuse-evidence.json"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/RuntimeEvidence.tsx",
+        "imports": [
+          "src/runtime-evidence.css",
+          "src/runtime-evidence.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/status-view-timing.ts",
+        "imports": [
+          "worker/status-view-cache.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "src/style.css",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "virtual:vite/modulepreload-polyfill.js",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "virtual:vite/preload-helper.js",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/budget-signals.ts",
+        "imports": [
+          "worker/burn-rate.ts",
+          "worker/monitor-check-cache.ts",
+          "worker/monitor-domain.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/burn-rate.ts",
+        "imports": [
+          "worker/monitor-domain.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/engine.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/incident-brief-domain.ts",
+        "imports": [
+          "worker/monitor-domain.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/lab-observer.ts",
+        "imports": [
+          "worker/engine.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/metadata-cleanup.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/monitor-check-cache.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/monitor-domain.ts",
+        "imports": [],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/monitor-readiness.ts",
+        "imports": [
+          "worker/monitor-domain.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/status-view-cache.ts",
+        "imports": [
+          "worker/budget-signals.ts",
+          "worker/monitor-domain.ts",
+          "worker/monitor-readiness.ts"
+        ],
+        "dynamicImports": []
+      },
+      {
+        "id": "worker/unique-json.mjs",
+        "imports": [],
+        "dynamicImports": []
+      }
+    ],
+    "outputFiles": [
+      {
+        "file": "assets/file-text-DD8hmdDx.js",
+        "kind": "javascript",
+        "bytes": 414,
+        "gzipBytes": 267,
+        "sha256": "2f4486ac46faeabad98265d8348226c6404f77d59e8a5199c6ab0ba4e4e82314"
+      },
+      {
+        "file": "assets/fingerprint-pattern-Bjr0xt-A.js",
+        "kind": "javascript",
+        "bytes": 664,
+        "gzipBytes": 389,
+        "sha256": "61f1be19e1786b8d55d4d5ca0020dc5b74eb241123ffe50049b7fd0c66ac8b64"
+      },
+      {
+        "file": "assets/Guide-BbYQaJIy.js",
+        "kind": "javascript",
+        "bytes": 66821,
+        "gzipBytes": 15971,
+        "sha256": "901ee183a55ef10b2c16dc87d77f508fd18dfa21329b33f946ebea01ca8de295"
+      },
+      {
+        "file": "assets/Guide-DRkiraTD.css",
+        "kind": "generated-asset",
+        "bytes": 6449,
+        "gzipBytes": 1659,
+        "sha256": "19fc3ceae6c51bc1c520bb7ab623a378cc7b88bc2169aac64b384a3da10163c8"
+      },
+      {
+        "file": "assets/index-CvKiV4w6.js",
+        "kind": "javascript",
+        "bytes": 268272,
+        "gzipBytes": 84079,
+        "sha256": "82d8a4e1414b56662a6f2f767bbba1575e79bc7ec186417f3f6d0d44d2bd61d6"
+      },
+      {
+        "file": "assets/index-DHjlISkN.css",
+        "kind": "generated-asset",
+        "bytes": 28611,
+        "gzipBytes": 7032,
+        "sha256": "9a0c57ef20fdfb75c298a869ee79db3ef383f96c54e945740da41dfd74e49d1e"
+      },
+      {
+        "file": "assets/lab-recording-Bo1xWnb7.js",
+        "kind": "javascript",
+        "bytes": 10360,
+        "gzipBytes": 3715,
+        "sha256": "f63cb6f466db9a72bbf5a601c1df3c90aba0933e057ea60cdb5b597a62b1dcd9"
+      },
+      {
+        "file": "assets/LabObserver-BpGRF3wj.css",
+        "kind": "generated-asset",
+        "bytes": 5737,
+        "gzipBytes": 1478,
+        "sha256": "fa257b38ca9875e163f41de1e8402f52cd0dbb7d76c6541530f145bf1736174b"
+      },
+      {
+        "file": "assets/LabObserver-DAzn316_.js",
+        "kind": "javascript",
+        "bytes": 12434,
+        "gzipBytes": 4228,
+        "sha256": "b1739fb56ee20979a27355841e3d8009d74048f316b1210724eb675b598840f2"
+      },
+      {
+        "file": "assets/monitor-domain-g5JLVs7-.js",
+        "kind": "javascript",
+        "bytes": 169,
+        "gzipBytes": 170,
+        "sha256": "0c7acc759d48a4dc25bccb0047b09480d39351603303e55e35594b234d3130bd"
+      },
+      {
+        "file": "assets/Operations-B2tVAsk_.css",
+        "kind": "generated-asset",
+        "bytes": 23849,
+        "gzipBytes": 5427,
+        "sha256": "0b45424343d69e3d40dc598e7e0a63ecf515bb5224213c24ab66877e61e4f522"
+      },
+      {
+        "file": "assets/Operations-CENBYlWD.js",
+        "kind": "javascript",
+        "bytes": 79978,
+        "gzipBytes": 22334,
+        "sha256": "ea907d9e30dc0bd9ae00db9be2dabff469f54ef7201844a758ba9150e1958053"
+      },
+      {
+        "file": "assets/ReplayRoute-2MSXFVX3.css",
+        "kind": "generated-asset",
+        "bytes": 6980,
+        "gzipBytes": 1779,
+        "sha256": "90f2c8fdd47ff51424c19704c1edbd12be38c4ac5790f740bb847df2e79ec2a9"
+      },
+      {
+        "file": "assets/ReplayRoute-DtUAYBqX.js",
+        "kind": "javascript",
+        "bytes": 42074,
+        "gzipBytes": 7552,
+        "sha256": "81ec5f4327a18497b05a4290f375bc19387e00d64890492a6bc9434d6125e6d5"
+      },
+      {
+        "file": "favicon.svg",
+        "kind": "public-asset",
+        "bytes": 173,
+        "gzipBytes": 159,
+        "sha256": "0dec07404a28b08f86562d48e90946ff62f4cccf38cd55e412c1a378b4317bb1"
+      },
+      {
+        "file": "index.html",
+        "kind": "generated-asset",
+        "bytes": 712,
+        "gzipBytes": 426,
+        "sha256": "7f83ea233ab093de7f9b78b6fc5bfd77e45b34e0cb014ff3d5f008fca8f38d1d"
+      }
+    ]
+  },
+  "comparison": {
+    "operations": {
+      "javascriptBytes": {
+        "before": 474938,
+        "after": 348833,
+        "saved": 126105,
+        "reductionPercent": 26.55
+      },
+      "javascriptGzipBytes": {
+        "before": 132474,
+        "after": 106850,
+        "saved": 25624,
+        "reductionPercent": 19.34
+      },
+      "cssBytes": {
+        "before": 70555,
+        "after": 52460,
+        "saved": 18095,
+        "reductionPercent": 25.65
+      },
+      "cssGzipBytes": {
+        "before": 14409,
+        "after": 12459,
+        "saved": 1950,
+        "reductionPercent": 13.53
+      }
+    },
+    "replay": {
+      "javascriptBytes": {
+        "before": 474938,
+        "after": 321784,
+        "saved": 153154,
+        "reductionPercent": 32.25
+      },
+      "javascriptGzipBytes": {
+        "before": 132474,
+        "after": 96002,
+        "saved": 36472,
+        "reductionPercent": 27.53
+      },
+      "cssBytes": {
+        "before": 70555,
+        "after": 35591,
+        "saved": 34964,
+        "reductionPercent": 49.56
+      },
+      "cssGzipBytes": {
+        "before": 14409,
+        "after": 8811,
+        "saved": 5598,
+        "reductionPercent": 38.85
+      }
+    },
+    "observer": {
+      "javascriptBytes": {
+        "before": 474938,
+        "after": 291066,
+        "saved": 183872,
+        "reductionPercent": 38.71
+      },
+      "javascriptGzipBytes": {
+        "before": 132474,
+        "after": 92022,
+        "saved": 40452,
+        "reductionPercent": 30.54
+      },
+      "cssBytes": {
+        "before": 70555,
+        "after": 34348,
+        "saved": 36207,
+        "reductionPercent": 51.32
+      },
+      "cssGzipBytes": {
+        "before": 14409,
+        "after": 8510,
+        "saved": 5899,
+        "reductionPercent": 40.94
+      }
+    },
+    "guide": {
+      "javascriptBytes": {
+        "before": 474938,
+        "after": 336340,
+        "saved": 138598,
+        "reductionPercent": 29.18
+      },
+      "javascriptGzipBytes": {
+        "before": 132474,
+        "after": 100876,
+        "saved": 31598,
+        "reductionPercent": 23.85
+      },
+      "cssBytes": {
+        "before": 70555,
+        "after": 35060,
+        "saved": 35495,
+        "reductionPercent": 50.31
+      },
+      "cssGzipBytes": {
+        "before": 14409,
+        "after": 8691,
+        "saved": 5718,
+        "reductionPercent": 39.68
+      }
+    }
+  },
+  "maintainedDist": {
+    "allMaintainedBytesIdentical": true,
+    "exactJavaScriptAndCssSet": true,
+    "files": {
+      "assets/Guide-BbYQaJIy.js": "901ee183a55ef10b2c16dc87d77f508fd18dfa21329b33f946ebea01ca8de295",
+      "assets/Guide-DRkiraTD.css": "19fc3ceae6c51bc1c520bb7ab623a378cc7b88bc2169aac64b384a3da10163c8",
+      "assets/LabObserver-BpGRF3wj.css": "fa257b38ca9875e163f41de1e8402f52cd0dbb7d76c6541530f145bf1736174b",
+      "assets/LabObserver-DAzn316_.js": "b1739fb56ee20979a27355841e3d8009d74048f316b1210724eb675b598840f2",
+      "assets/Operations-B2tVAsk_.css": "0b45424343d69e3d40dc598e7e0a63ecf515bb5224213c24ab66877e61e4f522",
+      "assets/Operations-CENBYlWD.js": "ea907d9e30dc0bd9ae00db9be2dabff469f54ef7201844a758ba9150e1958053",
+      "assets/ReplayRoute-2MSXFVX3.css": "90f2c8fdd47ff51424c19704c1edbd12be38c4ac5790f740bb847df2e79ec2a9",
+      "assets/ReplayRoute-DtUAYBqX.js": "81ec5f4327a18497b05a4290f375bc19387e00d64890492a6bc9434d6125e6d5",
+      "assets/file-text-DD8hmdDx.js": "2f4486ac46faeabad98265d8348226c6404f77d59e8a5199c6ab0ba4e4e82314",
+      "assets/fingerprint-pattern-Bjr0xt-A.js": "61f1be19e1786b8d55d4d5ca0020dc5b74eb241123ffe50049b7fd0c66ac8b64",
+      "assets/index-CvKiV4w6.js": "82d8a4e1414b56662a6f2f767bbba1575e79bc7ec186417f3f6d0d44d2bd61d6",
+      "assets/index-DHjlISkN.css": "9a0c57ef20fdfb75c298a869ee79db3ef383f96c54e945740da41dfd74e49d1e",
+      "assets/lab-recording-Bo1xWnb7.js": "f63cb6f466db9a72bbf5a601c1df3c90aba0933e057ea60cdb5b597a62b1dcd9",
+      "assets/monitor-domain-g5JLVs7-.js": "0c7acc759d48a4dc25bccb0047b09480d39351603303e55e35594b234d3130bd",
+      "favicon.svg": "0dec07404a28b08f86562d48e90946ff62f4cccf38cd55e412c1a378b4317bb1",
+      "index.html": "7f83ea233ab093de7f9b78b6fc5bfd77e45b34e0cb014ff3d5f008fca8f38d1d"
+    }
+  },
+  "gates": {
+    "deferredModulesExcludedFromInitialStaticClosure": true,
+    "completeStaticAndDynamicGraph": true,
+    "sharedJavaScriptAndCssIncluded": true,
+    "sourceStableBeforeAndAfterBuilds": true,
+    "currentSourceStableAfterSnapshotDisposal": true,
+    "baselineSnapshotDisposed": true
+  },
+  "limitations": [
+    "Actual pinned3.10 source versus actual current source, built locally under equal dependency content; not a hypothetical transform or a deployed baseline timing measurement.",
+    "Baseline generated HTML/entry JavaScript/CSS reproduce the frozen publication archive bytes/hashes. No fresh production fetch occurs, and the archive did not independently verify favicon.",
+    "Route totals include entry plus selected route and all recursive static JavaScript dependencies, and unique CSS. Gzip is calculated independently per file; not measured transport encoding/requests, load timing, CPU, or browser behavior.",
+    "Combined Architecture/Notes share the Guide chunk. Entry-only size is not the initial Operations or Replay payload.",
+    "This gate does not render React or prove cleanup, navigation, chunk-load recovery, API/socket traffic, or production asset MIME/cache behavior. Those require separate checks.",
+    "Pinned recording byte identity is checked against Git plus declared content hash; canonical recording validation remains in the recording/tour tests."
+  ]
+}

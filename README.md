@@ -64,7 +64,7 @@ Wrangler runs both Workers and both Durable Object classes locally. For an expli
 curl 'http://localhost:8787/cdn-cgi/local/scheduled?cron=*+*+*+*+*'
 ```
 
-Local Wrangler does not automatically simulate the production cron. The included HTTPS monitor points at the public deployment; edit `MONITOR_TARGETS` for your own deployment. The private catalog monitor uses the local binding. Tests use isolated fixtures without depending on public services.
+Local Wrangler does not automatically simulate the production cron. The included HTTPS monitor points at the public deployment; edit `MONITOR_TARGETS` for your own deployment. The private catalog monitor uses the local binding; keep its `https://origin.internal/<path>` URL when changing the bound Worker name. Target IDs and URLs must be JSON strings. Tests use isolated fixtures without depending on public services.
 
 The development command uses `wrangler dev --local`, forces AI generation off and explicitly disables the outer lab admission lanes for reproducible origin-policy experiments, so it starts without Cloudflare authentication or a remote AI proxy. Workers AI has no local model simulation; the offline brief evaluator uses explicit canned responses. [Local binding behavior](https://developers.cloudflare.com/workers/local-development/)
 

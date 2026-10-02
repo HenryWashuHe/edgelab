@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: native SQLite reproduces a non-string monitor identity that operator policy cannot address
+ok 1 - native SQLite reproduces a non-string monitor identity that operator policy cannot address
+  ---
+  duration_ms: 358.260292
+  type: 'test'
+  ...
+# Subtest: strict parser rejects malformed configuration before enrollment and preserves valid targets across eviction
+ok 2 - strict parser rejects malformed configuration before enrollment and preserves valid targets across eviction
+  ---
+  duration_ms: 183.960583
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 847.61675

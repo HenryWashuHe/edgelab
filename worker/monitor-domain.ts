@@ -107,6 +107,7 @@ export function parseTargets(raw?: string): MonitorTarget[] {
     if (
       !t ||
       typeof t !== 'object' ||
+      typeof t.id !== 'string' ||
       !/^[a-z0-9-]{1,40}$/.test(t.id) ||
       ids.has(t.id) ||
       typeof t.name !== 'string' ||
@@ -114,6 +115,7 @@ export function parseTargets(raw?: string): MonitorTarget[] {
       t.name.length > 80
     )
       throw new Error('Invalid or duplicate monitor identity');
+    if (typeof t.url !== 'string') throw new Error('Monitor target URL must be a string');
     const url = new URL(t.url);
     if (
       url.protocol !== 'https:' ||

@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-10-02T02:43:58.682Z",
+  "baselineCommit": "69a27ee153dace7dd7dde86d83ceb271a2ac0db2",
+  "baselineParserSHA256": "15ed1d9218b5c0baeea4061f20077ded6350d02c6b3bb71b2906fc595f16a003",
+  "sourcePins": {
+    "worker/monitor.ts": "26efdb7465c257a268fc54d69fac184225541cdc8961b671a37e4d6f9c56a4ce",
+    "worker/incident-evidence.ts": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2",
+    "worker/budget-signals.ts": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15",
+    "worker/monitor-probe.ts": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752",
+    "worker/metadata-cleanup.ts": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee",
+    "worker/status-view-cache.ts": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158",
+    "worker/monitor-version-retention.ts": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455",
+    "worker/monitor-check-cache.ts": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1",
+    "worker/incident-briefs.ts": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d",
+    "worker/monitor-domain.ts": "cf18d92b220815742326fb8bb93e9a2866e46a8cff649163fb1306ab46e12af5",
+    "worker/monitor-readiness.ts": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c",
+    "worker/bounded-json.ts": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1",
+    "worker/origin.ts": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8",
+    "worker/burn-rate.ts": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c",
+    "worker/incident-brief-ai.ts": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b",
+    "worker/incident-brief-domain.ts": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1"
+  },
+  "recipePins": {
+    "scripts/monitor-targets.test.mjs": "f5df1fa33b5c063817d721c5d19e07d661dc0e753f9cbbb172b931bb1fbaffcf",
+    "package.json": "41aa23246d75eae859b7bfbcc1a05bb3e280f29c19d73a98cc805e0f67a02e84",
+    "package-lock.json": "8b79ac8c916bff9ed11b7a357f609f82b1782afa961f0a28a1b3727f56ec872a"
+  },
+  "sourceStableThroughDisposal": true,
+  "environment": {
+    "node": "v25.4.0",
+    "platform": "darwin",
+    "nativeLocalSQLite": true,
+    "miniflare": "5.20260926.0-alpha",
+    "esbuild": "0.28.1",
+    "workerd": "1.20260926.1",
+    "originCalls": 0,
+    "accountCalls": 0
+  },
+  "boundary": "Only the parser is substituted in the before build. Both variants run the same tracked MonitorStore and dependencies. Configuration is controlled, HTTP reads are uncached exports, and eviction is local native workerd. No production malformed configuration, natural failure frequency, billing or customer value is measured.",
+  "observations": {
+    "old-parser": {
+      "bundleSHA256": "139efe327a61fb8efc648c70d1b1a92840e6b3d74e7a500755112c26785f7d9c",
+      "cases": {
+        "numericID": {
+          "rejected": false,
+          "revisions": [
+            [
+              {
+                "id": "7.0",
+                "revision": 1
+              }
+            ],
+            [
+              {
+                "id": "7.0",
+                "revision": 1
+              }
+            ],
+            [
+              {
+                "id": "7.0",
+                "revision": 1
+              }
+            ]
+          ],
+          "versionRows": 1,
+          "policyAttempts": [
+            {
+              "service": 7,
+              "status": 400
+            },
+            {
+              "service": "7",
+              "status": 400
+            },
+            {
+              "service": "7.0",
+              "status": 400
+            }
+          ]
+        },
+        "arrayURL": {
+          "rejected": false,
+          "revisions": [
+            [
+              {
+                "id": "catalog",
+                "revision": 1
+              }
+            ],
+            [
+              {
+                "id": "catalog",
+                "revision": 1
+              }
+            ],
+            [
+              {
+                "id": "catalog",
+                "revision": 1
+              }
+            ]
+          ],
+          "versionRows": 1,
+          "policyAttempts": []
+        },
+        "valid": {
+          "rejected": false,
+          "revisions": [
+            [
+              {
+                "id": "7",
+                "revision": 1
+              },
+              {
+                "id": "8",
+                "revision": 1
+              }
+            ],
+            [
+              {
+                "id": "7",
+                "revision": 1
+              },
+              {
+                "id": "8",
+                "revision": 1
+              }
+            ],
+            [
+              {
+                "id": "7",
+                "revision": 1
+              },
+              {
+                "id": "8",
+                "revision": 1
+              }
+            ]
+          ],
+          "versionRows": 2,
+          "policyAttempts": [],
+          "validPolicyUpdateStatus": 200
+        }
+      },
+      "disposed": true
+    },
+    "strict-parser": {
+      "bundleSHA256": "3b88b54adf2067e2dec2c7f08c89d2ba93f50cb16f34d119c3695b24a8e341c9",
+      "cases": {
+        "numericID": {
+          "rejected": true,
+          "revisions": [
+            [],
+            [],
+            []
+          ],
+          "versionRows": 0,
+          "policyAttempts": []
+        },
+        "arrayURL": {
+          "rejected": true,
+          "revisions": [
+            [],
+            [],
+            []
+          ],
+          "versionRows": 0,
+          "policyAttempts": []
+        },
+        "valid": {
+          "rejected": false,
+          "revisions": [
+            [
+              {
+                "id": "7",
+                "revision": 1
+              },
+              {
+                "id": "8",
+                "revision": 1
+              }
+            ],
+            [
+              {
+                "id": "7",
+                "revision": 1
+              },
+              {
+                "id": "8",
+                "revision": 1
+              }
+            ],
+            [
+              {
+                "id": "7",
+                "revision": 1
+              },
+              {
+                "id": "8",
+                "revision": 1
+              }
+            ]
+          ],
+          "versionRows": 2,
+          "policyAttempts": [],
+          "validPolicyUpdateStatus": 200
+        }
+      },
+      "disposed": true
+    }
+  }
+}

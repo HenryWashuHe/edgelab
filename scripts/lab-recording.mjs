@@ -12,7 +12,7 @@ import NetworkWebSocket from 'ws';
 // deadline and fault controls are never used; no account or native AI is called.
 if (process.argv.length !== 2) throw new Error('This local recording recipe accepts no arguments.');
 
-const PRODUCER_VERSION = '3.12.3';
+const PRODUCER_VERSION = '3.12.4';
 const COMPATIBILITY_DATE = '2026-09-01';
 const outputDirectory = 'output/lab-recording';
 const outputArtifact = 'output/lab-recording-example.json';
