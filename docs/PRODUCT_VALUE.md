@@ -17,6 +17,8 @@ EdgeLab has demonstrated engineering and portfolio value. It has not demonstrate
 
 Cloudflare warns that agent traces are incomplete and payloads may truncate. EdgeLab recordings also capture only an observed interval, preserve gaps and cannot authenticate their producer or re-execute the program. Neither limitation establishes a unique product opportunity.
 
+Browser replay also belongs in the baseline. [rrweb custom events](https://rrweb.com/docs/recipes/custom-event) can record tagged application payloads alongside replay events; its [library guide](https://rrweb.com/docs/guide) includes UI masking and blocking controls. My inference is that an application could instrument server/client positions and fixed statuses into that existing workflow. UI masking does not by itself establish safe custom payloads: allowlisting remains application work. No rrweb integration or handoff comparison was executed. A small strict artifact may simplify that work, but neither a new diagnostic answer nor reduced redaction/handoff effort has been measured.
+
 The October 1 comparison includes Local Explorer documentation updated September 4 and Workers Issues documentation updated September 30. Include these native capabilities when assessing a developer's baseline. Record whether they were enabled and usable for the actual problem; a local-versus-production boundary, missing permissions or disabled instrumentation does not by itself establish an unmet product need. No account capability was enabled or trialed for this comparison.
 
 ## Demonstrated value
