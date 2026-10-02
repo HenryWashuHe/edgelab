@@ -452,10 +452,19 @@ try {
   console.log('PASS pinned-index baseline: both native terminal cases reproduce omitted close');
   stage = 'maintained-build';
   paths.maintained = await buildPinned('maintained', 'tests/fixtures/lab-observer-delivery.ts');
+  for (const oldInput of graphs.baseline)
+    if (oldInput.path !== 'worker/index.ts')
+      assert.deepEqual(
+        oldInput,
+        graphs.maintained.find(({ path }) => path === oldInput.path),
+        'Comparison uses identical common maintained dependencies',
+      );
   assert.deepEqual(
-    graphs.baseline.filter(({ path }) => path !== 'worker/index.ts'),
-    graphs.maintained.filter(({ path }) => path !== 'worker/index.ts'),
-    'Comparison uses identical maintained dependencies',
+    graphs.maintained
+      .filter(({ path }) => !graphs.baseline.some((input) => input.path === path))
+      .map(({ path }) => path),
+    ['worker/request-body.ts'],
+    'Only the maintained gateway reaches the new request reader',
   );
   const maintained = [];
   for (const kind of ['unavailable', 'expired']) {
@@ -497,7 +506,7 @@ try {
     limitations: [
       'The send exception is fixture-thrown JavaScript before one terminal send delegates to a still-OPEN native socket. It is a controlled API failure, not an observed native send exception or evidence of natural production incidence.',
       'getWebSockets returns proxies around actual runtime sockets; nonfaulted send and all close calls are bound native methods. Socket transport, acceptance, attachments and membership are not simulated.',
-      'The baseline substitutes only the exact historical worker/index.ts bytes from the pinned Git commit; all other graph inputs and foundations match the maintained build.',
+      'The baseline substitutes only the exact historical worker/index.ts bytes from the pinned Git commit; common graph inputs and foundations match the maintained build. Only the maintained gateway reaches the new worker/request-body.ts reader.',
       'Forced hibernation uses the supported unsafeEvictDurableObject API with webSockets:hibernate. No natural production eviction timing is claimed.',
       'The peer uses a 500 ms close-handshake timeout. Received server close control frames and membership release are asserted; natural TCP teardown timing is not measured.',
       'Unavailable injects a JavaScript exception after real config-save SQL is consumed inside the production transaction; it is not a naturally occurring SQLite failure. The failed action rolls back, while the earlier successful owner touch remains visible.',
