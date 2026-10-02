@@ -2,7 +2,15 @@
 
 EdgeLab is a Cloudflare Workers reliability monitor and experiment lab. Scheduled probes preserve incident and policy evidence in SQLite Durable Objects. An isolated gateway demonstrates token admission, circuit recovery, reset fencing and durable observation. The [case study](CASE_STUDY.md) starts with a real monitoring quota failure and follows its repair.
 
-Start with the [recorded tour](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#replay). It needs no operator login, local setup or AI inference. The bundled example is historical controlled local workerd evidence, not a production incident or customer-traffic recording.
+Start with the real failure and its repair below. The supporting [recorded tour](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#replay) needs no operator login, local setup or AI inference. The bundled example is historical controlled local workerd evidence, not a production incident or customer-traffic recording.
+
+## A 90-second engineering review
+
+1. **Problem:** the deployed monitor exhausted its SQLite row-read allowance. The [case study](CASE_STUDY.md) distinguishes gateway liveness from unavailable monitoring and preserves the actual failure evidence.
+2. **Decision:** keep observations authoritative, repair reporting projections incrementally, and bound cleanup with persisted queues that recheck references before deleting evidence. Inspect the [retention decision](adr/006-metadata-retention-work.md).
+3. **Result:** the same controlled two-target workload with grown policy/note history used **3,354 → 94 rows read per cron run**, approximately 97% fewer. The [frozen comparison](evidence/releases/3.4.1-retention-cost.json) pins both implementations and inputs.
+4. **Correctness:** retained references, complete public summaries, queue progress and rollback are checked on actual local workerd/SQLite. Read the [verification record](evidence/VALIDATION.md).
+5. **Limit:** the measurement is local and workload-specific. Repeated deliveries and other account activity add work; it establishes neither a production billing reduction nor an unmet market. The [value assessment](PRODUCT_VALUE.md) compares existing alternatives.
 
 ## Two-minute recorded review
 

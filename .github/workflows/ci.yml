@@ -49,6 +49,7 @@ jobs:
       - run: npm run test:retention
       - run: npm run test:retention-cost
       - run: npm run test:monitor-cost
+      - run: npm run test:monitor-duplicates
       - run: npm run test:status-cache
       - run: npm run test:status-evidence
       - name: Test real local Worker and Durable Object

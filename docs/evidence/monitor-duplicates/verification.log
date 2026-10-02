@@ -1,0 +1,272 @@
+{
+  "passed": true,
+  "measuredAt": "2026-10-02T14:25:42.379Z",
+  "observations": [
+    {
+      "targetCount": 2,
+      "kind": "ordinary-current-minute",
+      "cost": {
+        "statements": 53,
+        "rowsRead": 57,
+        "rowsWritten": 32,
+        "attemptedStatements": 53,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "probes": 2
+    },
+    {
+      "targetCount": 2,
+      "kind": "same-slot-finished-duplicate",
+      "cost": {
+        "statements": 39,
+        "rowsRead": 49,
+        "rowsWritten": 10,
+        "attemptedStatements": 39,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "probes": 0
+    },
+    {
+      "targetCount": 2,
+      "kind": "overlapping-pair-combined",
+      "cost": {
+        "statements": 94,
+        "rowsRead": 107,
+        "rowsWritten": 42,
+        "attemptedStatements": 94,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "probes": 2
+    },
+    {
+      "targetCount": 2,
+      "kind": "same-slot-overlapping-duplicate",
+      "cost": {
+        "statements": 41,
+        "rowsRead": 46,
+        "rowsWritten": 12,
+        "attemptedStatements": 41,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "probes": 0
+    },
+    {
+      "targetCount": 5,
+      "kind": "ordinary-current-minute",
+      "cost": {
+        "statements": 104,
+        "rowsRead": 107,
+        "rowsWritten": 68,
+        "attemptedStatements": 104,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "probes": 5
+    },
+    {
+      "targetCount": 5,
+      "kind": "same-slot-finished-duplicate",
+      "cost": {
+        "statements": 69,
+        "rowsRead": 87,
+        "rowsWritten": 13,
+        "attemptedStatements": 69,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "probes": 0
+    },
+    {
+      "targetCount": 5,
+      "kind": "overlapping-pair-combined",
+      "cost": {
+        "statements": 178,
+        "rowsRead": 198,
+        "rowsWritten": 81,
+        "attemptedStatements": 178,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "probes": 5
+    },
+    {
+      "targetCount": 5,
+      "kind": "same-slot-overlapping-duplicate",
+      "cost": {
+        "statements": 74,
+        "rowsRead": 81,
+        "rowsWritten": 18,
+        "attemptedStatements": 74,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "probes": 0
+    }
+  ],
+  "runtimes": [
+    {
+      "targetCount": 2,
+      "kind": "ordinary",
+      "initialMinutePhaseMs": 36949,
+      "realMinuteWaitMs": 0,
+      "disposed": true,
+      "originCalls": 2
+    },
+    {
+      "targetCount": 2,
+      "kind": "overlap",
+      "initialMinutePhaseMs": 37979,
+      "realMinuteWaitMs": 0,
+      "disposed": true,
+      "originCalls": 2
+    },
+    {
+      "targetCount": 5,
+      "kind": "ordinary",
+      "initialMinutePhaseMs": 38792,
+      "realMinuteWaitMs": 0,
+      "disposed": true,
+      "originCalls": 5
+    },
+    {
+      "targetCount": 5,
+      "kind": "overlap",
+      "initialMinutePhaseMs": 40589,
+      "realMinuteWaitMs": 0,
+      "disposed": true,
+      "originCalls": 5
+    }
+  ]
+}

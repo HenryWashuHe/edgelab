@@ -2,7 +2,7 @@
 
 **A Cloudflare Workers reliability reference and debugging lab.** Scheduled probes retain incident evidence in SQLite-backed Durable Objects; an isolated lab demonstrates request coordination, circuit recovery and hibernating observers. The [case study](docs/CASE_STUDY.md) follows a real deployed row-read quota failure and its measured repair.
 
-[**Live Operations**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev) · [**Recorded coordination tour**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#replay) · [**Architecture evidence**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#architecture) · [Reviewer guide](docs/REVIEWER_GUIDE.md) · [CI](https://github.com/HenryWashuHe/edgelab/actions)
+[**90-second engineering review**](docs/REVIEWER_GUIDE.md#a-90-second-engineering-review) · [**Failure and repair**](docs/CASE_STUDY.md) · [**Live Operations**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev) · [**Recorded coordination tour**](https://edgelab-reliability.edgelab-henrywashuhe.workers.dev/#replay) · [CI](https://github.com/HenryWashuHe/edgelab/actions)
 
 ## A two-minute public tour
 

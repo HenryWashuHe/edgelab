@@ -10,7 +10,7 @@ An in-browser resilience lab demonstrates algorithms but does not operate a syst
 
 Use a singleton SQLite-backed Durable Object for at most five deployment-approved services, driven by a one-minute Cron Trigger. Keep the existing per-session laboratory class separate.
 
-Each service/minute job claims a persisted token and 30-second lease inside a synchronous transaction. An active lease prevents another minute for that service from overlapping. Probe I/O happens outside the transaction with a maximum 10-second budget. Completion checks the lease token and service revision, then atomically stores the uniquely keyed sample, advances streaks, records incident transitions, and completes the job. Expired claims can be replaced after a crash. Repeated completed minutes are no-ops. Stale policy results release their reservation and do not enter SLO history.
+Each service/minute job claims a persisted token and 30-second lease inside a synchronous transaction. An active lease prevents another minute for that service from overlapping. Probe I/O happens outside the transaction with a maximum 10-second budget. Completion checks the lease token and service revision, then atomically stores the uniquely keyed sample, advances streaks, records incident transitions, and completes the job. Expired claims can be replaced after a crash. A repeated completed service/minute suppresses another probe and sample; the accepted tick still records scheduler events, evaluates budgets and runs retention. Stale policy results release their reservation and do not enter SLO history.
 
 Streaks advance only for increasing consecutive slots. Out-of-order samples cannot change the latest incident state. Gaps reset streaks without closing an existing incident. Maintenance resets streaks and leaves open incidents intact. A partial unique SQLite index provides a second invariant against two open incidents for one service.
 
@@ -25,3 +25,5 @@ The singleton is a throughput/availability boundary. Probe concurrency is bounde
 ## Verification
 
 The runtime suite sends twelve concurrent deliveries of a slot and proves one stored check/one upstream call. It tests incident acknowledgement, recovery, object eviction, revision races, active and expired abandoned leases, retention, and the actual Worker scheduled handler. Unit tests cover gaps, out-of-order observations, bounds, redirects, invalid bodies, network failures, and body-consumption timeouts.
+
+The [duplicate workload](../evidence/monitor-duplicates/README.md) meters ordinary, finished-duplicate and overlapping ticks on real local SQLite. A `completed` scheduler event describes a finished attempt, including one that only found busy leases; it does not promise a new observation. Readiness separately ages current-revision observations. A completed busy attempt must not seal its minute: the existing abandoned-lease test later retries that same slot successfully.

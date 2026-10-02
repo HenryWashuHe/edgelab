@@ -20,3 +20,4 @@ docs/evidence/counter-inspector/*.json
 docs/evidence/releases/3.12.4-target-strings/*.json
 docs/evidence/monitor-enrollment/*.json
 docs/evidence/releases/3.12.5-request-body/*.json
+docs/evidence/monitor-duplicates/*.json

@@ -1,0 +1,1705 @@
+{
+  "schemaVersion": 1,
+  "kind": "edgelab-local-current-minute-duplicate-tick",
+  "startedAt": "2026-10-02T14:25:36.894Z",
+  "measuredAt": "2026-10-02T14:25:42.379Z",
+  "sourceBaseCommit": "40ecede8da952c68421dd66398ce430a1031babc",
+  "sourceProjectVersion": "3.12.5",
+  "environment": {
+    "node": "v25.4.0",
+    "esbuild": "0.28.1",
+    "miniflare": "5.20260926.0-alpha",
+    "compatibilityDate": "2026-09-01",
+    "clock": "native Date.now; optional fixture clock endpoint never invoked",
+    "entryPath": "Direct native MonitorStore /tick through its real Durable Object stub; no gateway scheduled handler or CronTrigger delivery invoked",
+    "cf": false,
+    "telemetry": false
+  },
+  "sourcePins": [
+    {
+      "path": "package-lock.json",
+      "bytes": 102759,
+      "sha256": "0033bcb3a8da647d312efa476e4835e9e651a4d820dfff0f2670f6235880151a"
+    },
+    {
+      "path": "package.json",
+      "bytes": 3377,
+      "sha256": "5b2485f5534b272846545a8126fcc3fd13ec5400a71611482eba79693a30b708"
+    },
+    {
+      "path": "scripts/monitor-duplicate-cost.mjs",
+      "bytes": 21065,
+      "sha256": "85053181aae6f201d4410d1761dcc58c20d931406d897889c348378450c282e2"
+    },
+    {
+      "path": "tests/fixtures/status-cache.ts",
+      "bytes": 8260,
+      "sha256": "6339da840c080dbdc2acfd830a1988cc65ada53060613f37b8c965c9e0c9e3ab"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 447,
+      "sha256": "9affb71fa759689786bd82d7dbe343c7fbed45e403dbc6fbd658c578d1bdface"
+    },
+    {
+      "path": "worker/bounded-json.ts",
+      "bytes": 4230,
+      "sha256": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1"
+    },
+    {
+      "path": "worker/budget-signals.ts",
+      "bytes": 8063,
+      "sha256": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15"
+    },
+    {
+      "path": "worker/burn-rate.ts",
+      "bytes": 7472,
+      "sha256": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c"
+    },
+    {
+      "path": "worker/engine.ts",
+      "bytes": 7107,
+      "sha256": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f"
+    },
+    {
+      "path": "worker/incident-brief-ai.ts",
+      "bytes": 3721,
+      "sha256": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b"
+    },
+    {
+      "path": "worker/incident-brief-domain.ts",
+      "bytes": 28826,
+      "sha256": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1"
+    },
+    {
+      "path": "worker/incident-briefs.ts",
+      "bytes": 21706,
+      "sha256": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d"
+    },
+    {
+      "path": "worker/incident-evidence.ts",
+      "bytes": 15413,
+      "sha256": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2"
+    },
+    {
+      "path": "worker/index.ts",
+      "bytes": 23106,
+      "sha256": "a655c09a5df7ff91bac389970890922e5f441f52f8cfa679c52b2c6f374a543f"
+    },
+    {
+      "path": "worker/lab-admission.ts",
+      "bytes": 3810,
+      "sha256": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc"
+    },
+    {
+      "path": "worker/lab-observer.ts",
+      "bytes": 8257,
+      "sha256": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08"
+    },
+    {
+      "path": "worker/metadata-cleanup.ts",
+      "bytes": 4888,
+      "sha256": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee"
+    },
+    {
+      "path": "worker/monitor-check-cache.ts",
+      "bytes": 9871,
+      "sha256": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1"
+    },
+    {
+      "path": "worker/monitor-domain.ts",
+      "bytes": 5281,
+      "sha256": "cf18d92b220815742326fb8bb93e9a2866e46a8cff649163fb1306ab46e12af5"
+    },
+    {
+      "path": "worker/monitor-forwarder.ts",
+      "bytes": 3099,
+      "sha256": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e"
+    },
+    {
+      "path": "worker/monitor-probe.ts",
+      "bytes": 1380,
+      "sha256": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752"
+    },
+    {
+      "path": "worker/monitor-readiness.ts",
+      "bytes": 4245,
+      "sha256": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c"
+    },
+    {
+      "path": "worker/monitor-version-retention.ts",
+      "bytes": 9863,
+      "sha256": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455"
+    },
+    {
+      "path": "worker/monitor.ts",
+      "bytes": 30887,
+      "sha256": "2e00d15cbfed9fef66c92e1a94bee3abbdc6983d338762e736f7f95c39b992cc"
+    },
+    {
+      "path": "worker/origin-client.ts",
+      "bytes": 1181,
+      "sha256": "1c92a87dc002fa309e032f2b3ebd569c58fa012929db7d9d9be596d2a9e18e59"
+    },
+    {
+      "path": "worker/origin.ts",
+      "bytes": 2274,
+      "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8"
+    },
+    {
+      "path": "worker/request-body.ts",
+      "bytes": 3325,
+      "sha256": "f0e8fe931433e142d556ef891e18d1afb95f7ea9f7cc7a2692ef2be82e31ad28"
+    },
+    {
+      "path": "worker/status-view-cache.ts",
+      "bytes": 6670,
+      "sha256": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158"
+    }
+  ],
+  "buildGraph": [
+    {
+      "path": "tests/fixtures/status-cache.ts",
+      "bytes": 8260,
+      "sha256": "6339da840c080dbdc2acfd830a1988cc65ada53060613f37b8c965c9e0c9e3ab"
+    },
+    {
+      "path": "worker/bounded-json.ts",
+      "bytes": 4230,
+      "sha256": "6c8b4a2b1517dd7f54db45e1530fb153a018c50cb923e27e86b3e5e7afaa31d1"
+    },
+    {
+      "path": "worker/budget-signals.ts",
+      "bytes": 8063,
+      "sha256": "9b24b97570b7023a9d53792aa639a56e6414710bf9ddeb0f28d3780c756b0f15"
+    },
+    {
+      "path": "worker/burn-rate.ts",
+      "bytes": 7472,
+      "sha256": "1df1a13b666aed1bedbd6ea4d2995fae5f9ae77bb2afc09e700a95863ede367c"
+    },
+    {
+      "path": "worker/engine.ts",
+      "bytes": 7107,
+      "sha256": "7acc5168b665d2352c7d6941def8991b8befbadd87af52e8d36a740eb9f6881f"
+    },
+    {
+      "path": "worker/incident-brief-ai.ts",
+      "bytes": 3721,
+      "sha256": "d5aa08abd85980389f1703db42c8cb745bdd71c672759be2044658eab789a60b"
+    },
+    {
+      "path": "worker/incident-brief-domain.ts",
+      "bytes": 28826,
+      "sha256": "dc09857468fae9c7f707945039bb64330d3a1da5222d1cb7ae340f3390dbf3e1"
+    },
+    {
+      "path": "worker/incident-briefs.ts",
+      "bytes": 21706,
+      "sha256": "8cea5dfb9d22f2b7e377bad0b6d431801574806188aa65431534fd12a654e89d"
+    },
+    {
+      "path": "worker/incident-evidence.ts",
+      "bytes": 15413,
+      "sha256": "e5648cf837c6314d5854b475e962f5f1265bc4a8bcd45fa36efeb1b6c23f55e2"
+    },
+    {
+      "path": "worker/index.ts",
+      "bytes": 23106,
+      "sha256": "a655c09a5df7ff91bac389970890922e5f441f52f8cfa679c52b2c6f374a543f"
+    },
+    {
+      "path": "worker/lab-admission.ts",
+      "bytes": 3810,
+      "sha256": "e4703484bef9bd6d57f530b86a97a14803d456061fc8c03a5b13ac84a42100cc"
+    },
+    {
+      "path": "worker/lab-observer.ts",
+      "bytes": 8257,
+      "sha256": "ed5865dee9d5a9d7affceaa240258ea91b527776d8f8c5e143b22a0b0d539b08"
+    },
+    {
+      "path": "worker/metadata-cleanup.ts",
+      "bytes": 4888,
+      "sha256": "2b79f9729869e41885d23e9b6356da6efcc5b3f9c9b1c197e1a57d07d91483ee"
+    },
+    {
+      "path": "worker/monitor-check-cache.ts",
+      "bytes": 9871,
+      "sha256": "e1646dc422ecfee9d4310216b9d3e541728db99cbc57a14b803009f10583edf1"
+    },
+    {
+      "path": "worker/monitor-domain.ts",
+      "bytes": 5281,
+      "sha256": "cf18d92b220815742326fb8bb93e9a2866e46a8cff649163fb1306ab46e12af5"
+    },
+    {
+      "path": "worker/monitor-forwarder.ts",
+      "bytes": 3099,
+      "sha256": "cc5594669f33baca61d229f5bb4b7463a946242a0d072d2ebd65391753cfc46e"
+    },
+    {
+      "path": "worker/monitor-probe.ts",
+      "bytes": 1380,
+      "sha256": "1311b0a606d01ff2f0d2fb9877d23e2c127020e515bdd8d83c50319b101c4752"
+    },
+    {
+      "path": "worker/monitor-readiness.ts",
+      "bytes": 4245,
+      "sha256": "7544aa7261119b12d5ff4040d3b0db2078af704b5dcbefec16470e49bda8ae8c"
+    },
+    {
+      "path": "worker/monitor-version-retention.ts",
+      "bytes": 9863,
+      "sha256": "08ecf4c8b8985345063dde9f73696e2e20c39459642be28c086acee951004455"
+    },
+    {
+      "path": "worker/monitor.ts",
+      "bytes": 30887,
+      "sha256": "2e00d15cbfed9fef66c92e1a94bee3abbdc6983d338762e736f7f95c39b992cc"
+    },
+    {
+      "path": "worker/origin-client.ts",
+      "bytes": 1181,
+      "sha256": "1c92a87dc002fa309e032f2b3ebd569c58fa012929db7d9d9be596d2a9e18e59"
+    },
+    {
+      "path": "worker/origin.ts",
+      "bytes": 2274,
+      "sha256": "13e360ae89552a3b38135cecf4f26d0480ac2553075670c0d23c1e52f82a5fb8"
+    },
+    {
+      "path": "worker/request-body.ts",
+      "bytes": 3325,
+      "sha256": "f0e8fe931433e142d556ef891e18d1afb95f7ea9f7cc7a2692ef2be82e31ad28"
+    },
+    {
+      "path": "worker/status-view-cache.ts",
+      "bytes": 6670,
+      "sha256": "4cec53a12bc6921cf0852090915671690b1ea2c0cc5eb5dc3bb9e464d06bb158"
+    }
+  ],
+  "bundle": {
+    "bytes": 171791,
+    "sha256": "af283f913ae6d1b9ca45976de733b74c95c018216343f78f7bb2c09fd776f146"
+  },
+  "sourcesStable": true,
+  "observations": [
+    {
+      "targetCount": 2,
+      "kind": "ordinary-current-minute",
+      "slot": 29849185,
+      "realClockAtStart": 1790951137946,
+      "results": [
+        {
+          "service": "target-0",
+          "result": "good"
+        },
+        {
+          "service": "target-1",
+          "result": "good"
+        }
+      ],
+      "cost": {
+        "statements": 53,
+        "rowsRead": 57,
+        "rowsWritten": 32,
+        "attemptedStatements": 53,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "probes": 2
+    },
+    {
+      "targetCount": 2,
+      "kind": "same-slot-finished-duplicate",
+      "slot": 29849185,
+      "cost": {
+        "statements": 39,
+        "rowsRead": 49,
+        "rowsWritten": 10,
+        "attemptedStatements": 39,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "extraProbes": 0,
+      "currentRows": {
+        "jobs": [
+          {
+            "service": "target-0",
+            "slot": 29849185,
+            "done": 1
+          },
+          {
+            "service": "target-1",
+            "slot": 29849185,
+            "done": 1
+          }
+        ],
+        "checks": [
+          {
+            "service": "target-0",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951137951,
+            "at": 1790951137956
+          },
+          {
+            "service": "target-1",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951137951,
+            "at": 1790951137956
+          }
+        ]
+      },
+      "completedEvents": [
+        {
+          "at": 1790951137960,
+          "slot": 29849185,
+          "status": "completed",
+          "detail": {
+            "results": [
+              {
+                "service": "target-0",
+                "result": "good"
+              },
+              {
+                "service": "target-1",
+                "result": "good"
+              }
+            ],
+            "cleanup": {
+              "schemaVersion": 1,
+              "cutoff": 1788359137959,
+              "versions": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              },
+              "orphanNotes": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              }
+            }
+          }
+        },
+        {
+          "at": 1790951137967,
+          "slot": 29849185,
+          "status": "completed",
+          "detail": {
+            "results": [
+              {
+                "service": "target-0",
+                "result": "duplicate-or-busy"
+              },
+              {
+                "service": "target-1",
+                "result": "duplicate-or-busy"
+              }
+            ],
+            "cleanup": {
+              "schemaVersion": 1,
+              "cutoff": 1788359137967,
+              "versions": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              },
+              "orphanNotes": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              }
+            }
+          }
+        }
+      ],
+      "finalReadiness": {
+        "ok": true,
+        "monitoring": {
+          "status": "healthy",
+          "lastStartedAt": 1790951137965,
+          "lastCompletedAt": 1790951137967,
+          "lastSlot": 29849185,
+          "ageMs": 5,
+          "reason": "The scheduler and all active service observations are fresh."
+        }
+      },
+      "inFlightReadiness": null,
+      "inFlightLatestCheckSlots": null,
+      "inFlightCurrentChecks": null,
+      "beforeFinishedDuplicateChecks": [
+        {
+          "service": "target-0",
+          "slot": 29849185,
+          "revision": 1,
+          "outcome": "good",
+          "observedAt": 1790951137951,
+          "at": 1790951137956
+        },
+        {
+          "service": "target-1",
+          "slot": 29849185,
+          "revision": 1,
+          "outcome": "good",
+          "observedAt": 1790951137951,
+          "at": 1790951137956
+        }
+      ],
+      "budgetState": [
+        {
+          "service": "target-0",
+          "evaluationStatus": "current",
+          "computedAt": 1790951137965,
+          "state": "clear"
+        },
+        {
+          "service": "target-1",
+          "evaluationStatus": "current",
+          "computedAt": 1790951137966,
+          "state": "clear"
+        }
+      ],
+      "orderedResults": [
+        [
+          {
+            "service": "target-0",
+            "result": "good"
+          },
+          {
+            "service": "target-1",
+            "result": "good"
+          }
+        ],
+        [
+          {
+            "service": "target-0",
+            "result": "duplicate-or-busy"
+          },
+          {
+            "service": "target-1",
+            "result": "duplicate-or-busy"
+          }
+        ]
+      ],
+      "seed": {
+        "verifiedMinutesPerService": 4320,
+        "seedLastSlot": 29849184
+      }
+    },
+    {
+      "targetCount": 2,
+      "kind": "overlapping-pair-combined",
+      "slot": 29849185,
+      "realClockAtStart": 1790951138761,
+      "firstResults": [
+        {
+          "service": "target-0",
+          "result": "good"
+        },
+        {
+          "service": "target-1",
+          "result": "good"
+        }
+      ],
+      "duplicateResults": [
+        {
+          "service": "target-0",
+          "result": "duplicate-or-busy"
+        },
+        {
+          "service": "target-1",
+          "result": "duplicate-or-busy"
+        }
+      ],
+      "cost": {
+        "statements": 94,
+        "rowsRead": 107,
+        "rowsWritten": 42,
+        "attemptedStatements": 94,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "excludedDiagnosticCost": {
+        "statements": 12,
+        "rowsRead": 17290,
+        "rowsWritten": 0,
+        "attemptedStatements": 12,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "probes": 2
+    },
+    {
+      "targetCount": 2,
+      "kind": "same-slot-overlapping-duplicate",
+      "slot": 29849185,
+      "cost": {
+        "statements": 41,
+        "rowsRead": 46,
+        "rowsWritten": 12,
+        "attemptedStatements": 41,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "extraProbes": 0,
+      "currentRows": {
+        "jobs": [
+          {
+            "service": "target-0",
+            "slot": 29849185,
+            "done": 1
+          },
+          {
+            "service": "target-1",
+            "slot": 29849185,
+            "done": 1
+          }
+        ],
+        "checks": [
+          {
+            "service": "target-0",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951138763,
+            "at": 1790951138779
+          },
+          {
+            "service": "target-1",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951138764,
+            "at": 1790951138779
+          }
+        ]
+      },
+      "completedEvents": [
+        {
+          "at": 1790951138773,
+          "slot": 29849185,
+          "status": "completed",
+          "detail": {
+            "results": [
+              {
+                "service": "target-0",
+                "result": "duplicate-or-busy"
+              },
+              {
+                "service": "target-1",
+                "result": "duplicate-or-busy"
+              }
+            ],
+            "cleanup": {
+              "schemaVersion": 1,
+              "cutoff": 1788359138773,
+              "versions": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              },
+              "orphanNotes": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              }
+            }
+          }
+        },
+        {
+          "at": 1790951138782,
+          "slot": 29849185,
+          "status": "completed",
+          "detail": {
+            "results": [
+              {
+                "service": "target-0",
+                "result": "good"
+              },
+              {
+                "service": "target-1",
+                "result": "good"
+              }
+            ],
+            "cleanup": {
+              "schemaVersion": 1,
+              "cutoff": 1788359138781,
+              "versions": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              },
+              "orphanNotes": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              }
+            }
+          }
+        }
+      ],
+      "finalReadiness": {
+        "ok": true,
+        "monitoring": {
+          "status": "healthy",
+          "lastStartedAt": 1790951138769,
+          "lastCompletedAt": 1790951138782,
+          "lastSlot": 29849185,
+          "ageMs": 4,
+          "reason": "The scheduler and all active service observations are fresh."
+        }
+      },
+      "inFlightReadiness": {
+        "status": 200,
+        "data": {
+          "ok": true,
+          "monitoring": {
+            "status": "healthy",
+            "lastStartedAt": 1790951138769,
+            "lastCompletedAt": 1790951138773,
+            "lastSlot": 29849185,
+            "ageMs": 2,
+            "reason": "The scheduler and all active service observations are fresh."
+          }
+        }
+      },
+      "inFlightLatestCheckSlots": [
+        {
+          "service": "target-0",
+          "latestSlot": 29849184
+        },
+        {
+          "service": "target-1",
+          "latestSlot": 29849184
+        }
+      ],
+      "inFlightCurrentChecks": [],
+      "beforeFinishedDuplicateChecks": null,
+      "budgetState": [
+        {
+          "service": "target-0",
+          "evaluationStatus": "current",
+          "computedAt": 1790951138779,
+          "state": "clear"
+        },
+        {
+          "service": "target-1",
+          "evaluationStatus": "current",
+          "computedAt": 1790951138780,
+          "state": "clear"
+        }
+      ],
+      "orderedResults": [
+        [
+          {
+            "service": "target-0",
+            "result": "good"
+          },
+          {
+            "service": "target-1",
+            "result": "good"
+          }
+        ],
+        [
+          {
+            "service": "target-0",
+            "result": "duplicate-or-busy"
+          },
+          {
+            "service": "target-1",
+            "result": "duplicate-or-busy"
+          }
+        ]
+      ],
+      "seed": {
+        "verifiedMinutesPerService": 4320,
+        "seedLastSlot": 29849184
+      }
+    },
+    {
+      "targetCount": 5,
+      "kind": "ordinary-current-minute",
+      "slot": 29849185,
+      "realClockAtStart": 1790951140548,
+      "results": [
+        {
+          "service": "target-0",
+          "result": "good"
+        },
+        {
+          "service": "target-1",
+          "result": "good"
+        },
+        {
+          "service": "target-2",
+          "result": "good"
+        },
+        {
+          "service": "target-3",
+          "result": "good"
+        },
+        {
+          "service": "target-4",
+          "result": "good"
+        }
+      ],
+      "cost": {
+        "statements": 104,
+        "rowsRead": 107,
+        "rowsWritten": 68,
+        "attemptedStatements": 104,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "probes": 5
+    },
+    {
+      "targetCount": 5,
+      "kind": "same-slot-finished-duplicate",
+      "slot": 29849185,
+      "cost": {
+        "statements": 69,
+        "rowsRead": 87,
+        "rowsWritten": 13,
+        "attemptedStatements": 69,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "extraProbes": 0,
+      "currentRows": {
+        "jobs": [
+          {
+            "service": "target-0",
+            "slot": 29849185,
+            "done": 1
+          },
+          {
+            "service": "target-1",
+            "slot": 29849185,
+            "done": 1
+          },
+          {
+            "service": "target-2",
+            "slot": 29849185,
+            "done": 1
+          },
+          {
+            "service": "target-3",
+            "slot": 29849185,
+            "done": 1
+          },
+          {
+            "service": "target-4",
+            "slot": 29849185,
+            "done": 1
+          }
+        ],
+        "checks": [
+          {
+            "service": "target-0",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951140551,
+            "at": 1790951140552
+          },
+          {
+            "service": "target-1",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951140551,
+            "at": 1790951140552
+          },
+          {
+            "service": "target-2",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951140551,
+            "at": 1790951140553
+          },
+          {
+            "service": "target-3",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951140551,
+            "at": 1790951140553
+          },
+          {
+            "service": "target-4",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951140551,
+            "at": 1790951140553
+          }
+        ]
+      },
+      "completedEvents": [
+        {
+          "at": 1790951140561,
+          "slot": 29849185,
+          "status": "completed",
+          "detail": {
+            "results": [
+              {
+                "service": "target-0",
+                "result": "good"
+              },
+              {
+                "service": "target-1",
+                "result": "good"
+              },
+              {
+                "service": "target-2",
+                "result": "good"
+              },
+              {
+                "service": "target-3",
+                "result": "good"
+              },
+              {
+                "service": "target-4",
+                "result": "good"
+              }
+            ],
+            "cleanup": {
+              "schemaVersion": 1,
+              "cutoff": 1788359140561,
+              "versions": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              },
+              "orphanNotes": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              }
+            }
+          }
+        },
+        {
+          "at": 1790951140573,
+          "slot": 29849185,
+          "status": "completed",
+          "detail": {
+            "results": [
+              {
+                "service": "target-0",
+                "result": "duplicate-or-busy"
+              },
+              {
+                "service": "target-1",
+                "result": "duplicate-or-busy"
+              },
+              {
+                "service": "target-2",
+                "result": "duplicate-or-busy"
+              },
+              {
+                "service": "target-3",
+                "result": "duplicate-or-busy"
+              },
+              {
+                "service": "target-4",
+                "result": "duplicate-or-busy"
+              }
+            ],
+            "cleanup": {
+              "schemaVersion": 1,
+              "cutoff": 1788359140573,
+              "versions": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              },
+              "orphanNotes": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              }
+            }
+          }
+        }
+      ],
+      "finalReadiness": {
+        "ok": true,
+        "monitoring": {
+          "status": "healthy",
+          "lastStartedAt": 1790951140567,
+          "lastCompletedAt": 1790951140573,
+          "lastSlot": 29849185,
+          "ageMs": 4,
+          "reason": "The scheduler and all active service observations are fresh."
+        }
+      },
+      "inFlightReadiness": null,
+      "inFlightLatestCheckSlots": null,
+      "inFlightCurrentChecks": null,
+      "beforeFinishedDuplicateChecks": [
+        {
+          "service": "target-0",
+          "slot": 29849185,
+          "revision": 1,
+          "outcome": "good",
+          "observedAt": 1790951140551,
+          "at": 1790951140552
+        },
+        {
+          "service": "target-1",
+          "slot": 29849185,
+          "revision": 1,
+          "outcome": "good",
+          "observedAt": 1790951140551,
+          "at": 1790951140552
+        },
+        {
+          "service": "target-2",
+          "slot": 29849185,
+          "revision": 1,
+          "outcome": "good",
+          "observedAt": 1790951140551,
+          "at": 1790951140553
+        },
+        {
+          "service": "target-3",
+          "slot": 29849185,
+          "revision": 1,
+          "outcome": "good",
+          "observedAt": 1790951140551,
+          "at": 1790951140553
+        },
+        {
+          "service": "target-4",
+          "slot": 29849185,
+          "revision": 1,
+          "outcome": "good",
+          "observedAt": 1790951140551,
+          "at": 1790951140553
+        }
+      ],
+      "budgetState": [
+        {
+          "service": "target-0",
+          "evaluationStatus": "current",
+          "computedAt": 1790951140567,
+          "state": "clear"
+        },
+        {
+          "service": "target-1",
+          "evaluationStatus": "current",
+          "computedAt": 1790951140568,
+          "state": "clear"
+        },
+        {
+          "service": "target-2",
+          "evaluationStatus": "current",
+          "computedAt": 1790951140569,
+          "state": "clear"
+        },
+        {
+          "service": "target-3",
+          "evaluationStatus": "current",
+          "computedAt": 1790951140570,
+          "state": "clear"
+        },
+        {
+          "service": "target-4",
+          "evaluationStatus": "current",
+          "computedAt": 1790951140571,
+          "state": "clear"
+        }
+      ],
+      "orderedResults": [
+        [
+          {
+            "service": "target-0",
+            "result": "good"
+          },
+          {
+            "service": "target-1",
+            "result": "good"
+          },
+          {
+            "service": "target-2",
+            "result": "good"
+          },
+          {
+            "service": "target-3",
+            "result": "good"
+          },
+          {
+            "service": "target-4",
+            "result": "good"
+          }
+        ],
+        [
+          {
+            "service": "target-0",
+            "result": "duplicate-or-busy"
+          },
+          {
+            "service": "target-1",
+            "result": "duplicate-or-busy"
+          },
+          {
+            "service": "target-2",
+            "result": "duplicate-or-busy"
+          },
+          {
+            "service": "target-3",
+            "result": "duplicate-or-busy"
+          },
+          {
+            "service": "target-4",
+            "result": "duplicate-or-busy"
+          }
+        ]
+      ],
+      "seed": {
+        "verifiedMinutesPerService": 4320,
+        "seedLastSlot": 29849184
+      }
+    },
+    {
+      "targetCount": 5,
+      "kind": "overlapping-pair-combined",
+      "slot": 29849185,
+      "realClockAtStart": 1790951142318,
+      "firstResults": [
+        {
+          "service": "target-0",
+          "result": "good"
+        },
+        {
+          "service": "target-1",
+          "result": "good"
+        },
+        {
+          "service": "target-2",
+          "result": "good"
+        },
+        {
+          "service": "target-3",
+          "result": "good"
+        },
+        {
+          "service": "target-4",
+          "result": "good"
+        }
+      ],
+      "duplicateResults": [
+        {
+          "service": "target-0",
+          "result": "duplicate-or-busy"
+        },
+        {
+          "service": "target-1",
+          "result": "duplicate-or-busy"
+        },
+        {
+          "service": "target-2",
+          "result": "duplicate-or-busy"
+        },
+        {
+          "service": "target-3",
+          "result": "duplicate-or-busy"
+        },
+        {
+          "service": "target-4",
+          "result": "duplicate-or-busy"
+        }
+      ],
+      "cost": {
+        "statements": 178,
+        "rowsRead": 198,
+        "rowsWritten": 81,
+        "attemptedStatements": 178,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "excludedDiagnosticCost": {
+        "statements": 24,
+        "rowsRead": 43222,
+        "rowsWritten": 0,
+        "attemptedStatements": 24,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "probes": 5
+    },
+    {
+      "targetCount": 5,
+      "kind": "same-slot-overlapping-duplicate",
+      "slot": 29849185,
+      "cost": {
+        "statements": 74,
+        "rowsRead": 81,
+        "rowsWritten": 18,
+        "attemptedStatements": 74,
+        "failedStatements": 0,
+        "faultsFired": 0,
+        "nativeFaultsFired": 0,
+        "operations": {
+          "kvGet": 0,
+          "kvPut": 0,
+          "kvDelete": 0,
+          "kvList": 0,
+          "storageGet": 0,
+          "storagePut": 0,
+          "storageDelete": 0,
+          "storageList": 0,
+          "storageDeleteAll": 0,
+          "alarmGet": 0,
+          "alarmSet": 0,
+          "alarmDelete": 0
+        },
+        "failedCursorRowCost": "no-failed-cursor"
+      },
+      "extraProbes": 0,
+      "currentRows": {
+        "jobs": [
+          {
+            "service": "target-0",
+            "slot": 29849185,
+            "done": 1
+          },
+          {
+            "service": "target-1",
+            "slot": 29849185,
+            "done": 1
+          },
+          {
+            "service": "target-2",
+            "slot": 29849185,
+            "done": 1
+          },
+          {
+            "service": "target-3",
+            "slot": 29849185,
+            "done": 1
+          },
+          {
+            "service": "target-4",
+            "slot": 29849185,
+            "done": 1
+          }
+        ],
+        "checks": [
+          {
+            "service": "target-0",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951142321,
+            "at": 1790951142342
+          },
+          {
+            "service": "target-1",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951142321,
+            "at": 1790951142342
+          },
+          {
+            "service": "target-2",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951142321,
+            "at": 1790951142342
+          },
+          {
+            "service": "target-3",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951142321,
+            "at": 1790951142342
+          },
+          {
+            "service": "target-4",
+            "slot": 29849185,
+            "revision": 1,
+            "outcome": "good",
+            "observedAt": 1790951142321,
+            "at": 1790951142342
+          }
+        ]
+      },
+      "completedEvents": [
+        {
+          "at": 1790951142335,
+          "slot": 29849185,
+          "status": "completed",
+          "detail": {
+            "results": [
+              {
+                "service": "target-0",
+                "result": "duplicate-or-busy"
+              },
+              {
+                "service": "target-1",
+                "result": "duplicate-or-busy"
+              },
+              {
+                "service": "target-2",
+                "result": "duplicate-or-busy"
+              },
+              {
+                "service": "target-3",
+                "result": "duplicate-or-busy"
+              },
+              {
+                "service": "target-4",
+                "result": "duplicate-or-busy"
+              }
+            ],
+            "cleanup": {
+              "schemaVersion": 1,
+              "cutoff": 1788359142334,
+              "versions": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              },
+              "orphanNotes": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              }
+            }
+          }
+        },
+        {
+          "at": 1790951142348,
+          "slot": 29849185,
+          "status": "completed",
+          "detail": {
+            "results": [
+              {
+                "service": "target-0",
+                "result": "good"
+              },
+              {
+                "service": "target-1",
+                "result": "good"
+              },
+              {
+                "service": "target-2",
+                "result": "good"
+              },
+              {
+                "service": "target-3",
+                "result": "good"
+              },
+              {
+                "service": "target-4",
+                "result": "good"
+              }
+            ],
+            "cleanup": {
+              "schemaVersion": 1,
+              "cutoff": 1788359142348,
+              "versions": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              },
+              "orphanNotes": {
+                "limit": 32,
+                "examined": 0,
+                "deleted": 0,
+                "protected": 0,
+                "missing": 0,
+                "mayRemain": false
+              }
+            }
+          }
+        }
+      ],
+      "finalReadiness": {
+        "ok": true,
+        "monitoring": {
+          "status": "healthy",
+          "lastStartedAt": 1790951142327,
+          "lastCompletedAt": 1790951142348,
+          "lastSlot": 29849185,
+          "ageMs": 5,
+          "reason": "The scheduler and all active service observations are fresh."
+        }
+      },
+      "inFlightReadiness": {
+        "status": 200,
+        "data": {
+          "ok": true,
+          "monitoring": {
+            "status": "healthy",
+            "lastStartedAt": 1790951142327,
+            "lastCompletedAt": 1790951142335,
+            "lastSlot": 29849185,
+            "ageMs": 2,
+            "reason": "The scheduler and all active service observations are fresh."
+          }
+        }
+      },
+      "inFlightLatestCheckSlots": [
+        {
+          "service": "target-0",
+          "latestSlot": 29849184
+        },
+        {
+          "service": "target-1",
+          "latestSlot": 29849184
+        },
+        {
+          "service": "target-2",
+          "latestSlot": 29849184
+        },
+        {
+          "service": "target-3",
+          "latestSlot": 29849184
+        },
+        {
+          "service": "target-4",
+          "latestSlot": 29849184
+        }
+      ],
+      "inFlightCurrentChecks": [],
+      "beforeFinishedDuplicateChecks": null,
+      "budgetState": [
+        {
+          "service": "target-0",
+          "evaluationStatus": "current",
+          "computedAt": 1790951142342,
+          "state": "clear"
+        },
+        {
+          "service": "target-1",
+          "evaluationStatus": "current",
+          "computedAt": 1790951142343,
+          "state": "clear"
+        },
+        {
+          "service": "target-2",
+          "evaluationStatus": "current",
+          "computedAt": 1790951142345,
+          "state": "clear"
+        },
+        {
+          "service": "target-3",
+          "evaluationStatus": "current",
+          "computedAt": 1790951142346,
+          "state": "clear"
+        },
+        {
+          "service": "target-4",
+          "evaluationStatus": "current",
+          "computedAt": 1790951142346,
+          "state": "clear"
+        }
+      ],
+      "orderedResults": [
+        [
+          {
+            "service": "target-0",
+            "result": "good"
+          },
+          {
+            "service": "target-1",
+            "result": "good"
+          },
+          {
+            "service": "target-2",
+            "result": "good"
+          },
+          {
+            "service": "target-3",
+            "result": "good"
+          },
+          {
+            "service": "target-4",
+            "result": "good"
+          }
+        ],
+        [
+          {
+            "service": "target-0",
+            "result": "duplicate-or-busy"
+          },
+          {
+            "service": "target-1",
+            "result": "duplicate-or-busy"
+          },
+          {
+            "service": "target-2",
+            "result": "duplicate-or-busy"
+          },
+          {
+            "service": "target-3",
+            "result": "duplicate-or-busy"
+          },
+          {
+            "service": "target-4",
+            "result": "duplicate-or-busy"
+          }
+        ]
+      ],
+      "seed": {
+        "verifiedMinutesPerService": 4320,
+        "seedLastSlot": 29849184
+      }
+    }
+  ],
+  "runtimes": [
+    {
+      "targetCount": 2,
+      "kind": "ordinary",
+      "initialMinutePhaseMs": 36949,
+      "realMinuteWaitMs": 0,
+      "disposed": true,
+      "originCalls": 2
+    },
+    {
+      "targetCount": 2,
+      "kind": "overlap",
+      "initialMinutePhaseMs": 37979,
+      "realMinuteWaitMs": 0,
+      "disposed": true,
+      "originCalls": 2
+    },
+    {
+      "targetCount": 5,
+      "kind": "ordinary",
+      "initialMinutePhaseMs": 38792,
+      "realMinuteWaitMs": 0,
+      "disposed": true,
+      "originCalls": 5
+    },
+    {
+      "targetCount": 5,
+      "kind": "overlap",
+      "initialMinutePhaseMs": 40589,
+      "realMinuteWaitMs": 0,
+      "disposed": true,
+      "originCalls": 5
+    }
+  ],
+  "meterBoundary": {
+    "cursor": "Real SQLite execute + toArray completion, including trigger/index consumed row accounting. Instrumentation delegates actual SQL/KV/alarm APIs.",
+    "failedCursorCost": "Failed SQL has no cursor: cost unknown, never zero. No SQL failure occurred in this workload.",
+    "exclusions": "Constructor/schema/enrollment, manual seeding, explicit projection warming and verification/readiness reads excluded from tick intervals; overlapping pair subtracts only separately measured readiness call."
+  },
+  "limits": [
+    "Controlled local origin response only, no actual provider/account/production/browser calls.",
+    "Real current minute only, no fixed/advanced clock, old-minute replay or backfill. Setup waits for a new real minute when less than15seconds remain, without replaying a failed tick.",
+    "One ordinary and one overlap profile per target count; not a throughput/load/billing/capacity or natural cron-duplication measurement.",
+    "Each duplicate is a separate native MonitorStore /tick invocation. Gateway scheduled handling, CronTrigger delivery and naturally occurring duplicates are not exercised. Completion diagnostics do not assert a new probe; result lists disclose duplicate-or-busy.",
+    "Seeded4320-minute good histories/jobs with no expiry candidates; these are measured empty-retention tick paths, not saturated cleanup."
+  ],
+  "externalCalls": {
+    "provider": 0,
+    "account": 0,
+    "production": 0,
+    "browser": 0
+  }
+}
